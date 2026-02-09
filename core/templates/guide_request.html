@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3 class="mb-4">Request Guide</h3>
+
+{% if existing_request %}
+    <div class="alert alert-info">A guide request is already {{ existing_request.status }}.</div>
+{% endif %}
+
+<form method="post" class="card p-3">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label">Select Guide</label>
+        <select class="form-select" name="guide_id" {% if existing_request %}disabled{% endif %}>
+            <option value="">Choose a guide</option>
+            {% for guide in guides %}
+                <option value="{{ guide.id }}">{{ guide.username }} ({{ guide.email }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Message</label>
+        <textarea class="form-control" name="message" rows="4" {% if existing_request %}disabled{% endif %}></textarea>
+    </div>
+    <button class="btn btn-primary" type="submit" {% if existing_request %}disabled{% endif %}>Send Request</button>
+</form>
+
+<div class="mt-3">
+    <a class="btn btn-outline-secondary" href="/mini-project/">Back to Mini Project</a>
+</div>
+{% endblock %}
