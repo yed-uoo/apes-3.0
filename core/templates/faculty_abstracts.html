@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3 class="mb-4">Review Abstracts</h3>
+
+<ul class="nav nav-tabs mb-4" id="abstractTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button"
+            role="tab">
+            Pending <span class="badge bg-warning text-dark">{{ pending_abstracts.count }}</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button"
+            role="tab">
+            Approved <span class="badge bg-success">{{ approved_abstracts.count }}</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button"
+            role="tab">
+            Rejected <span class="badge bg-danger">{{ rejected_abstracts.count }}</span>
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="abstractTabsContent">
+    <!-- Pending Tab -->
+    <div class="tab-pane fade show active" id="pending" role="tabpanel">
+        {% if pending_abstracts %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Group Leader</th>
+                        <th>Title</th>
+                        <th>Submitted Date</th>
+                        <th>PDF Size</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for abstract in pending_abstracts %}
+                    <tr>
+                        <td>{{ abstract.group.leader.username }}</td>
+                        <td><strong>{{ abstract.title }}</strong></td>
+                        <td>{{ abstract.submitted_at|date:"M d, Y H:i" }}</td>
+                        <td>{{ abstract.pdf_size|filesizeformat }}</td>
+                        <td>
+                            <a href="{% url 'review_abstract' abstract.id %}" class="btn btn-sm btn-primary">Review</a>
+                            <a href="{% url 'download_abstract' abstract.id %}"
+                                class="btn btn-sm btn-outline-secondary">Download PDF</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">No pending abstracts to review.</div>
+        {% endif %}
+    </div>
+
+    <!-- Approved Tab -->
+    <div class="tab-pane fade" id="approved" role="tabpanel">
+        {% if approved_abstracts %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Group Leader</th>
+                        <th>Title</th>
+                        <th>Submitted Date</th>
+                        <th>Approved Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for abstract in approved_abstracts %}
+                    <tr>
+                        <td>{{ abstract.group.leader.username }}</td>
+                        <td><strong>{{ abstract.title }}</strong></td>
+                        <td>{{ abstract.submitted_at|date:"M d, Y" }}</td>
+                        <td>{{ abstract.reviewed_at|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'review_abstract' abstract.id %}"
+                                class="btn btn-sm btn-outline-primary">View</a>
+                            <a href="{% url 'download_abstract' abstract.id %}"
+                                class="btn btn-sm btn-outline-secondary">Download PDF</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">No approved abstracts yet.</div>
+        {% endif %}
+    </div>
+
+    <!-- Rejected Tab -->
+    <div class="tab-pane fade" id="rejected" role="tabpanel">
+        {% if rejected_abstracts %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Group Leader</th>
+                        <th>Title</th>
+                        <th>Submitted Date</th>
+                        <th>Rejected Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for abstract in rejected_abstracts %}
+                    <tr>
+                        <td>{{ abstract.group.leader.username }}</td>
+                        <td><strong>{{ abstract.title }}</strong></td>
+                        <td>{{ abstract.submitted_at|date:"M d, Y" }}</td>
+                        <td>{{ abstract.reviewed_at|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'review_abstract' abstract.id %}"
+                                class="btn btn-sm btn-outline-primary">View</a>
+                            <a href="{% url 'download_abstract' abstract.id %}"
+                                class="btn btn-sm btn-outline-secondary">Download PDF</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">No rejected abstracts.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
