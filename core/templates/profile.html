@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3 class="mb-4">User Profile</h3>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Profile Information</h5>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>First Name:</strong>
+            </div>
+            <div class="col-md-8">
+                {{ user.first_name|default:"Not set" }}
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Last Name:</strong>
+            </div>
+            <div class="col-md-8">
+                {{ user.last_name|default:"Not set" }}
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Username:</strong>
+            </div>
+            <div class="col-md-8">
+                {{ user.username }}
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Email:</strong>
+            </div>
+            <div class="col-md-8">
+                {{ user.email }}
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Role:</strong>
+            </div>
+            <div class="col-md-8">
+                {% if is_student %}
+                    <span class="badge bg-info">Student</span>
+                {% elif is_guide and is_coordinator %}
+                    <span class="badge bg-success">Guide</span>
+                    <span class="badge bg-warning text-dark">Coordinator</span>
+                {% elif is_guide %}
+                    <span class="badge bg-success">Guide</span>
+                {% elif is_coordinator %}
+                    <span class="badge bg-warning text-dark">Coordinator</span>
+                {% else %}
+                    <span class="badge bg-secondary">No Role Assigned</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if is_student and student_profile %}
+        <hr>
+        <h6 class="mb-3">Academic Information</h6>
+        
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Class:</strong>
+            </div>
+            <div class="col-md-8">
+                {{ student_profile.class_name|default:"Not set" }}
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Roll Number:</strong>
+            </div>
+            <div class="col-md-8">
+                {{ student_profile.roll_number|default:"Not set" }}
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Register Number:</strong>
+            </div>
+            <div class="col-md-8">
+                {{ student_profile.register_number|default:"Not set" }}
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Department:</strong>
+            </div>
+            <div class="col-md-8">
+                {{ student_profile.department|default:"Not set" }}
+            </div>
+        </div>
+        
+        <div class="alert alert-info mt-3">
+            <small>Academic information can only be updated by administrators.</small>
+        </div>
+        {% endif %}
+
+        {% if faculty_profile %}
+        <hr>
+        <h6 class="mb-3">Faculty Information</h6>
+        
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Department:</strong>
+            </div>
+            <div class="col-md-8">
+                {{ faculty_profile.department|default:"Not set" }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-3">
+    <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Back to Dashboard</a>
+</div>
+{% endblock %}
