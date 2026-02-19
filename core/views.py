@@ -2,9 +2,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
-from .models import Group, GroupMember, GroupRequest, GuideRequest, UserProfile
+from .models import Abstract, Group, GroupMember, GroupRequest, GuideRequest, UserProfile
 
 
 def _get_user_role(user):
@@ -237,3 +239,224 @@ def guide_requests(request):
 	pending_requests = GuideRequest.objects.filter(guide=request.user, status=GuideRequest.STATUS_PENDING).select_related("group", "group__leader")
 	context = {"pending_requests": pending_requests}
 	return render(request, "guide_requests.html", context)
+
+
+def _get_accepted_guide_for_group(group):
+	"""Get the accepted guide for a group, if any."""
+	accepted_request = GuideRequest.objects.filter(group=group, status=GuideRequest.STATUS_ACCEPTED).first()
+	return accepted_request.guide if accepted_request else None
+
+
+@login_required
+def submit_abstract(request):
+	role = _get_user_role(request.user)
+	if role != UserProfile.ROLE_STUDENT:
+		messages.error(request, "Only students can access this page.")
+		return redirect("dashboard")
+
+	group = _get_group_for_user(request.user)
+	if not group:
+		messages.error(request, "You must be in a group to submit an abstract.")
+		return redirect("mini_project")
+
+	if group.leader != request.user:
+		messages.error(request, "Only the group leader can submit abstracts.")
+		return redirect("mini_project")
+
+	group_size = _get_group_size(group)
+	if group_size < 4:
+		messages.error(request, "Group must have at least 4 members to submit an abstract.")
+		return redirect("mini_project")
+
+	guide = _get_accepted_guide_for_group(group)
+	if not guide:
+		messages.error(request, "Your group must have an accepted guide before submitting an abstract.")
+		return redirect("guide_request")
+
+	if request.method == "POST":
+		title = request.POST.get("title", "").strip()
+		abstract_text = request.POST.get("abstract_text", "").strip()
+		pdf_file = request.FILES.get("pdf_file")
+
+		if not title:
+			messages.error(request, "Title is required.")
+			return redirect("submit_abstract")
+
+		if not abstract_text:
+			messages.error(request, "Abstract text is required.")
+			return redirect("submit_abstract")
+
+		if not pdf_file:
+			messages.error(request, "PDF file is required.")
+			return redirect("submit_abstract")
+
+		if pdf_file.size > 10485760:  # 10MB
+			messages.error(request, "PDF file size must be less than 10MB.")
+			return redirect("submit_abstract")
+
+		if not pdf_file.name.lower().endswith('.pdf'):
+			messages.error(request, "Only PDF files are allowed.")
+			return redirect("submit_abstract")
+
+		# Create new abstract submission
+		abstract = Abstract.objects.create(
+			group=group,
+			title=title,
+			abstract_text=abstract_text,
+			pdf_file=pdf_file.read(),
+			pdf_filename=pdf_file.name,
+			pdf_size=pdf_file.size,
+			status=Abstract.STATUS_PENDING
+		)
+
+		messages.success(request, "Abstract submitted successfully!")
+		return redirect("abstract_status")
+
+	# Get previous submissions
+	previous_abstracts = Abstract.objects.filter(group=group).order_by("-submitted_at")
+
+	context = {
+		"group": group,
+		"guide": guide,
+		"previous_abstracts": previous_abstracts,
+	}
+	return render(request, "submit_abstract.html", context)
+
+
+@login_required
+def abstract_status(request):
+	role = _get_user_role(request.user)
+	if role != UserProfile.ROLE_STUDENT:
+		messages.error(request, "Only students can access this page.")
+		return redirect("dashboard")
+
+	group = _get_group_for_user(request.user)
+	if not group:
+		messages.error(request, "You must be in a group to view abstract status.")
+		return redirect("mini_project")
+
+	abstracts = Abstract.objects.filter(group=group).select_related("reviewed_by").order_by("-submitted_at")
+
+	context = {
+		"group": group,
+		"abstracts": abstracts,
+	}
+	return render(request, "abstract_status.html", context)
+
+
+@login_required
+def faculty_abstracts(request):
+	role = _get_user_role(request.user)
+	if role != UserProfile.ROLE_GUIDE:
+		messages.error(request, "Only faculty can access this page.")
+		return redirect("dashboard")
+
+	# Get all groups where this faculty has accepted guide requests
+	accepted_groups = GuideRequest.objects.filter(
+		guide=request.user,
+		status=GuideRequest.STATUS_ACCEPTED
+	).values_list("group_id", flat=True)
+
+	# Get all abstracts from these groups
+	all_abstracts = Abstract.objects.filter(group_id__in=accepted_groups).select_related("group", "group__leader").order_by("-submitted_at")
+
+	pending_abstracts = all_abstracts.filter(status=Abstract.STATUS_PENDING)
+	approved_abstracts = all_abstracts.filter(status=Abstract.STATUS_APPROVED)
+	rejected_abstracts = all_abstracts.filter(status=Abstract.STATUS_REJECTED)
+
+	context = {
+		"pending_abstracts": pending_abstracts,
+		"approved_abstracts": approved_abstracts,
+		"rejected_abstracts": rejected_abstracts,
+	}
+	return render(request, "faculty_abstracts.html", context)
+
+
+@login_required
+def review_abstract(request, abstract_id):
+	role = _get_user_role(request.user)
+	if role != UserProfile.ROLE_GUIDE:
+		messages.error(request, "Only faculty can access this page.")
+		return redirect("dashboard")
+
+	abstract = get_object_or_404(Abstract, id=abstract_id)
+
+	# Verify this faculty is the accepted guide for this group
+	guide_request = GuideRequest.objects.filter(
+		group=abstract.group,
+		guide=request.user,
+		status=GuideRequest.STATUS_ACCEPTED
+	).first()
+
+	if not guide_request:
+		messages.error(request, "You are not the assigned guide for this group.")
+		return redirect("faculty_abstracts")
+
+	if request.method == "POST":
+		action = request.POST.get("action")
+		feedback = request.POST.get("feedback", "").strip()
+
+		if action == "approve":
+			abstract.status = Abstract.STATUS_APPROVED
+			abstract.reviewed_at = timezone.now()
+			abstract.reviewed_by = request.user
+			abstract.feedback = feedback if feedback else None
+			abstract.save()
+			messages.success(request, "Abstract approved successfully!")
+			return redirect("faculty_abstracts")
+
+		elif action == "reject":
+			if not feedback:
+				messages.error(request, "Feedback is required when rejecting an abstract.")
+				return redirect("review_abstract", abstract_id=abstract_id)
+
+			abstract.status = Abstract.STATUS_REJECTED
+			abstract.reviewed_at = timezone.now()
+			abstract.reviewed_by = request.user
+			abstract.feedback = feedback
+			abstract.save()
+			messages.success(request, "Abstract rejected with feedback.")
+			return redirect("faculty_abstracts")
+
+	# Get group members
+	group_members = GroupMember.objects.filter(group=abstract.group).select_related("user")
+
+	context = {
+		"abstract": abstract,
+		"group_members": group_members,
+	}
+	return render(request, "review_abstract.html", context)
+
+
+@login_required
+def download_abstract(request, abstract_id):
+	abstract = get_object_or_404(Abstract, id=abstract_id)
+
+	# Check access: either student in the group or assigned faculty
+	role = _get_user_role(request.user)
+	has_access = False
+
+	if role == UserProfile.ROLE_STUDENT:
+		group = _get_group_for_user(request.user)
+		has_access = group and group.id == abstract.group.id
+
+	elif role == UserProfile.ROLE_GUIDE:
+		guide_request = GuideRequest.objects.filter(
+			group=abstract.group,
+			guide=request.user,
+			status=GuideRequest.STATUS_ACCEPTED
+		).exists()
+		has_access = guide_request
+
+	if not has_access:
+		messages.error(request, "You don't have permission to download this abstract.")
+		return redirect("dashboard")
+
+	if not abstract.pdf_file:
+		messages.error(request, "No PDF file available for this abstract.")
+		return redirect("abstract_status" if role == UserProfile.ROLE_STUDENT else "faculty_abstracts")
+
+	response = HttpResponse(abstract.pdf_file, content_type='application/pdf')
+	response['Content-Disposition'] = f'attachment; filename="{abstract.pdf_filename}"'
+	return response
+

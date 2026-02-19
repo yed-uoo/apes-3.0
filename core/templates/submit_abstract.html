@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h3 class="mb-4">Submit Abstract</h3>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Group Information</h5>
+                <p><strong>Group Leader:</strong> {{ group.leader.username }}</p>
+                <p><strong>Assigned Guide:</strong> {{ guide.username }}</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Submit New Abstract</h5>
+                <form method="post" enctype="multipart/form-data" id="abstractForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Project Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" required maxlength="255">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="abstract_text" class="form-label">Abstract <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="abstract_text" name="abstract_text" rows="8" required 
+                                  placeholder="Enter your project abstract here..."></textarea>
+                        <div class="form-text">Provide a detailed description of your project.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="pdf_file" class="form-label">Upload PDF <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="pdf_file" name="pdf_file" accept=".pdf" required>
+                        <div class="form-text">Maximum file size: 10MB. Only PDF files are accepted.</div>
+                        <div id="fileSizeWarning" class="text-danger mt-2" style="display: none;">
+                            Warning: File size exceeds 10MB limit!
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Submit Abstract</button>
+                        <a href="{% url 'abstract_status' %}" class="btn btn-outline-secondary">View Submission History</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if previous_abstracts %}
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Recent Submissions</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Submitted</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for abstract in previous_abstracts|slice:":3" %}
+                            <tr>
+                                <td>{{ abstract.title }}</td>
+                                <td>{{ abstract.submitted_at|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if abstract.status == "pending" %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% elif abstract.status == "approved" %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{% url 'abstract_status' %}" class="btn btn-sm btn-link">View All Submissions →</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.getElementById('pdf_file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const warning = document.getElementById('fileSizeWarning');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (file) {
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+            warning.style.display = 'block';
+            submitBtn.disabled = true;
+        } else {
+            warning.style.display = 'none';
+            submitBtn.disabled = false;
+        }
+    }
+});
+</script>
+{% endblock %}

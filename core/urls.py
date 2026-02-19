@@ -12,4 +12,10 @@ urlpatterns = [
     path("guide-request/", views.guide_request, name="guide_request"),
     path("guide-dashboard/", views.guide_dashboard, name="guide_dashboard"),
     path("guide-requests/", views.guide_requests, name="guide_requests"),
+    # Abstract submission URLs
+    path("submit-abstract/", views.submit_abstract, name="submit_abstract"),
+    path("abstract-status/", views.abstract_status, name="abstract_status"),
+    path("faculty-abstracts/", views.faculty_abstracts, name="faculty_abstracts"),
+    path("review-abstract/<int:abstract_id>/", views.review_abstract, name="review_abstract"),
+    path("download-abstract/<int:abstract_id>/", views.download_abstract, name="download_abstract"),
 ]

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3>Abstract Submission Status</h3>
+            <a href="{% url 'submit_abstract' %}" class="btn btn-primary">Submit New Abstract</a>
+        </div>
+
+        {% if abstracts %}
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Submitted Date</th>
+                                <th>Status</th>
+                                <th>Reviewed By</th>
+                                <th>Reviewed Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for abstract in abstracts %}
+                            <tr>
+                                <td>
+                                    <strong>{{ abstract.title }}</strong>
+                                    {% if abstract.status == "pending" %}
+                                    <span class="badge bg-warning text-dark ms-2">Latest</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ abstract.submitted_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    {% if abstract.status == "pending" %}
+                                    <span class="badge bg-warning text-dark">Pending Review</span>
+                                    {% elif abstract.status == "approved" %}
+                                    <span class="badge bg-success">Approved</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if abstract.reviewed_by %}
+                                    {{ abstract.reviewed_by.username }}
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if abstract.reviewed_at %}
+                                    {{ abstract.reviewed_at|date:"M d, Y H:i" }}
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse"
+                                        data-bs-target="#abstract-{{ abstract.id }}">
+                                        View Details
+                                    </button>
+                                    <a href="{% url 'download_abstract' abstract.id %}"
+                                        class="btn btn-sm btn-outline-secondary">
+                                        Download PDF
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr class="collapse" id="abstract-{{ abstract.id }}">
+                                <td colspan="6" class="bg-light">
+                                    <div class="p-3">
+                                        <h6>Abstract Text:</h6>
+                                        <p class="mb-3">{{ abstract.abstract_text|linebreaks }}</p>
+
+                                        {% if abstract.feedback %}
+                                        {% if abstract.status == "approved" %}
+                                        <div class="alert alert-success">
+                                            {% else %}
+                                            <div class="alert alert-danger">
+                                                {% endif %}
+                                                <h6>Faculty Feedback:</h6>
+                                                <p class="mb-0">{{ abstract.feedback|linebreaks }}</p>
+                                            </div>
+                                            {% endif %}
+
+                                            <p class="mb-0">
+                                                <strong>PDF File:</strong> {{ abstract.pdf_filename }}
+                                                ({{ abstract.pdf_size|filesizeformat }})
+                                            </p>
+                                        </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <h5>No Abstracts Submitted Yet</h5>
+            <p class="mb-0">You haven't submitted any abstracts yet. Click the button above to submit your first
+                abstract.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

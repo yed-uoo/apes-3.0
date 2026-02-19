@@ -64,6 +64,35 @@ class GuideRequest(models.Model):
 	status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
 
 
+class Abstract(models.Model):
+	STATUS_PENDING = "pending"
+	STATUS_APPROVED = "approved"
+	STATUS_REJECTED = "rejected"
+	STATUS_CHOICES = [
+		(STATUS_PENDING, "Pending"),
+		(STATUS_APPROVED, "Approved"),
+		(STATUS_REJECTED, "Rejected"),
+	]
+
+	group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="abstracts")
+	title = models.CharField(max_length=255)
+	abstract_text = models.TextField()
+	pdf_file = models.BinaryField(null=True, blank=True)
+	pdf_filename = models.CharField(max_length=255, null=True, blank=True)
+	pdf_size = models.IntegerField(null=True, blank=True)
+	status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+	feedback = models.TextField(null=True, blank=True)
+	submitted_at = models.DateTimeField(auto_now_add=True)
+	reviewed_at = models.DateTimeField(null=True, blank=True)
+	reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="reviewed_abstracts")
+
+	class Meta:
+		ordering = ["-submitted_at"]
+
+	def __str__(self):
+		return f"{self.title} - {self.group.leader.username}"
+
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
 	if created:

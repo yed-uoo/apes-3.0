@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3>Review Abstract</h3>
+            <a href="{% url 'faculty_abstracts' %}" class="btn btn-outline-secondary">← Back to List</a>
+        </div>
+
+        <!-- Abstract Details -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ abstract.title }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Group Leader:</strong> {{ abstract.group.leader.username }}</p>
+                        <p><strong>Submitted:</strong> {{ abstract.submitted_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Status:</strong>
+                            {% if abstract.status == "pending" %}
+                            <span class="badge bg-warning text-dark">Pending Review</span>
+                            {% elif abstract.status == "approved" %}
+                            <span class="badge bg-success">Approved</span>
+                            {% else %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </p>
+                        <p><strong>PDF File:</strong> {{ abstract.pdf_filename }} ({{ abstract.pdf_size|filesizeformat
+                            }})</p>
+                    </div>
+                </div>
+
+                <h6>Group Members:</h6>
+                <ul class="list-unstyled mb-3">
+                    {% for member in group_members %}
+                    <li>
+                        <i class="bi bi-person-fill"></i> {{ member.user.username }}
+                        {% if member.user == abstract.group.leader %}
+                        <span class="badge bg-info text-dark">Leader</span>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <hr>
+
+                <h6>Abstract Text:</h6>
+                <div class="p-3 bg-light rounded">
+                    {{ abstract.abstract_text|linebreaks }}
+                </div>
+
+                <div class="mt-3">
+                    <a href="{% url 'download_abstract' abstract.id %}" class="btn btn-outline-primary">
+                        📄 Download PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review Form -->
+        {% if abstract.status == "pending" %}
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">Review Decision</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="reviewForm">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="feedback" class="form-label">Feedback (Optional for approval, Required for
+                            rejection)</label>
+                        <textarea class="form-control" id="feedback" name="feedback" rows="5"
+                            placeholder="Provide feedback to the students..."></textarea>
+                        <div class="form-text">Your feedback will be visible to all group members.</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="action" value="approve" class="btn btn-success">
+                            ✓ Approve Abstract
+                        </button>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger" id="rejectBtn">
+                            ✗ Reject Abstract
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <!-- Already Reviewed -->
+        {% if abstract.status == "approved" %}
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                {% else %}
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        {% endif %}
+                        <h5 class="mb-0">Review Completed</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Reviewed By:</strong> {{ abstract.reviewed_by.username }}</p>
+                        <p><strong>Reviewed On:</strong> {{ abstract.reviewed_at|date:"M d, Y H:i" }}</p>
+
+                        {% if abstract.feedback %}
+                        <h6>Feedback Provided:</h6>
+                        <div class="p-3 bg-light rounded">
+                            {{ abstract.feedback|linebreaks }}
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No feedback provided.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <script>
+            // Validate rejection requires feedback
+            document.getElementById('rejectBtn')?.addEventListener('click', function (e) {
+                const feedback = document.getElementById('feedback').value.trim();
+                if (!feedback) {
+                    e.preventDefault();
+                    alert('Please provide feedback when rejecting an abstract.');
+                    document.getElementById('feedback').focus();
+                }
+            });
+        </script>
+        {% endblock %}

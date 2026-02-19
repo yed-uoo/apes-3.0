@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Group, GroupMember, GroupRequest, GuideRequest, UserProfile
+from .models import Abstract, Group, GroupMember, GroupRequest, GuideRequest, UserProfile
 
 
 @admin.register(UserProfile)
@@ -39,3 +39,12 @@ class GuideRequestAdmin(admin.ModelAdmin):
 	search_fields = ("group__leader__username", "guide__username", "guide__email")
 	list_filter = ("status",)
 	ordering = ("-id",)
+
+
+@admin.register(Abstract)
+class AbstractAdmin(admin.ModelAdmin):
+	list_display = ("title", "group", "status", "submitted_at", "reviewed_by")
+	search_fields = ("title", "group__leader__username", "abstract_text")
+	list_filter = ("status", "submitted_at")
+	ordering = ("-submitted_at",)
+	readonly_fields = ("submitted_at", "reviewed_at")
