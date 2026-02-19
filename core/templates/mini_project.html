@@ -49,6 +49,38 @@
 </div>
 
 <div class="mb-4">
+    <h5>Coordinator Approval Status</h5>
+    {% if group and group_ready %}
+        {% if coordinator_approval %}
+            {% if coordinator_approval.status == 'pending' %}
+                <span class="badge bg-warning text-dark">Pending</span>
+                <p class="text-muted mt-2">Waiting for coordinator approval.</p>
+            {% elif coordinator_approval.status == 'approved' %}
+                <span class="badge bg-success">Approved</span>
+                <p class="text-muted mt-2">Your group has been approved by the coordinator.</p>
+            {% elif coordinator_approval.status == 'rejected' %}
+                <span class="badge bg-danger">Rejected</span>
+                <p class="text-muted mt-2">Your group was rejected. You can request approval again.</p>
+                {% if is_leader %}
+                    <a class="btn btn-primary mt-2" href="{% url 'request_coordinator_approval' %}">Request Approval Again</a>
+                {% endif %}
+            {% endif %}
+        {% else %}
+            {% if is_leader %}
+                <p class="text-muted">No coordinator approval requested yet.</p>
+                <a class="btn btn-primary" href="{% url 'request_coordinator_approval' %}">Request Coordinator Approval</a>
+            {% else %}
+                <p class="text-muted">The group leader needs to request coordinator approval.</p>
+            {% endif %}
+        {% endif %}
+    {% elif group %}
+        <p class="text-muted">Group must have at least 4 members to request coordinator approval.</p>
+    {% else %}
+        <p class="text-muted">Create a group first.</p>
+    {% endif %}
+</div>
+
+<div class="mb-4">
     <h5>Group Members</h5>
     {% if group_members %}
         <ul class="list-group">

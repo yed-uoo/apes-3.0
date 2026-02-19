@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3 class="mb-4">Request Coordinator Approval</h3>
+
+<div class="mb-4">
+    <p>Your group is ready to request coordinator approval.</p>
+    <p><strong>Group Size:</strong> {{ group_size }} members</p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="coordinator_id" class="form-label">Select Coordinator</label>
+        <select class="form-select" name="coordinator_id" id="coordinator_id" required>
+            <option value="">Choose a coordinator...</option>
+            {% for coordinator in coordinators %}
+                <option value="{{ coordinator.id }}">{{ coordinator.username }} ({{ coordinator.email }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Send Request</button>
+    <a class="btn btn-outline-secondary" href="{% url 'mini_project' %}">Cancel</a>
+</form>
+{% endblock %}

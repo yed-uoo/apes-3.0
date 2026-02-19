@@ -4,16 +4,31 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
-class UserProfile(models.Model):
-	ROLE_STUDENT = "student"
-	ROLE_GUIDE = "guide"
-	ROLE_CHOICES = [
-		(ROLE_STUDENT, "Student"),
-		(ROLE_GUIDE, "Guide"),
-	]
+class StudentProfile(models.Model):
+	user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="student_profile")
+	class_name = models.CharField(max_length=100, blank=True, null=True)
+	roll_number = models.CharField(max_length=50, blank=True, null=True)
+	register_number = models.CharField(max_length=50, blank=True, null=True)
+	department = models.CharField(max_length=100, blank=True, null=True)
 
-	user = models.OneToOneField(User, on_delete=models.CASCADE)
-	role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_STUDENT)
+	def __str__(self):
+		return f"{self.user.username} - Student"
+
+
+class FacultyProfile(models.Model):
+	user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="faculty_profile")
+	department = models.CharField(max_length=100, blank=True, null=True)
+	is_guide = models.BooleanField(default=False)
+	is_coordinator = models.BooleanField(default=False)
+
+	def __str__(self):
+		roles = []
+		if self.is_guide:
+			roles.append("Guide")
+		if self.is_coordinator:
+			roles.append("Coordinator")
+		role_str = ", ".join(roles) if roles else "Faculty"
+		return f"{self.user.username} - {role_str}"
 
 
 class Group(models.Model):
@@ -64,6 +79,23 @@ class GuideRequest(models.Model):
 	status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
 
 
+class CoordinatorApproval(models.Model):
+	STATUS_PENDING = "pending"
+	STATUS_APPROVED = "approved"
+	STATUS_REJECTED = "rejected"
+	STATUS_CHOICES = [
+		(STATUS_PENDING, "Pending"),
+		(STATUS_APPROVED, "Approved"),
+		(STATUS_REJECTED, "Rejected"),
+	]
+
+	group = models.OneToOneField(Group, on_delete=models.CASCADE, related_name="coordinator_approval")
+	coordinator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="coordinator_approvals")
+	status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+
 class Abstract(models.Model):
 	STATUS_PENDING = "pending"
 	STATUS_APPROVED = "approved"
@@ -92,8 +124,3 @@ class Abstract(models.Model):
 	def __str__(self):
 		return f"{self.title} - {self.group.leader.username}"
 
-
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-	if created:
-		UserProfile.objects.create(user=instance)

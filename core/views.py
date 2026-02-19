@@ -6,14 +6,19 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .models import Abstract, Group, GroupMember, GroupRequest, GuideRequest, UserProfile
+from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, StudentProfile, FacultyProfile
 
 
-def _get_user_role(user):
-	try:
-		return user.userprofile.role
-	except UserProfile.DoesNotExist:
-		return UserProfile.ROLE_STUDENT
+def _is_student(user):
+	return hasattr(user, "student_profile")
+
+
+def _is_guide(user):
+	return hasattr(user, "faculty_profile") and user.faculty_profile.is_guide
+
+
+def _is_coordinator(user):
+	return hasattr(user, "faculty_profile") and user.faculty_profile.is_coordinator
 
 
 def _get_group_for_user(user):
@@ -30,16 +35,16 @@ def _get_group_size(group):
 
 @login_required
 def dashboard(request):
-	role = _get_user_role(request.user)
-	if role == UserProfile.ROLE_GUIDE:
+	if _is_guide(request.user):
 		return render(request, "guide_dashboard.html")
+	elif _is_coordinator(request.user):
+		return redirect("coordinator_dashboard")
 	return render(request, "dashboard.html")
 
 
 @login_required
 def mini_project(request):
-	role = _get_user_role(request.user)
-	if role != UserProfile.ROLE_STUDENT:
+	if not _is_student(request.user):
 		messages.error(request, "Only students can access this page.")
 		return redirect("dashboard")
 
@@ -92,6 +97,13 @@ def mini_project(request):
 	sent_requests = GroupRequest.objects.filter(sender=request.user).select_related("recipient")
 	group_members = GroupMember.objects.filter(group=group).select_related("user") if group else []
 
+	coordinator_approval = None
+	if group:
+		try:
+			coordinator_approval = CoordinatorApproval.objects.get(group=group)
+		except CoordinatorApproval.DoesNotExist:
+			pass
+
 	context = {
 		"group": group,
 		"is_leader": is_leader,
@@ -102,14 +114,14 @@ def mini_project(request):
 		"sent_requests": sent_requests,
 		"group_members": group_members,
 		"query": query,
+		"coordinator_approval": coordinator_approval,
 	}
 	return render(request, "mini_project.html", context)
 
 
 @login_required
 def group_requests(request):
-	role = _get_user_role(request.user)
-	if role != UserProfile.ROLE_STUDENT:
+	if not _is_student(request.user):
 		messages.error(request, "Only students can access this page.")
 		return redirect("dashboard")
 
@@ -158,8 +170,7 @@ def group_requests(request):
 
 @login_required
 def guide_request(request):
-	role = _get_user_role(request.user)
-	if role != UserProfile.ROLE_STUDENT:
+	if not _is_student(request.user):
 		messages.error(request, "Only students can access this page.")
 		return redirect("dashboard")
 
@@ -171,6 +182,15 @@ def guide_request(request):
 	group_size = _get_group_size(group)
 	if group_size < 4:
 		messages.error(request, "Group must have at least 4 members to request a guide.")
+		return redirect("mini_project")
+
+	try:
+		coordinator_approval = CoordinatorApproval.objects.get(group=group)
+		if coordinator_approval.status != CoordinatorApproval.STATUS_APPROVED:
+			messages.error(request, "Your group must be approved by a coordinator before requesting a guide.")
+			return redirect("mini_project")
+	except CoordinatorApproval.DoesNotExist:
+		messages.error(request, "Your group must be approved by a coordinator before requesting a guide.")
 		return redirect("mini_project")
 
 	existing_request = GuideRequest.objects.filter(group=group, status__in=[GuideRequest.STATUS_PENDING, GuideRequest.STATUS_ACCEPTED]).first()
@@ -188,14 +208,14 @@ def guide_request(request):
 			messages.error(request, "Message is required.")
 			return redirect("guide_request")
 		guide_user = get_object_or_404(User, id=guide_id)
-		if _get_user_role(guide_user) != UserProfile.ROLE_GUIDE:
+		if not _is_guide(guide_user):
 			messages.error(request, "Selected user is not a guide.")
 			return redirect("guide_request")
 		GuideRequest.objects.create(group=group, guide=guide_user, message=message)
 		messages.success(request, "Guide request sent.")
 		return redirect("guide_request")
 
-	guides = User.objects.filter(userprofile__role=UserProfile.ROLE_GUIDE)
+	guides = User.objects.filter(faculty_profile__is_guide=True)
 	context = {
 		"guides": guides,
 		"group": group,
@@ -207,8 +227,7 @@ def guide_request(request):
 
 @login_required
 def guide_dashboard(request):
-	role = _get_user_role(request.user)
-	if role != UserProfile.ROLE_GUIDE:
+	if not _is_guide(request.user):
 		messages.error(request, "Only guides can access this page.")
 		return redirect("dashboard")
 	return render(request, "guide_dashboard.html")
@@ -216,8 +235,7 @@ def guide_dashboard(request):
 
 @login_required
 def guide_requests(request):
-	role = _get_user_role(request.user)
-	if role != UserProfile.ROLE_GUIDE:
+	if not _is_guide(request.user):
 		messages.error(request, "Only guides can access this page.")
 		return redirect("dashboard")
 
@@ -249,8 +267,7 @@ def _get_accepted_guide_for_group(group):
 
 @login_required
 def submit_abstract(request):
-	role = _get_user_role(request.user)
-	if role != UserProfile.ROLE_STUDENT:
+	if not _is_student(request.user):
 		messages.error(request, "Only students can access this page.")
 		return redirect("dashboard")
 
@@ -325,8 +342,7 @@ def submit_abstract(request):
 
 @login_required
 def abstract_status(request):
-	role = _get_user_role(request.user)
-	if role != UserProfile.ROLE_STUDENT:
+	if not _is_student(request.user):
 		messages.error(request, "Only students can access this page.")
 		return redirect("dashboard")
 
@@ -346,8 +362,7 @@ def abstract_status(request):
 
 @login_required
 def faculty_abstracts(request):
-	role = _get_user_role(request.user)
-	if role != UserProfile.ROLE_GUIDE:
+	if not _is_guide(request.user):
 		messages.error(request, "Only faculty can access this page.")
 		return redirect("dashboard")
 
@@ -374,8 +389,7 @@ def faculty_abstracts(request):
 
 @login_required
 def review_abstract(request, abstract_id):
-	role = _get_user_role(request.user)
-	if role != UserProfile.ROLE_GUIDE:
+	if not _is_guide(request.user):
 		messages.error(request, "Only faculty can access this page.")
 		return redirect("dashboard")
 
@@ -433,14 +447,16 @@ def download_abstract(request, abstract_id):
 	abstract = get_object_or_404(Abstract, id=abstract_id)
 
 	# Check access: either student in the group or assigned faculty
-	role = _get_user_role(request.user)
+@login_required
+def download_abstract(request, abstract_id):
+	abstract = get_object_or_404(Abstract, id=abstract_id)
 	has_access = False
 
-	if role == UserProfile.ROLE_STUDENT:
+	if _is_student(request.user):
 		group = _get_group_for_user(request.user)
 		has_access = group and group.id == abstract.group.id
 
-	elif role == UserProfile.ROLE_GUIDE:
+	elif _is_guide(request.user):
 		guide_request = GuideRequest.objects.filter(
 			group=abstract.group,
 			guide=request.user,
@@ -454,9 +470,102 @@ def download_abstract(request, abstract_id):
 
 	if not abstract.pdf_file:
 		messages.error(request, "No PDF file available for this abstract.")
-		return redirect("abstract_status" if role == UserProfile.ROLE_STUDENT else "faculty_abstracts")
+		return redirect("abstract_status" if _is_student(request.user) else "faculty_abstracts")
 
 	response = HttpResponse(abstract.pdf_file, content_type='application/pdf')
 	response['Content-Disposition'] = f'attachment; filename="{abstract.pdf_filename}"'
 	return response
+
+
+@login_required
+def request_coordinator_approval(request):
+	if not _is_student(request.user):
+		messages.error(request, "Only students can request coordinator approval.")
+		return redirect("dashboard")
+
+	group = _get_group_for_user(request.user)
+	if not group or group.leader != request.user:
+		messages.error(request, "Only group leaders can request coordinator approval.")
+		return redirect("mini_project")
+
+	group_size = _get_group_size(group)
+	if group_size < 4:
+		messages.error(request, "Group must have at least 4 members to request coordinator approval.")
+		return redirect("mini_project")
+
+	if hasattr(group, 'coordinator_approval'):
+		messages.info(request, "Coordinator approval request already exists.")
+		return redirect("mini_project")
+
+	if request.method == "POST":
+		coordinator_id = request.POST.get("coordinator_id")
+		if not coordinator_id:
+			messages.error(request, "Please select a coordinator.")
+			return redirect("request_coordinator_approval")
+
+		coordinator_user = get_object_or_404(User, id=coordinator_id)
+		if not _is_coordinator(coordinator_user):
+			messages.error(request, "Selected user is not a coordinator.")
+			return redirect("request_coordinator_approval")
+
+		CoordinatorApproval.objects.create(group=group, coordinator=coordinator_user)
+		messages.success(request, "Coordinator approval request sent.")
+		return redirect("mini_project")
+
+	coordinators = User.objects.filter(faculty_profile__is_coordinator=True)
+	context = {
+		"coordinators": coordinators,
+		"group": group,
+		"group_size": group_size,
+	}
+	return render(request, "request_coordinator_approval.html", context)
+
+
+@login_required
+def coordinator_dashboard(request):
+	if not _is_coordinator(request.user):
+		messages.error(request, "Only coordinators can access this page.")
+		return redirect("dashboard")
+
+	if request.method == "POST":
+		approval_id = request.POST.get("approval_id")
+		action = request.POST.get("action")
+		approval = get_object_or_404(CoordinatorApproval, id=approval_id, coordinator=request.user)
+
+		if action == "approve":
+			approval.status = CoordinatorApproval.STATUS_APPROVED
+			approval.save()
+			messages.success(request, "Group approved.")
+		elif action == "reject":
+			approval.status = CoordinatorApproval.STATUS_REJECTED
+			approval.save()
+			messages.info(request, "Group rejected.")
+		return redirect("coordinator_dashboard")
+
+	pending_approvals = CoordinatorApproval.objects.filter(
+		coordinator=request.user,
+		status=CoordinatorApproval.STATUS_PENDING
+	).select_related("group", "group__leader")
+
+	context = {"pending_approvals": pending_approvals}
+	return render(request, "coordinator_dashboard.html", context)
+
+
+@login_required
+def profile(request):
+	context = {
+		"is_student": _is_student(request.user),
+		"is_guide": _is_guide(request.user),
+		"is_coordinator": _is_coordinator(request.user),
+	}
+	
+	if _is_student(request.user):
+		context["student_profile"] = request.user.student_profile
+	elif hasattr(request.user, "faculty_profile"):
+		context["faculty_profile"] = request.user.faculty_profile
+	
+	return render(request, "profile.html", context)
+
+
+
 

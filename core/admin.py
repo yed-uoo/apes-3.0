@@ -1,14 +1,34 @@
 from django.contrib import admin
 
-from .models import Abstract, Group, GroupMember, GroupRequest, GuideRequest, UserProfile
+from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, StudentProfile, FacultyProfile
 
 
-@admin.register(UserProfile)
-class UserProfileAdmin(admin.ModelAdmin):
-	list_display = ("user", "role")
-	search_fields = ("user__username", "user__email")
-	list_filter = ("role",)
+@admin.register(StudentProfile)
+class StudentProfileAdmin(admin.ModelAdmin):
+	list_display = ("user", "class_name", "roll_number", "register_number", "department")
+	search_fields = ("user__username", "user__email", "user__first_name", "user__last_name", "roll_number", "register_number")
+	list_filter = ("department", "class_name")
 	ordering = ("user__username",)
+
+
+@admin.register(FacultyProfile)
+class FacultyProfileAdmin(admin.ModelAdmin):
+	list_display = ("user", "department", "is_guide", "is_coordinator")
+	search_fields = ("user__username", "user__email", "user__first_name", "user__last_name")
+	list_filter = ("is_guide", "is_coordinator", "department")
+	ordering = ("user__username",)
+	fieldsets = (
+		("User Information", {
+			"fields": ("user",)
+		}),
+		("Faculty Details", {
+			"fields": ("department",)
+		}),
+		("Roles", {
+			"fields": ("is_guide", "is_coordinator"),
+			"description": "Select the roles for this faculty member."
+		}),
+	)
 
 
 @admin.register(Group)
@@ -39,6 +59,15 @@ class GuideRequestAdmin(admin.ModelAdmin):
 	search_fields = ("group__leader__username", "guide__username", "guide__email")
 	list_filter = ("status",)
 	ordering = ("-id",)
+
+
+@admin.register(CoordinatorApproval)
+class CoordinatorApprovalAdmin(admin.ModelAdmin):
+	list_display = ("group", "coordinator", "status", "created_at", "updated_at")
+	search_fields = ("group__leader__username", "coordinator__username", "coordinator__email")
+	list_filter = ("status",)
+	ordering = ("-created_at",)
+	readonly_fields = ("created_at", "updated_at")
 
 
 @admin.register(Abstract)
