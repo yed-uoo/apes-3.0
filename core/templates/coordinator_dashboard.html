@@ -6,37 +6,58 @@
 <div class="mb-4">
     <h5>Pending Approval Requests</h5>
     {% if pending_approvals %}
-        <div class="list-group">
-            {% for approval in pending_approvals %}
-                <div class="list-group-item">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="mb-2">Group Leader: {{ approval.group.leader.username }}</h6>
-                            <p class="mb-2"><strong>Group Members:</strong></p>
-                            <ul class="mb-2">
-                                <li>{{ approval.group.leader.username }} (Leader)</li>
-                                {% for member in approval.group.groupmember_set.all %}
-                                    {% if member.user != approval.group.leader %}
-                                        <li>{{ member.user.username }}</li>
-                                    {% endif %}
-                                {% endfor %}
-                            </ul>
-                            <p class="text-muted mb-0">Requested: {{ approval.created_at|date:"M d, Y H:i" }}</p>
-                        </div>
-                        <div>
-                            <form method="post" class="d-inline">
-                                {% csrf_token %}
-                                <input type="hidden" name="approval_id" value="{{ approval.id }}">
-                                <button type="submit" name="action" value="approve" class="btn btn-success btn-sm me-2">Approve</button>
-                                <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
-                            </form>
-                        </div>
-                    </div>
+    <div class="list-group">
+        {% for approval in pending_approvals %}
+        <div class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h6 class="mb-2">Group Leader: {{ approval.group.leader.username }}</h6>
+                    <p class="mb-2"><strong>Group Members:</strong></p>
+                    <table class="table table-sm table-bordered mb-2">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Name</th>
+                                <th>Roll No</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ approval.group.leader.username }}</td>
+                                <td>{{ approval.group.leader.first_name }} {{ approval.group.leader.last_name }}</td>
+                                <td>{{ approval.group.leader.student_profile.roll_number|default:"-" }}</td>
+                                <td><span class="badge bg-primary">Leader</span></td>
+                            </tr>
+                            {% for member in approval.group.groupmember_set.all %}
+                            {% if member.user != approval.group.leader %}
+                            <tr>
+                                <td>{{ member.user.username }}</td>
+                                <td>{{ member.user.first_name }} {{ member.user.last_name }}</td>
+                                <td>{{ member.user.student_profile.roll_number|default:"-" }}</td>
+                                <td>Member</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <p class="text-muted mb-0">Requested: {{ approval.created_at|date:"M d, Y H:i" }}</p>
                 </div>
-            {% endfor %}
+                <div>
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="approval_id" value="{{ approval.id }}">
+                        <button type="submit" name="action" value="approve"
+                            class="btn btn-success btn-sm me-2">Approve</button>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                </div>
+            </div>
         </div>
+        {% endfor %}
+    </div>
     {% else %}
-        <p class="text-muted">No pending approval requests.</p>
+    <p class="text-muted">No pending approval requests.</p>
     {% endif %}
 </div>
 

@@ -35,9 +35,13 @@ def _get_group_size(group):
 
 @login_required
 def dashboard(request):
-	if _is_guide(request.user):
+	is_guide = _is_guide(request.user)
+	is_coord = _is_coordinator(request.user)
+	if is_guide and is_coord:
+		return render(request, "role_selection.html")
+	elif is_guide:
 		return render(request, "guide_dashboard.html")
-	elif _is_coordinator(request.user):
+	elif is_coord:
 		return redirect("coordinator_dashboard")
 	return render(request, "dashboard.html")
 
@@ -90,7 +94,7 @@ def mini_project(request):
 		return redirect("mini_project")
 
 	query = request.GET.get("q", "").strip()
-	available_students = User.objects.exclude(id=request.user.id)
+	available_students = User.objects.filter(student_profile__isnull=False).exclude(id=request.user.id)
 	if query:
 		available_students = available_students.filter(Q(username__icontains=query) | Q(email__icontains=query))
 
