@@ -113,6 +113,9 @@ class Abstract(models.Model):
 	pdf_filename = models.CharField(max_length=255, null=True, blank=True)
 	pdf_size = models.IntegerField(null=True, blank=True)
 	status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+	guide_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+	coordinator_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+	is_final_approved = models.BooleanField(default=False)
 	feedback = models.TextField(null=True, blank=True)
 	submitted_at = models.DateTimeField(auto_now_add=True)
 	reviewed_at = models.DateTimeField(null=True, blank=True)
@@ -123,4 +126,14 @@ class Abstract(models.Model):
 
 	def __str__(self):
 		return f"{self.title} - {self.group.leader.username}"
+
+
+class SustainableDevelopmentGoal(models.Model):
+	group = models.OneToOneField(Group, on_delete=models.CASCADE, related_name="sdg")
+	content = models.TextField()
+	submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="submitted_sdgs")
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return f"SDG - Group {self.group_id}"
 

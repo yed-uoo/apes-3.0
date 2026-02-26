@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, StudentProfile, FacultyProfile
+from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, StudentProfile, FacultyProfile, SustainableDevelopmentGoal
 
 
 @admin.register(StudentProfile)
@@ -77,3 +77,11 @@ class AbstractAdmin(admin.ModelAdmin):
 	list_filter = ("status", "submitted_at")
 	ordering = ("-submitted_at",)
 	readonly_fields = ("submitted_at", "reviewed_at")
+
+
+@admin.register(SustainableDevelopmentGoal)
+class SustainableDevelopmentGoalAdmin(admin.ModelAdmin):
+	list_display = ("group", "submitted_by", "created_at")
+	search_fields = ("group__leader__username", "submitted_by__username", "content")
+	ordering = ("-created_at",)
+	readonly_fields = ("created_at",)
