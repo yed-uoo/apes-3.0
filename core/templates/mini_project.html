@@ -18,6 +18,10 @@
             role="tab">Guide</button>
     </li>
     <li class="nav-item" role="presentation">
+        <button class="nav-link" id="sdg-tab" data-bs-toggle="tab" data-bs-target="#sdg" type="button"
+            role="tab">SDG</button>
+    </li>
+    <li class="nav-item" role="presentation">
         <button class="nav-link" id="abstract-tab" data-bs-toggle="tab" data-bs-target="#abstract" type="button"
             role="tab">Abstract</button>
     </li>
@@ -43,6 +47,7 @@
 
             <form method="post" class="row g-2">
                 {% csrf_token %}
+                <input type="hidden" name="action" value="send_group_request">
                 <div class="col-md-6">
                     <select class="form-select" name="to_user_id" {% if group_full %}disabled{% endif %}>
                         <option value="">Select user</option>
@@ -109,6 +114,48 @@
         </div>
 
         <div class="mb-4">
+            <h5>Selected Topic</h5>
+            {% if selected_topic %}
+            <div class="card">
+                <div class="card-body">
+                    <span class="badge bg-success mb-2">Selected</span>
+                    <h6 class="mb-1">{{ selected_topic.title }}</h6>
+                    <small class="text-muted">Approved on {{ selected_topic.reviewed_at|date:"M d, Y H:i" }}</small>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-muted">No selected topic yet. Topic is selected only after guide and coordinator approvals.</p>
+            {% endif %}
+        </div>
+
+        <div class="mb-4">
+            <h5>Assigned Guide</h5>
+            {% if assigned_guide %}
+            <span class="badge bg-success">Assigned</span>
+            <p class="mb-0 mt-2">
+                <strong>{{ assigned_guide.get_full_name|default:assigned_guide.username }}</strong>
+            </p>
+            {% else %}
+            <p class="text-muted">No guide assigned yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="mb-4">
+            <h5>Submitted SDG</h5>
+            {% if sdg_submission %}
+            <div class="card">
+                <div class="card-body">
+                    <span class="badge bg-success mb-2">Submitted</span>
+                    <p class="mb-1" style="white-space: pre-line;">{{ sdg_submission.content }}</p>
+                    <small class="text-muted">Submitted on {{ sdg_submission.created_at|date:"M d, Y H:i" }}</small>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-muted">No SDG submitted yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="mb-4">
             <h5>Group Members</h5>
             {% if group_members %}
             <ul class="list-group">
@@ -159,6 +206,46 @@
         <div class="mb-4">
             <h5>Request Guide</h5>
             <a class="btn btn-outline-success" href="/guide-request/">Request Guide</a>
+        </div>
+    </div>
+
+    <!-- SDG Tab -->
+    <div class="tab-pane fade" id="sdg" role="tabpanel">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Sustainable Development Goals (SDG)</h5>
+
+                {% if sdg_submission %}
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge bg-success">Submitted</span>
+                    <small class="text-muted">On {{ sdg_submission.created_at|date:"M d, Y H:i" }}</small>
+                </div>
+                <div class="border rounded p-3 bg-light">
+                    <p class="mb-0" style="white-space: pre-line;">{{ sdg_submission.content }}</p>
+                </div>
+                {% else %}
+                    {% if can_submit_sdg %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="submit_sdg">
+                        <div class="mb-3">
+                            <label for="sdg_content" class="form-label">SDG Content</label>
+                            <textarea id="sdg_content" name="sdg_content" class="form-control" rows="6"
+                                placeholder="Enter Sustainable Development Goals for your project" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit SDG</button>
+                    </form>
+                    {% elif not group %}
+                    <p class="text-muted mb-0">Create or join a group to submit SDG.</p>
+                    {% elif not is_leader %}
+                    <p class="text-muted mb-0">Only the group leader can submit SDG.</p>
+                    {% elif coordinator_approval and coordinator_approval.status != 'approved' %}
+                    <p class="text-muted mb-0">SDG can be submitted only after coordinator approval.</p>
+                    {% else %}
+                    <p class="text-muted mb-0">Request coordinator approval to enable SDG submission.</p>
+                    {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
 

@@ -62,6 +62,212 @@
 </div>
 
 <div class="mb-4">
+    <h5>Pending Topic Approvals</h5>
+    {% if coordinator_pending_abstracts %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Leader</th>
+                    <th>Title</th>
+                    <th>Guide Status</th>
+                    <th>Coordinator Status</th>
+                    <th>Submitted</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for abstract in coordinator_pending_abstracts %}
+                <tr>
+                    <td>{{ abstract.group.id }}</td>
+                    <td>{{ abstract.group.leader.username }}</td>
+                    <td>{{ abstract.title }}</td>
+                    <td><span class="badge bg-success">Approved</span></td>
+                    <td><span class="badge bg-warning text-dark">Pending</span></td>
+                    <td>{{ abstract.submitted_at|date:"M d, Y H:i" }}</td>
+                    <td>
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="abstract_id" value="{{ abstract.id }}">
+                            <button type="submit" name="abstract_action" value="approve" class="btn btn-success btn-sm me-1">Approve</button>
+                            <button type="submit" name="abstract_action" value="reject" class="btn btn-danger btn-sm">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">No guide-approved topics pending coordinator review.</p>
+    {% endif %}
+</div>
+
+<div class="mb-4">
+    <h5>All Groups in Assigned Class(es)</h5>
+    {% if assigned_classes %}
+    <p class="text-muted mb-3">
+        <strong>Assigned Class(es):</strong> {{ assigned_classes|join:", " }}
+    </p>
+    {% else %}
+    <p class="text-muted mb-3">No classes assigned yet based on coordinator approvals.</p>
+    {% endif %}
+
+    {% if group_details %}
+    <div class="accordion" id="groupAccordion">
+        {% for item in group_details %}
+        <div class="accordion-item mb-2">
+            <h2 class="accordion-header" id="heading{{ item.group.id }}">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapse{{ item.group.id }}" aria-expanded="false"
+                    aria-controls="collapse{{ item.group.id }}">
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <span><strong>Group {{ item.group.id }}</strong></span>
+                        <span class="badge bg-info text-dark">Size {{ item.group_size }}</span>
+                        {% if item.coordinator_approval %}
+                            {% if item.coordinator_approval.status == 'approved' %}
+                            <span class="badge bg-success">Approved</span>
+                            {% elif item.coordinator_approval.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            {% else %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        {% else %}
+                        <span class="badge bg-secondary">Approval Not Requested</span>
+                        {% endif %}
+
+                        {% if item.assigned_guide %}
+                        <span class="badge bg-primary">Guide Assigned</span>
+                        {% endif %}
+
+                        {% if item.approved_abstract %}
+                        <span class="badge bg-success">Topic Approved</span>
+                        {% endif %}
+                    </div>
+                </button>
+            </h2>
+            <div id="collapse{{ item.group.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ item.group.id }}"
+                data-bs-parent="#groupAccordion">
+                <div class="accordion-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Group ID:</strong> {{ item.group.id }}</p>
+                            <p class="mb-1"><strong>Class:</strong> {{ item.class_name|default:"-" }}</p>
+                            <p class="mb-1"><strong>Department:</strong> {{ item.department|default:"-" }}</p>
+                            <p class="mb-1"><strong>Leader:</strong> {{ item.group.leader.username }}
+                                ({{ item.group.leader.first_name }} {{ item.group.leader.last_name }})</p>
+                            <p class="mb-1"><strong>Group Size:</strong> {{ item.group_size }}</p>
+                            <p class="mb-0"><strong>Created:</strong> {{ item.group.created_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Coordinator Approval:</strong>
+                                {% if item.coordinator_approval %}
+                                    {% if item.coordinator_approval.status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                    {% elif item.coordinator_approval.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                    {% endif %}
+                                {% else %}
+                                <span class="badge bg-secondary">Not Requested</span>
+                                {% endif %}
+                            </p>
+
+                            <p class="mb-1"><strong>Assigned Guide:</strong>
+                                {% if item.assigned_guide %}
+                                {{ item.assigned_guide.username }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </p>
+
+                            <p class="mb-1"><strong>Guide Request Status:</strong>
+                                {% if item.latest_guide_request %}
+                                    {% if item.latest_guide_request.status == 'accepted' %}
+                                    <span class="badge bg-success">Approved</span>
+                                    {% elif item.latest_guide_request.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                    {% endif %}
+                                {% else %}
+                                <span class="badge bg-secondary">Not Requested</span>
+                                {% endif %}
+                            </p>
+
+                            <p class="mb-1"><strong>Selected Topic:</strong>
+                                {% if item.approved_abstract %}
+                                {{ item.approved_abstract.title }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </p>
+                            {% if item.approved_abstract %}
+                            <p class="mb-1"><strong>Topic Submitted:</strong> {{ item.approved_abstract.submitted_at|date:"M d, Y H:i" }}</p>
+                            {% endif %}
+
+                            <p class="mb-1"><strong>SDG:</strong></p>
+                            {% if item.sdg %}
+                            <div class="border rounded p-2 bg-light">
+                                <p class="mb-1" style="white-space: pre-line;">{{ item.sdg.content }}</p>
+                                <small class="text-muted">Submitted: {{ item.sdg.created_at|date:"M d, Y H:i" }}</small>
+                            </div>
+                            {% else %}
+                            <span class="badge bg-secondary">Not Submitted</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#members{{ item.group.id }}" aria-expanded="false"
+                            aria-controls="members{{ item.group.id }}">
+                            Show / Hide Group Members
+                        </button>
+                        <div class="collapse mt-2" id="members{{ item.group.id }}">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Username</th>
+                                            <th>Roll Number</th>
+                                            <th>Register Number</th>
+                                            <th>Role</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for member in item.members %}
+                                        <tr>
+                                            <td>{{ member.user.username }}</td>
+                                            <td>{{ member.user.student_profile.roll_number|default:"-" }}</td>
+                                            <td>{{ member.user.student_profile.register_number|default:"-" }}</td>
+                                            <td>
+                                                {% if member.user == item.group.leader %}
+                                                <span class="badge bg-primary">Leader</span>
+                                                {% else %}
+                                                Member
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">No groups found for assigned class(es).</p>
+    {% endif %}
+</div>
+
+<div class="mb-4">
     <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Back to Dashboard</a>
 </div>
 {% endblock %}

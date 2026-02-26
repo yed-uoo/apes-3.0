@@ -6,4 +6,25 @@
     <a class="btn btn-primary" href="/guide-requests/">Guide Requests</a>
     <a class="btn btn-success" href="{% url 'faculty_abstracts' %}">Review Abstracts</a>
 </div>
+
+<div class="mt-4">
+    <h5>Assigned Group SDGs</h5>
+    {% if assigned_groups %}
+    <div class="list-group">
+        {% for item in assigned_groups %}
+        <div class="list-group-item">
+            <h6 class="mb-2">Group Leader: {{ item.group.leader.username }}</h6>
+            {% if item.sdg %}
+            <span class="badge bg-success mb-2">Submitted</span>
+            <p class="mb-0" style="white-space: pre-line;">{{ item.sdg.content }}</p>
+            {% else %}
+            <span class="badge bg-secondary">Not Submitted</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">No assigned groups yet.</p>
+    {% endif %}
+</div>
 {% endblock %}

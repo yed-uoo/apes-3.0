@@ -58,7 +58,9 @@
                             <tr>
                                 <th>Title</th>
                                 <th>Submitted</th>
-                                <th>Status</th>
+                                <th>Guide</th>
+                                <th>Coordinator</th>
+                                <th>Final</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -67,12 +69,28 @@
                                 <td>{{ abstract.title }}</td>
                                 <td>{{ abstract.submitted_at|date:"M d, Y" }}</td>
                                 <td>
-                                    {% if abstract.status == "pending" %}
+                                    {% if abstract.guide_status == "pending" %}
                                         <span class="badge bg-warning text-dark">Pending</span>
-                                    {% elif abstract.status == "approved" %}
+                                    {% elif abstract.guide_status == "approved" %}
                                         <span class="badge bg-success">Approved</span>
                                     {% else %}
                                         <span class="badge bg-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if abstract.coordinator_status == "pending" %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% elif abstract.coordinator_status == "approved" %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if abstract.is_final_approved %}
+                                    <span class="badge bg-success">Selected</span>
+                                    {% else %}
+                                    <span class="badge bg-warning text-dark">Not Selected</span>
                                     {% endif %}
                                 </td>
                             </tr>

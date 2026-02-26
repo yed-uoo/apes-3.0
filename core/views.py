@@ -1,12 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, StudentProfile, FacultyProfile
+from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, StudentProfile, FacultyProfile, SustainableDevelopmentGoal
 
 
 def _is_student(user):
@@ -19,6 +19,30 @@ def _is_guide(user):
 
 def _is_coordinator(user):
 	return hasattr(user, "faculty_profile") and user.faculty_profile.is_coordinator
+
+
+def _has_dual_faculty_roles(user):
+	return _is_guide(user) and _is_coordinator(user)
+
+
+def _get_active_faculty_role(request):
+	if not _has_dual_faculty_roles(request.user):
+		return None
+	active_role = request.session.get("active_role")
+	if active_role in ["guide", "coordinator"]:
+		return active_role
+	return None
+
+
+def _ensure_active_role_for_dual_faculty(request, required_role):
+	if not _has_dual_faculty_roles(request.user):
+		return None
+	active_role = _get_active_faculty_role(request)
+	if not active_role:
+		return redirect("role_selection")
+	if active_role != required_role:
+		return redirect("guide_dashboard" if active_role == "guide" else "coordinator_dashboard")
+	return None
 
 
 def _get_group_for_user(user):
@@ -35,15 +59,39 @@ def _get_group_size(group):
 
 @login_required
 def dashboard(request):
-	is_guide = _is_guide(request.user)
-	is_coord = _is_coordinator(request.user)
-	if is_guide and is_coord:
-		return render(request, "role_selection.html")
-	elif is_guide:
-		return render(request, "guide_dashboard.html")
-	elif is_coord:
+	if _has_dual_faculty_roles(request.user):
+		active_role = _get_active_faculty_role(request)
+		if not active_role:
+			return redirect("role_selection")
+		return redirect("guide_dashboard" if active_role == "guide" else "coordinator_dashboard")
+	if _is_guide(request.user):
+		request.session["active_role"] = "guide"
+		return redirect("guide_dashboard")
+	elif _is_coordinator(request.user):
+		request.session["active_role"] = "coordinator"
 		return redirect("coordinator_dashboard")
 	return render(request, "dashboard.html")
+
+
+@login_required
+def role_selection(request):
+	if not hasattr(request.user, "faculty_profile"):
+		return redirect("dashboard")
+
+	if not _has_dual_faculty_roles(request.user):
+		return redirect("dashboard")
+
+	if request.method == "POST":
+		selected_role = request.POST.get("role")
+		if selected_role == "guide":
+			request.session["active_role"] = "guide"
+			return redirect("guide_dashboard")
+		if selected_role == "coordinator":
+			request.session["active_role"] = "coordinator"
+			return redirect("coordinator_dashboard")
+		messages.error(request, "Please select a valid role.")
+
+	return render(request, "role_selection.html")
 
 
 @login_required
@@ -58,6 +106,42 @@ def mini_project(request):
 	group_full = group_size >= 5
 
 	if request.method == "POST":
+		action = request.POST.get("action")
+
+		if action == "submit_sdg":
+			if not group:
+				messages.error(request, "You must be in a group to submit SDG.")
+				return redirect("mini_project")
+
+			if group.leader != request.user:
+				messages.error(request, "Only the group leader can submit SDG.")
+				return redirect("mini_project")
+
+			coordinator_approval = CoordinatorApproval.objects.filter(
+				group=group,
+				status=CoordinatorApproval.STATUS_APPROVED,
+			).first()
+			if not coordinator_approval:
+				messages.error(request, "Coordinator approval is required before SDG submission.")
+				return redirect("mini_project")
+
+			if SustainableDevelopmentGoal.objects.filter(group=group).exists():
+				messages.info(request, "SDG already submitted for this group.")
+				return redirect("mini_project")
+
+			sdg_content = request.POST.get("sdg_content", "").strip()
+			if not sdg_content:
+				messages.error(request, "SDG content is required.")
+				return redirect("mini_project")
+
+			SustainableDevelopmentGoal.objects.create(
+				group=group,
+				content=sdg_content,
+				submitted_by=request.user,
+			)
+			messages.success(request, "SDG submitted successfully.")
+			return redirect("mini_project")
+
 		if group and group.leader != request.user:
 			messages.error(request, "Only the group leader can send requests.")
 			return redirect("mini_project")
@@ -94,7 +178,7 @@ def mini_project(request):
 		return redirect("mini_project")
 
 	query = request.GET.get("q", "").strip()
-	available_students = User.objects.filter(student_profile__isnull=False).exclude(id=request.user.id)
+	available_students = User.objects.exclude(id=request.user.id)
 	if query:
 		available_students = available_students.filter(Q(username__icontains=query) | Q(email__icontains=query))
 
@@ -108,6 +192,16 @@ def mini_project(request):
 		except CoordinatorApproval.DoesNotExist:
 			pass
 
+	sdg_submission = SustainableDevelopmentGoal.objects.filter(group=group).first() if group else None
+	assigned_guide = _get_accepted_guide_for_group(group) if group else None
+	selected_topic = Abstract.objects.filter(group=group, is_final_approved=True).order_by("-submitted_at").first() if group else None
+	can_submit_sdg = bool(
+		group
+		and is_leader
+		and coordinator_approval
+		and coordinator_approval.status == CoordinatorApproval.STATUS_APPROVED
+	)
+
 	context = {
 		"group": group,
 		"is_leader": is_leader,
@@ -119,6 +213,10 @@ def mini_project(request):
 		"group_members": group_members,
 		"query": query,
 		"coordinator_approval": coordinator_approval,
+		"sdg_submission": sdg_submission,
+		"assigned_guide": assigned_guide,
+		"can_submit_sdg": can_submit_sdg,
+		"selected_topic": selected_topic,
 	}
 	return render(request, "mini_project.html", context)
 
@@ -234,7 +332,34 @@ def guide_dashboard(request):
 	if not _is_guide(request.user):
 		messages.error(request, "Only guides can access this page.")
 		return redirect("dashboard")
-	return render(request, "guide_dashboard.html")
+
+	role_redirect = _ensure_active_role_for_dual_faculty(request, "guide")
+	if role_redirect:
+		return role_redirect
+
+	accepted_requests = GuideRequest.objects.filter(
+		guide=request.user,
+		status=GuideRequest.STATUS_ACCEPTED,
+	).select_related("group", "group__leader")
+
+	group_ids = accepted_requests.values_list("group_id", flat=True)
+	sdg_by_group_id = {
+		sdg.group_id: sdg
+		for sdg in SustainableDevelopmentGoal.objects.filter(group_id__in=group_ids)
+	}
+
+	assigned_groups = [
+		{
+			"group": guide_request.group,
+			"sdg": sdg_by_group_id.get(guide_request.group_id),
+		}
+		for guide_request in accepted_requests
+	]
+
+	context = {
+		"assigned_groups": assigned_groups,
+	}
+	return render(request, "guide_dashboard.html", context)
 
 
 @login_required
@@ -242,6 +367,10 @@ def guide_requests(request):
 	if not _is_guide(request.user):
 		messages.error(request, "Only guides can access this page.")
 		return redirect("dashboard")
+
+	role_redirect = _ensure_active_role_for_dual_faculty(request, "guide")
+	if role_redirect:
+		return role_redirect
 
 	if request.method == "POST":
 		request_id = request.POST.get("request_id")
@@ -267,6 +396,15 @@ def _get_accepted_guide_for_group(group):
 	"""Get the accepted guide for a group, if any."""
 	accepted_request = GuideRequest.objects.filter(group=group, status=GuideRequest.STATUS_ACCEPTED).first()
 	return accepted_request.guide if accepted_request else None
+
+
+def _apply_abstract_derived_status(abstract):
+	if abstract.is_final_approved:
+		abstract.status = Abstract.STATUS_APPROVED
+	elif abstract.guide_status == Abstract.STATUS_REJECTED or abstract.coordinator_status == Abstract.STATUS_REJECTED:
+		abstract.status = Abstract.STATUS_REJECTED
+	else:
+		abstract.status = Abstract.STATUS_PENDING
 
 
 @login_required
@@ -327,7 +465,10 @@ def submit_abstract(request):
 			pdf_file=pdf_file.read(),
 			pdf_filename=pdf_file.name,
 			pdf_size=pdf_file.size,
-			status=Abstract.STATUS_PENDING
+			status=Abstract.STATUS_PENDING,
+			guide_status=Abstract.STATUS_PENDING,
+			coordinator_status=Abstract.STATUS_PENDING,
+			is_final_approved=False,
 		)
 
 		messages.success(request, "Abstract submitted successfully!")
@@ -356,10 +497,12 @@ def abstract_status(request):
 		return redirect("mini_project")
 
 	abstracts = Abstract.objects.filter(group=group).select_related("reviewed_by").order_by("-submitted_at")
+	selected_topic = abstracts.filter(is_final_approved=True).first()
 
 	context = {
 		"group": group,
 		"abstracts": abstracts,
+		"selected_topic": selected_topic,
 	}
 	return render(request, "abstract_status.html", context)
 
@@ -370,6 +513,10 @@ def faculty_abstracts(request):
 		messages.error(request, "Only faculty can access this page.")
 		return redirect("dashboard")
 
+	role_redirect = _ensure_active_role_for_dual_faculty(request, "guide")
+	if role_redirect:
+		return role_redirect
+
 	# Get all groups where this faculty has accepted guide requests
 	accepted_groups = GuideRequest.objects.filter(
 		guide=request.user,
@@ -379,9 +526,9 @@ def faculty_abstracts(request):
 	# Get all abstracts from these groups
 	all_abstracts = Abstract.objects.filter(group_id__in=accepted_groups).select_related("group", "group__leader").order_by("-submitted_at")
 
-	pending_abstracts = all_abstracts.filter(status=Abstract.STATUS_PENDING)
-	approved_abstracts = all_abstracts.filter(status=Abstract.STATUS_APPROVED)
-	rejected_abstracts = all_abstracts.filter(status=Abstract.STATUS_REJECTED)
+	pending_abstracts = all_abstracts.filter(guide_status=Abstract.STATUS_PENDING)
+	approved_abstracts = all_abstracts.filter(guide_status=Abstract.STATUS_APPROVED)
+	rejected_abstracts = all_abstracts.filter(guide_status=Abstract.STATUS_REJECTED)
 
 	context = {
 		"pending_abstracts": pending_abstracts,
@@ -397,6 +544,10 @@ def review_abstract(request, abstract_id):
 		messages.error(request, "Only faculty can access this page.")
 		return redirect("dashboard")
 
+	role_redirect = _ensure_active_role_for_dual_faculty(request, "guide")
+	if role_redirect:
+		return role_redirect
+
 	abstract = get_object_or_404(Abstract, id=abstract_id)
 
 	# Verify this faculty is the accepted guide for this group
@@ -411,16 +562,23 @@ def review_abstract(request, abstract_id):
 		return redirect("faculty_abstracts")
 
 	if request.method == "POST":
+		if abstract.guide_status != Abstract.STATUS_PENDING:
+			messages.info(request, "This abstract has already been reviewed.")
+			return redirect("review_abstract", abstract_id=abstract_id)
+
 		action = request.POST.get("action")
 		feedback = request.POST.get("feedback", "").strip()
 
 		if action == "approve":
-			abstract.status = Abstract.STATUS_APPROVED
+			abstract.guide_status = Abstract.STATUS_APPROVED
+			abstract.coordinator_status = Abstract.STATUS_PENDING
+			abstract.is_final_approved = False
+			_apply_abstract_derived_status(abstract)
 			abstract.reviewed_at = timezone.now()
 			abstract.reviewed_by = request.user
 			abstract.feedback = feedback if feedback else None
 			abstract.save()
-			messages.success(request, "Abstract approved successfully!")
+			messages.success(request, "Abstract approved and forwarded to coordinator.")
 			return redirect("faculty_abstracts")
 
 		elif action == "reject":
@@ -428,7 +586,9 @@ def review_abstract(request, abstract_id):
 				messages.error(request, "Feedback is required when rejecting an abstract.")
 				return redirect("review_abstract", abstract_id=abstract_id)
 
-			abstract.status = Abstract.STATUS_REJECTED
+			abstract.guide_status = Abstract.STATUS_REJECTED
+			abstract.is_final_approved = False
+			_apply_abstract_derived_status(abstract)
 			abstract.reviewed_at = timezone.now()
 			abstract.reviewed_by = request.user
 			abstract.feedback = feedback
@@ -531,9 +691,56 @@ def coordinator_dashboard(request):
 		messages.error(request, "Only coordinators can access this page.")
 		return redirect("dashboard")
 
+	role_redirect = _ensure_active_role_for_dual_faculty(request, "coordinator")
+	if role_redirect:
+		return role_redirect
+
 	if request.method == "POST":
+		abstract_id = request.POST.get("abstract_id")
+		abstract_action = request.POST.get("abstract_action")
+		if abstract_id and abstract_action:
+			assigned_classes_for_post = list(
+				CoordinatorApproval.objects.filter(coordinator=request.user)
+				.values_list("group__leader__student_profile__class_name", flat=True)
+				.distinct()
+			)
+			assigned_classes_for_post = [class_name for class_name in assigned_classes_for_post if class_name]
+
+			abstract = get_object_or_404(Abstract, id=abstract_id)
+			abstract_class = getattr(getattr(abstract.group.leader, "student_profile", None), "class_name", None)
+			if abstract_class not in assigned_classes_for_post:
+				messages.error(request, "You are not authorized to review this abstract.")
+				return redirect("coordinator_dashboard")
+
+			if abstract.guide_status != Abstract.STATUS_APPROVED or abstract.coordinator_status != Abstract.STATUS_PENDING:
+				messages.error(request, "This abstract is not available for coordinator review.")
+				return redirect("coordinator_dashboard")
+
+			if abstract_action == "approve":
+				abstract.coordinator_status = Abstract.STATUS_APPROVED
+				abstract.is_final_approved = True
+				_apply_abstract_derived_status(abstract)
+				abstract.reviewed_at = timezone.now()
+				abstract.reviewed_by = request.user
+				abstract.save()
+				messages.success(request, "Abstract approved by coordinator. Topic selected.")
+			elif abstract_action == "reject":
+				abstract.coordinator_status = Abstract.STATUS_REJECTED
+				abstract.is_final_approved = False
+				_apply_abstract_derived_status(abstract)
+				abstract.reviewed_at = timezone.now()
+				abstract.reviewed_by = request.user
+				abstract.save()
+				messages.info(request, "Abstract rejected by coordinator.")
+			else:
+				messages.error(request, "Invalid abstract review action.")
+			return redirect("coordinator_dashboard")
+
 		approval_id = request.POST.get("approval_id")
 		action = request.POST.get("action")
+		if not approval_id:
+			messages.error(request, "Invalid coordinator action.")
+			return redirect("coordinator_dashboard")
 		approval = get_object_or_404(CoordinatorApproval, id=approval_id, coordinator=request.user)
 
 		if action == "approve":
@@ -546,12 +753,93 @@ def coordinator_dashboard(request):
 			messages.info(request, "Group rejected.")
 		return redirect("coordinator_dashboard")
 
+	faculty_profile = request.user.faculty_profile
+
+	assigned_classes = list(
+		CoordinatorApproval.objects.filter(coordinator=request.user)
+		.values_list("group__leader__student_profile__class_name", flat=True)
+		.distinct()
+	)
+	assigned_classes = [class_name for class_name in assigned_classes if class_name]
+
+	groups_queryset = Group.objects.none()
+	if assigned_classes:
+		groups_queryset = Group.objects.filter(
+			leader__student_profile__class_name__in=assigned_classes
+		)
+
+	groups_queryset = groups_queryset.select_related(
+		"leader",
+		"leader__student_profile",
+		"coordinator_approval",
+		"coordinator_approval__coordinator",
+	).prefetch_related(
+		Prefetch(
+			"groupmember_set",
+			queryset=GroupMember.objects.select_related("user", "user__student_profile").order_by("id"),
+		),
+		Prefetch(
+			"guiderequest_set",
+			queryset=GuideRequest.objects.select_related("guide").order_by("-id"),
+		),
+		Prefetch(
+			"abstracts",
+			queryset=Abstract.objects.select_related("reviewed_by").order_by("-submitted_at"),
+		),
+	)
+
+	sdg_by_group_id = {}
+	if groups_queryset:
+		sdg_by_group_id = {
+			sdg.group_id: sdg
+			for sdg in SustainableDevelopmentGoal.objects.filter(group_id__in=groups_queryset.values_list("id", flat=True))
+		}
+
+	group_details = []
+	for group in groups_queryset.order_by("id"):
+		members = list(group.groupmember_set.all())
+		guide_requests = list(group.guiderequest_set.all())
+		latest_guide_request = guide_requests[0] if guide_requests else None
+		assigned_guide = None
+		if latest_guide_request and latest_guide_request.status == GuideRequest.STATUS_ACCEPTED:
+			assigned_guide = latest_guide_request.guide
+
+		abstracts = list(group.abstracts.all())
+		approved_abstract = next((item for item in abstracts if item.is_final_approved), None)
+		sdg_entry = sdg_by_group_id.get(group.id)
+
+		group_details.append({
+			"group": group,
+			"class_name": getattr(getattr(group.leader, "student_profile", None), "class_name", None),
+			"department": getattr(getattr(group.leader, "student_profile", None), "department", None),
+			"leader_profile": getattr(group.leader, "student_profile", None),
+			"members": members,
+			"group_size": len(members),
+			"coordinator_approval": getattr(group, "coordinator_approval", None),
+			"latest_guide_request": latest_guide_request,
+			"assigned_guide": assigned_guide,
+			"approved_abstract": approved_abstract,
+			"sdg": sdg_entry,
+		})
+
 	pending_approvals = CoordinatorApproval.objects.filter(
 		coordinator=request.user,
-		status=CoordinatorApproval.STATUS_PENDING
+		status=CoordinatorApproval.STATUS_PENDING,
 	).select_related("group", "group__leader")
 
-	context = {"pending_approvals": pending_approvals}
+	coordinator_pending_abstracts = Abstract.objects.filter(
+		guide_status=Abstract.STATUS_APPROVED,
+		coordinator_status=Abstract.STATUS_PENDING,
+		group__leader__student_profile__class_name__in=assigned_classes,
+	).select_related("group", "group__leader").order_by("-submitted_at")
+
+	context = {
+		"pending_approvals": pending_approvals,
+		"faculty_profile": faculty_profile,
+		"assigned_classes": assigned_classes,
+		"group_details": group_details,
+		"coordinator_pending_abstracts": coordinator_pending_abstracts,
+	}
 	return render(request, "coordinator_dashboard.html", context)
 
 
