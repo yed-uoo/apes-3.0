@@ -14,9 +14,44 @@
         {% for item in assigned_groups %}
         <div class="list-group-item">
             <h6 class="mb-2">Group Leader: {{ item.group.leader.username }}</h6>
-            {% if item.sdg %}
+            {% if item.sdg and item.sdg.is_submitted %}
             <span class="badge bg-success mb-2">Submitted</span>
-            <p class="mb-0" style="white-space: pre-line;">{{ item.sdg.content }}</p>
+            {% if item.sdg.created_at %}
+            <div class="mb-2">
+                <small class="text-muted">Submitted: {{ item.sdg.created_at|date:"M d, Y H:i" }}</small>
+            </div>
+            {% endif %}
+
+            {% if item.sdg.sdg1 %}
+            <div class="mb-3">
+                <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg1 }}</p>
+                <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg1_justification|default:"-" }}</p>
+            </div>
+            {% endif %}
+            {% if item.sdg.sdg2 %}
+            <div class="mb-3">
+                <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg2 }}</p>
+                <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg2_justification|default:"-" }}</p>
+            </div>
+            {% endif %}
+            {% if item.sdg.sdg3 %}
+            <div class="mb-3">
+                <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg3 }}</p>
+                <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg3_justification|default:"-" }}</p>
+            </div>
+            {% endif %}
+            {% if item.sdg.sdg4 %}
+            <div class="mb-3">
+                <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg4 }}</p>
+                <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg4_justification|default:"-" }}</p>
+            </div>
+            {% endif %}
+            {% if item.sdg.sdg5 %}
+            <div class="mb-0">
+                <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg5 }}</p>
+                <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg5_justification|default:"-" }}</p>
+            </div>
+            {% endif %}
             {% else %}
             <span class="badge bg-secondary">Not Submitted</span>
             {% endif %}

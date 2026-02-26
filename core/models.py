@@ -130,10 +130,44 @@ class Abstract(models.Model):
 
 class SustainableDevelopmentGoal(models.Model):
 	group = models.OneToOneField(Group, on_delete=models.CASCADE, related_name="sdg")
-	content = models.TextField()
+	sdg1 = models.CharField(max_length=255, default="")
+	sdg1_justification = models.TextField(default="")
+	sdg2 = models.CharField(max_length=255, default="")
+	sdg2_justification = models.TextField(default="")
+	sdg3 = models.CharField(max_length=255, default="")
+	sdg3_justification = models.TextField(default="")
+	sdg4 = models.CharField(max_length=255, default="")
+	sdg4_justification = models.TextField(default="")
+	sdg5 = models.CharField(max_length=255, default="")
+	sdg5_justification = models.TextField(default="")
+
+	wp1 = models.CharField(max_length=255, default="")
+	wp1_justification = models.TextField(default="")
+	wp2 = models.CharField(max_length=255, default="")
+	wp2_justification = models.TextField(default="")
+	wp3 = models.CharField(max_length=255, default="")
+	wp3_justification = models.TextField(default="")
+	wp4 = models.CharField(max_length=255, default="")
+	wp4_justification = models.TextField(default="")
+	wp5 = models.CharField(max_length=255, default="")
+	wp5_justification = models.TextField(default="")
+
+	po1 = models.CharField(max_length=100, default="")
+	po2 = models.CharField(max_length=100, default="")
+	po3 = models.CharField(max_length=100, default="")
+	po4 = models.CharField(max_length=100, default="")
+	po5 = models.CharField(max_length=100, default="")
+	pso1 = models.CharField(max_length=100, default="")
+	pso2 = models.CharField(max_length=100, default="")
+
 	submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="submitted_sdgs")
+	is_submitted = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 
 	def __str__(self):
 		return f"SDG - Group {self.group_id}"
+
+	@property
+	def content(self):
+		return f"SDG1: {self.sdg1}\nSDG2: {self.sdg2}\nSDG3: {self.sdg3}\nSDG4: {self.sdg4}\nSDG5: {self.sdg5}"
 

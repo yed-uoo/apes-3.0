@@ -82,6 +82,6 @@ class AbstractAdmin(admin.ModelAdmin):
 @admin.register(SustainableDevelopmentGoal)
 class SustainableDevelopmentGoalAdmin(admin.ModelAdmin):
 	list_display = ("group", "submitted_by", "created_at")
-	search_fields = ("group__leader__username", "submitted_by__username", "content")
+	search_fields = ("group__leader__username", "submitted_by__username", "sdg1", "sdg2", "sdg3", "sdg4", "sdg5")
 	ordering = ("-created_at",)
 	readonly_fields = ("created_at",)

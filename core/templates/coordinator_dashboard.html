@@ -177,7 +177,7 @@
 
                             <p class="mb-1"><strong>Assigned Guide:</strong>
                                 {% if item.assigned_guide %}
-                                {{ item.assigned_guide.username }}
+                                {{ item.assigned_guide.get_full_name|default:item.assigned_guide.username }}
                                 {% else %}
                                 -
                                 {% endif %}
@@ -209,10 +209,43 @@
                             {% endif %}
 
                             <p class="mb-1"><strong>SDG:</strong></p>
-                            {% if item.sdg %}
+                            {% if item.sdg and item.sdg.is_submitted %}
                             <div class="border rounded p-2 bg-light">
-                                <p class="mb-1" style="white-space: pre-line;">{{ item.sdg.content }}</p>
-                                <small class="text-muted">Submitted: {{ item.sdg.created_at|date:"M d, Y H:i" }}</small>
+                                <span class="badge bg-success mb-2">Submitted</span>
+                                <div class="mb-2">
+                                    <small class="text-muted">Submitted: {{ item.sdg.created_at|date:"M d, Y H:i" }}</small>
+                                </div>
+
+                                {% if item.sdg.sdg1 %}
+                                <div class="mb-3">
+                                    <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg1 }}</p>
+                                    <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg1_justification|default:"-" }}</p>
+                                </div>
+                                {% endif %}
+                                {% if item.sdg.sdg2 %}
+                                <div class="mb-3">
+                                    <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg2 }}</p>
+                                    <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg2_justification|default:"-" }}</p>
+                                </div>
+                                {% endif %}
+                                {% if item.sdg.sdg3 %}
+                                <div class="mb-3">
+                                    <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg3 }}</p>
+                                    <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg3_justification|default:"-" }}</p>
+                                </div>
+                                {% endif %}
+                                {% if item.sdg.sdg4 %}
+                                <div class="mb-3">
+                                    <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg4 }}</p>
+                                    <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg4_justification|default:"-" }}</p>
+                                </div>
+                                {% endif %}
+                                {% if item.sdg.sdg5 %}
+                                <div class="mb-0">
+                                    <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg5 }}</p>
+                                    <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg5_justification|default:"-" }}</p>
+                                </div>
+                                {% endif %}
                             </div>
                             {% else %}
                             <span class="badge bg-secondary">Not Submitted</span>
