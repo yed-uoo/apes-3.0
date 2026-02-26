@@ -6,16 +6,24 @@
     <title>Project Evaluation System</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons for professional UI -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link href="{% static 'core/styles.css' %}" rel="stylesheet">
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-        <a class="navbar-brand" href="/">Project Evaluation System</a>
-        <div class="d-flex align-items-center gap-2">
+<!-- top navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container-fluid">
+        {% if user.is_authenticated %}
+        <button class="btn btn-outline-light me-2" id="sidebarToggle">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        {% endif %}
+        <a class="navbar-brand" href="/">Project Monitoring</a>
+        <div class="d-flex align-items-center ms-auto gap-2">
             {% if user.is_authenticated %}
-                <a href="{% url 'profile' %}" class="btn btn-sm btn-outline-info">Profile</a>
-                <span class="navbar-text text-light">{{ user.username }}</span>
+                <a href="{% url 'profile' %}" class="btn btn-sm btn-outline-light">Profile</a>
+                <span class="navbar-text text-white">{{ user.username }}</span>
                 <form method="post" action="/logout/" class="mb-0">
                     {% csrf_token %}
                     <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>
@@ -25,15 +33,63 @@
     </div>
 </nav>
 
-<div class="container py-4">
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
+<div class="d-flex" id="wrapper">
+    {% if user.is_authenticated %}
+    <!-- Sidebar -->
+    <nav id="sidebar" class="bg-light border-end">
+        <div class="sidebar-heading py-4 px-3 text-secondary">Menu</div>
+        <div class="list-group list-group-flush">
+            <a href="{% url 'dashboard' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+            <a href="{% url 'group_members' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-people me-2"></i> Group Members
+            </a>
+            <a href="{% url 'guide_request' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-person-badge me-2"></i> Guide Request
+            </a>
+            <a href="{% url 'weekly_progress' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-calendar-check me-2"></i> Weekly Progress
+            </a>
+            <a href="{% url 'meetings' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-chat-left-text me-2"></i> Meetings
+            </a>
+            <a href="{% url 'documents' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-folder me-2"></i> Documents
+            </a>
+            <a href="{% url 'project_status' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-bar-chart-line me-2"></i> Project Status
+            </a>
+            <a href="{% url 'profile' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-person-circle me-2"></i> Profile
+            </a>
+            <a href="{% url 'settings' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-gear me-2"></i> Settings
+            </a>
+        </div>
+    </nav>
     {% endif %}
 
-    {% block content %}{% endblock %}
+    <!-- Page content -->
+    <div id="page-content-wrapper" class="w-100">
+        <div class="container-fluid py-4">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            {% block content %}{% endblock %}
+        </div>
+    </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById('sidebarToggle').addEventListener('click', function () {
+        document.getElementById('sidebar').classList.toggle('d-none');
+    });
+</script>
+</body>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

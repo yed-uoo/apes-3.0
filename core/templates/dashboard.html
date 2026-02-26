@@ -1,12 +1,68 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h3 class="mb-4">Student Dashboard</h3>
-<div class="d-flex gap-3 flex-wrap">
-    <a class="btn btn-primary" href="/mini-project/">Mini Project</a>
-    <a class="btn btn-success" href="{% url 'submit_abstract' %}">Submit Abstract</a>
-    <a class="btn btn-info" href="{% url 'abstract_status' %}">Abstract Status</a>
-    <button class="btn btn-outline-secondary" disabled>Main Project (Placeholder)</button>
-    <button class="btn btn-outline-secondary" disabled>Course Project (Placeholder)</button>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-0">Hello, {{ user.first_name|default:user.username }}!</h3>
+        <small class="text-muted">Student Dashboard</small>
+    </div>
+</div>
+
+<div class="row gy-4">
+    <!-- quick cards -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Group Members</h5>
+                <p class="card-text">Manage your team and add or remove members.</p>
+                <a href="{% url 'group_members' %}" class="btn btn-primary btn-sm">View Members</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Request Guide</h5>
+                <p class="card-text">Send or check status of your guide request.</p>
+                <a href="{% url 'guide_request' %}" class="btn btn-primary btn-sm">Request Guide</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Weekly Progress</h5>
+                <p class="card-text">Submit and track weekly updates.</p>
+                <a href="{% url 'weekly_progress' %}" class="btn btn-primary btn-sm">Open</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- timeline & meetings panels -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">Project Status Timeline</div>
+            <div class="card-body">
+                <p class="mb-0 text-muted">Use this area to display the timeline with dates and event labels.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">Upcoming Meetings</div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <strong>Meeting with Guide</strong><br>
+                        <small class="text-muted">Apr 10, 2024 10:00 AM</small>
+                    </li>
+                    <li>
+                        <strong>Weekly Progress Review</strong><br>
+                        <small class="text-muted">Apr 10, 2024 11:00 AM</small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

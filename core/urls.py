@@ -10,6 +10,13 @@ urlpatterns = [
     path("profile/", views.profile, name="profile"),
     path("mini-project/", views.mini_project, name="mini_project"),
     path("group-requests/", views.group_requests, name="group_requests"),
+    # dashboard convenience links
+    path("group-members/", views.group_members, name="group_members"),
+    path("weekly-progress/", views.weekly_progress, name="weekly_progress"),
+    path("meetings/", views.meetings, name="meetings"),
+    path("documents/", views.documents, name="documents"),
+    path("project-status/", views.project_status, name="project_status"),
+    path("settings/", views.settings, name="settings"),
     path("guide-request/", views.guide_request, name="guide_request"),
     path("guide-dashboard/", views.guide_dashboard, name="guide_dashboard"),
     path("guide-requests/", views.guide_requests, name="guide_requests"),

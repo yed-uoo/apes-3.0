@@ -1,12 +1,40 @@
 body {
     background-color: #f8f9fa;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .card {
     border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .list-group-item {
     border-radius: 6px;
     margin-bottom: 8px;
 }
+
+/* sidebar specific */
+#wrapper {
+    display: flex;
+}
+
+#sidebar {
+    width: 220px;
+    min-height: 100vh;
+}
+
+#sidebar .list-group-item {
+    border: none;
+    padding: 12px 20px;
+}
+
+#sidebar .list-group-item.active {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+/* hide sidebar on small screens when toggled */
+#sidebar.d-none {
+    display: none !important;
+}
+

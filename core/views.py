@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponse
@@ -35,9 +36,13 @@ def _get_group_size(group):
 
 @login_required
 def dashboard(request):
-	if _is_guide(request.user):
+	is_guide = _is_guide(request.user)
+	is_coord = _is_coordinator(request.user)
+	if is_guide and is_coord:
+		return render(request, "role_selection.html")
+	elif is_guide:
 		return render(request, "guide_dashboard.html")
-	elif _is_coordinator(request.user):
+	elif is_coord:
 		return redirect("coordinator_dashboard")
 	return render(request, "dashboard.html")
 
@@ -90,7 +95,7 @@ def mini_project(request):
 		return redirect("mini_project")
 
 	query = request.GET.get("q", "").strip()
-	available_students = User.objects.exclude(id=request.user.id)
+	available_students = User.objects.filter(student_profile__isnull=False).exclude(id=request.user.id)
 	if query:
 		available_students = available_students.filter(Q(username__icontains=query) | Q(email__icontains=query))
 
@@ -567,5 +572,34 @@ def profile(request):
 	return render(request, "profile.html", context)
 
 
+# simple stub pages to satisfy sidebar links
+@login_required
+@require_http_methods(["GET"])
+def group_members(request):
+    # reuse mini_project context for now
+    return mini_project(request)
 
+@login_required
+@require_http_methods(["GET"])
+def weekly_progress(request):
+    return render(request, "weekly_progress.html")
 
+@login_required
+@require_http_methods(["GET"])
+def meetings(request):
+    return render(request, "meetings.html")
+
+@login_required
+@require_http_methods(["GET"])
+def documents(request):
+    return render(request, "documents.html")
+
+@login_required
+@require_http_methods(["GET"])
+def project_status(request):
+    return render(request, "project_status.html")
+
+@login_required
+@require_http_methods(["GET"])
+def settings(request):
+    return render(request, "settings.html")

@@ -35,16 +35,27 @@
                 </div>
 
                 <h6>Group Members:</h6>
-                <ul class="list-unstyled mb-3">
-                    {% for member in group_members %}
-                    <li>
-                        <i class="bi bi-person-fill"></i> {{ member.user.username }}
-                        {% if member.user == abstract.group.leader %}
-                        <span class="badge bg-info text-dark">Leader</span>
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
+                <table class="table table-sm table-bordered mb-3">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Roll No</th>
+                            <th>Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in group_members %}
+                        <tr>
+                            <td>{{ member.user.username }}</td>
+                            <td>{{ member.user.first_name }} {{ member.user.last_name }}</td>
+                            <td>{{ member.user.student_profile.roll_number|default:"-" }}</td>
+                            <td>{% if member.user == abstract.group.leader %}<span
+                                    class="badge bg-info text-dark">Leader</span>{% else %}Member{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
 
                 <hr>
 
