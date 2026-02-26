@@ -22,7 +22,7 @@
         <label class="form-label">Message</label>
         <textarea class="form-control" name="message" rows="4" {% if existing_request %}disabled{% endif %}></textarea>
     </div>
-    <button class="btn btn-primary" type="submit" {% if existing_request %}disabled{% endif %}>Send Request</button>
+    <button class="btn btn-danger" type="submit" {% if existing_request %}disabled{% endif %}>Send Request</button>
 </form>
 
 <div class="mt-3">

@@ -3,6 +3,12 @@ body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+/* make 'primary' theme red instead of blue */
+:root {
+    --bs-primary: #dc3545;
+    --bs-primary-rgb: 220,53,69;
+}
+
 .card {
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
@@ -29,7 +35,7 @@ body {
 }
 
 #sidebar .list-group-item.active {
-    background-color: #0d6efd;
+    background-color: var(--bs-primary);
     color: #fff;
 }
 
@@ -37,4 +43,11 @@ body {
 #sidebar.d-none {
     display: none !important;
 }
+
+/* ensure bootstrap classes that rely on primary also use red */
+.bg-primary { background-color: var(--bs-primary) !important; color: #fff !important; }
+.text-primary { color: var(--bs-primary) !important; }
+.btn-primary { background-color: var(--bs-primary) !important; border-color: var(--bs-primary) !important; }
+.btn-primary:hover, .btn-primary:focus { background-color: #b82a2a !important; border-color: #b82a2a !important; }
+.badge.bg-primary { background-color: var(--bs-primary) !important; color: #fff !important; }
 
