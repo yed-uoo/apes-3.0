@@ -125,29 +125,33 @@ def mini_project(request):
 				messages.error(request, "Coordinator approval is required before SDG submission.")
 				return redirect("mini_project")
 
-			if SustainableDevelopmentGoal.objects.filter(group=group).exists():
-				messages.info(request, "SDG already submitted for this group.")
-				return redirect("mini_project")
+			# Get or create SDG submission (allows editing)
+			sdg_submission, created = SustainableDevelopmentGoal.objects.get_or_create(
+				group=group,
+				defaults={'submitted_by': request.user}
+			)
 
+			# Update all SDG fields
 			sdg_fields = [
+				"project_title", "project_description",
 				"sdg1", "sdg1_justification", "sdg2", "sdg2_justification", "sdg3", "sdg3_justification",
 				"sdg4", "sdg4_justification", "sdg5", "sdg5_justification",
 				"wp1", "wp1_justification", "wp2", "wp2_justification", "wp3", "wp3_justification",
 				"wp4", "wp4_justification", "wp5", "wp5_justification",
 				"po1", "po2", "po3", "po4", "po5", "pso1", "pso2",
 			]
-			sdg_data = {}
+			
 			for field in sdg_fields:
 				value = request.POST.get(field, "").strip()
-				sdg_data[field] = value
-
-			SustainableDevelopmentGoal.objects.create(
-				group=group,
-				submitted_by=request.user,
-				is_submitted=True,
-				**sdg_data,
-			)
-			messages.success(request, "SDG submitted successfully.")
+				setattr(sdg_submission, field, value)
+			
+			sdg_submission.is_submitted = True
+			sdg_submission.save()
+			
+			if created:
+				messages.success(request, "SDG submitted successfully.")
+			else:
+				messages.success(request, "SDG updated successfully.")
 			return redirect("mini_project")
 
 		if group and group.leader != request.user:
@@ -203,12 +207,13 @@ def mini_project(request):
 	sdg_submission = SustainableDevelopmentGoal.objects.filter(group=group).first() if group else None
 	assigned_guide = _get_accepted_guide_for_group(group) if group else None
 	selected_topic = Abstract.objects.filter(group=group, is_final_approved=True).order_by("-submitted_at").first() if group else None
+	
+	# Allow SDG submission/editing if group has coordinator approval
 	can_submit_sdg = bool(
 		group
 		and is_leader
 		and coordinator_approval
 		and coordinator_approval.status == CoordinatorApproval.STATUS_APPROVED
-		and (not sdg_submission or not sdg_submission.is_submitted)
 	)
 
 	context = {

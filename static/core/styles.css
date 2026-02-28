@@ -10,3 +10,110 @@ body {
     border-radius: 6px;
     margin-bottom: 8px;
 }
+/* SDG Tab Styles */
+.sdg-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.sdg-container .card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+}
+
+.sdg-container .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.sdg-container .card-header {
+    border-radius: 8px 8px 0 0 !important;
+    font-weight: 600;
+    padding: 1rem 1.5rem;
+}
+
+.sdg-entry {
+    transition: all 0.2s ease;
+}
+
+.sdg-entry:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+/* Custom Icons */
+.bi {
+    margin-right: 0.25rem;
+}
+
+/* Badge enhancements */
+.badge {
+    padding: 0.5rem 0.75rem;
+    font-weight: 500;
+}
+
+/* Button styles */
+.btn {
+    border-radius: 6px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-lg {
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+}
+
+/* Alert customization */
+.alert {
+    border-radius: 8px;
+    border: none;
+    padding: 1rem 1.5rem;
+}
+
+/* Background colors for different sections */
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+/* Form plaintext for view mode */
+.form-control-plaintext {
+    color: #212529;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sdg-container {
+        padding: 0 0.5rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* Collapsible sections */
+.collapse:not(.show) {
+    display: none;
+}
+
+.collapse.show {
+    display: block;
+}
+
+/* Smooth animations */
+* {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 0.15s;
+    transition-timing-function: ease-in-out;
+}

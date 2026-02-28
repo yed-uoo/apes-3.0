@@ -249,223 +249,501 @@
 
     <!-- SDG Tab -->
     <div class="tab-pane fade" id="sdg" role="tabpanel">
-        <h5 class="mb-3">Sustainable Development Goals (SDG) Matrix</h5>
+        <div class="sdg-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0">🎯 Project Information & SDG Matrix</h4>
+                {% if sdg_submission and sdg_submission.is_submitted %}
+                <span class="badge bg-success fs-6">
+                    <i class="bi bi-check-circle"></i> Saved
+                </span>
+                {% endif %}
+            </div>
 
-        {% if sdg_submission and sdg_submission.is_submitted %}
-        <div class="d-flex align-items-center gap-2 mb-3">
-            <span class="badge bg-success">Submitted</span>
-            <small class="text-muted">On {{ sdg_submission.created_at|date:"M d, Y H:i" }}</small>
+            {% if can_submit_sdg %}
+            <form method="post" id="sdgForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="submit_sdg">
+
+                <!-- Project Overview Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-folder"></i> Project Overview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="project_title" class="form-label fw-bold">Project Title</label>
+                            <input type="text" class="form-control form-control-lg" id="project_title" 
+                                   name="project_title" placeholder="Enter your project title" 
+                                   value="{{ sdg_submission.project_title|default:'' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Guide</label>
+                            <div class="p-3 bg-light rounded">
+                                {% if assigned_guide %}
+                                    <i class="bi bi-person-badge"></i> 
+                                    <strong>{{ assigned_guide.get_full_name|default:assigned_guide.username }}</strong>
+                                    <span class="text-muted">({{ assigned_guide.email }})</span>
+                                {% else %}
+                                    <span class="text-muted">No guide assigned yet</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Team Members</label>
+                            <div class="p-3 bg-light rounded">
+                                {% if group_members %}
+                                <div class="row g-2">
+                                    {% for member in group_members %}
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-person-circle text-primary me-2"></i>
+                                            <span>{{ member.user.get_full_name|default:member.user.username }}</span>
+                                            {% if member.user == group.leader %}
+                                            <span class="badge bg-primary ms-2">Leader</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <span class="text-muted">No team members</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-0">
+                            <label for="project_description" class="form-label fw-bold">Project Description</label>
+                            <textarea class="form-control" id="project_description" name="project_description" 
+                                      rows="5" placeholder="Provide a comprehensive description of your project...">{{ sdg_submission.project_description|default:'' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SDG Goals Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-globe"></i> Sustainable Development Goals (SDG)</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">
+                            Select and justify SDG goals that align with your project. 
+                            <small>(e.g., SDG 4 – Quality Education)</small>
+                        </p>
+                        
+                        <div id="sdgEntries">
+                            <!-- SDG 1 -->
+                            <div class="sdg-entry border rounded p-3 mb-3 bg-light">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">SDG Goal 1</label>
+                                        <input type="text" class="form-control" name="sdg1" 
+                                               placeholder="e.g., SDG 4 – Quality Education"
+                                               value="{{ sdg_submission.sdg1|default:'' }}">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <label class="form-label fw-bold">Description/Justification</label>
+                                        <textarea class="form-control" name="sdg1_justification" rows="2" 
+                                                  placeholder="Explain how your project aligns with this SDG...">{{ sdg_submission.sdg1_justification|default:'' }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SDG 2 -->
+                            <div class="sdg-entry border rounded p-3 mb-3 bg-light">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">SDG Goal 2</label>
+                                        <input type="text" class="form-control" name="sdg2" 
+                                               placeholder="e.g., SDG 9 – Industry Innovation"
+                                               value="{{ sdg_submission.sdg2|default:'' }}">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <label class="form-label fw-bold">Description/Justification</label>
+                                        <textarea class="form-control" name="sdg2_justification" rows="2" 
+                                                  placeholder="Explain how your project aligns with this SDG...">{{ sdg_submission.sdg2_justification|default:'' }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SDG 3 -->
+                            <div class="sdg-entry border rounded p-3 mb-3 bg-light">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">SDG Goal 3</label>
+                                        <input type="text" class="form-control" name="sdg3" 
+                                               placeholder="e.g., SDG 11 – Sustainable Cities"
+                                               value="{{ sdg_submission.sdg3|default:'' }}">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <label class="form-label fw-bold">Description/Justification</label>
+                                        <textarea class="form-control" name="sdg3_justification" rows="2" 
+                                                  placeholder="Explain how your project aligns with this SDG...">{{ sdg_submission.sdg3_justification|default:'' }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Additional SDGs (collapsible) -->
+                            <div class="collapse" id="additionalSDGs">
+                                <!-- SDG 4 -->
+                                <div class="sdg-entry border rounded p-3 mb-3 bg-light">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold">SDG Goal 4</label>
+                                            <input type="text" class="form-control" name="sdg4" 
+                                                   value="{{ sdg_submission.sdg4|default:'' }}">
+                                        </div>
+                                        <div class="col-md-8">
+                                            <label class="form-label fw-bold">Description/Justification</label>
+                                            <textarea class="form-control" name="sdg4_justification" rows="2">{{ sdg_submission.sdg4_justification|default:'' }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- SDG 5 -->
+                                <div class="sdg-entry border rounded p-3 mb-3 bg-light">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold">SDG Goal 5</label>
+                                            <input type="text" class="form-control" name="sdg5" 
+                                                   value="{{ sdg_submission.sdg5|default:'' }}">
+                                        </div>
+                                        <div class="col-md-8">
+                                            <label class="form-label fw-bold">Description/Justification</label>
+                                            <textarea class="form-control" name="sdg5_justification" rows="2">{{ sdg_submission.sdg5_justification|default:'' }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-outline-success btn-sm" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#additionalSDGs">
+                            <i class="bi bi-plus-circle"></i> Add More SDG Goals
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Work Packages Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Work Packages</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">Define the major work packages of your project</p>
+                        
+                        <div class="row g-3">
+                            <!-- WP1 -->
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded bg-light">
+                                    <label class="form-label fw-bold">WP1</label>
+                                    <input type="text" class="form-control mb-2" name="wp1" 
+                                           placeholder="e.g., Requirements Analysis"
+                                           value="{{ sdg_submission.wp1|default:'' }}">
+                                    <textarea class="form-control" name="wp1_justification" rows="2" 
+                                              placeholder="Description...">{{ sdg_submission.wp1_justification|default:'' }}</textarea>
+                                </div>
+                            </div>
+
+                            <!-- WP2 -->
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded bg-light">
+                                    <label class="form-label fw-bold">WP2</label>
+                                    <input type="text" class="form-control mb-2" name="wp2" 
+                                           placeholder="e.g., System Design"
+                                           value="{{ sdg_submission.wp2|default:'' }}">
+                                    <textarea class="form-control" name="wp2_justification" rows="2" 
+                                              placeholder="Description...">{{ sdg_submission.wp2_justification|default:'' }}</textarea>
+                                </div>
+                            </div>
+
+                            <!-- WP3 -->
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded bg-light">
+                                    <label class="form-label fw-bold">WP3</label>
+                                    <input type="text" class="form-control mb-2" name="wp3" 
+                                           placeholder="e.g., Implementation"
+                                           value="{{ sdg_submission.wp3|default:'' }}">
+                                    <textarea class="form-control" name="wp3_justification" rows="2" 
+                                              placeholder="Description...">{{ sdg_submission.wp3_justification|default:'' }}</textarea>
+                                </div>
+                            </div>
+
+                            <!-- Additional WPs (collapsible) -->
+                            <div class="col-12">
+                                <div class="collapse" id="additionalWPs">
+                                    <div class="row g-3">
+                                        <!-- WP4 -->
+                                        <div class="col-md-6">
+                                            <div class="p-3 border rounded bg-light">
+                                                <label class="form-label fw-bold">WP4</label>
+                                                <input type="text" class="form-control mb-2" name="wp4" 
+                                                       value="{{ sdg_submission.wp4|default:'' }}">
+                                                <textarea class="form-control" name="wp4_justification" rows="2">{{ sdg_submission.wp4_justification|default:'' }}</textarea>
+                                            </div>
+                                        </div>
+
+                                        <!-- WP5 -->
+                                        <div class="col-md-6">
+                                            <div class="p-3 border rounded bg-light">
+                                                <label class="form-label fw-bold">WP5</label>
+                                                <input type="text" class="form-control mb-2" name="wp5" 
+                                                       value="{{ sdg_submission.wp5|default:'' }}">
+                                                <textarea class="form-control" name="wp5_justification" rows="2">{{ sdg_submission.wp5_justification|default:'' }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline-info btn-sm mt-2" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#additionalWPs">
+                                    <i class="bi bi-plus-circle"></i> Add More Work Packages
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outcomes Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0"><i class="bi bi-trophy"></i> Program Outcomes (PO) & PSO</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">Map your project to Program Outcomes and Program Specific Outcomes</p>
+                        
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Program Outcomes (PO)</label>
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" name="po1" 
+                                               placeholder="PO1" value="{{ sdg_submission.po1|default:'' }}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" name="po2" 
+                                               placeholder="PO2" value="{{ sdg_submission.po2|default:'' }}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" name="po3" 
+                                               placeholder="PO3" value="{{ sdg_submission.po3|default:'' }}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="collapse" id="additionalPOs">
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control" name="po4" 
+                                                   placeholder="PO4" value="{{ sdg_submission.po4|default:'' }}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control" name="po5" 
+                                                   placeholder="PO5" value="{{ sdg_submission.po5|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline-secondary btn-sm mt-2" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#additionalPOs">
+                                    <i class="bi bi-plus-circle"></i> Add More POs
+                                </button>
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <label class="form-label fw-bold">Program Specific Outcomes (PSO)</label>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="pso1" 
+                                               placeholder="PSO1" value="{{ sdg_submission.pso1|default:'' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="pso2" 
+                                               placeholder="PSO2" value="{{ sdg_submission.pso2|default:'' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-save"></i> 
+                        {% if sdg_submission and sdg_submission.is_submitted %}
+                            Update SDG Matrix
+                        {% else %}
+                            Save SDG Matrix
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+
+            {% elif sdg_submission and sdg_submission.is_submitted %}
+            <!-- View Only Mode -->
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Only the group leader can edit the SDG matrix.
+            </div>
+
+            <!-- Display submitted data in view-only mode -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-folder"></i> Project Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Project Title</label>
+                        <p class="form-control-plaintext border p-2 rounded bg-light">
+                            {{ sdg_submission.project_title|default:"Not specified" }}
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Guide</label>
+                        <div class="p-3 bg-light rounded">
+                            {% if assigned_guide %}
+                                <i class="bi bi-person-badge"></i> 
+                                <strong>{{ assigned_guide.get_full_name|default:assigned_guide.username }}</strong>
+                            {% else %}
+                                <span class="text-muted">No guide assigned</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Team Members</label>
+                        <div class="p-3 bg-light rounded">
+                            {% if group_members %}
+                            <div class="row g-2">
+                                {% for member in group_members %}
+                                <div class="col-md-6">
+                                    <i class="bi bi-person-circle text-primary me-2"></i>
+                                    {{ member.user.get_full_name|default:member.user.username }}
+                                    {% if member.user == group.leader %}
+                                    <span class="badge bg-primary">Leader</span>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label fw-bold">Project Description</label>
+                        <p class="form-control-plaintext border p-3 rounded bg-light">
+                            {{ sdg_submission.project_description|default:"No description provided" }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {% if sdg_submission.sdg1 or sdg_submission.sdg2 or sdg_submission.sdg3 %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-globe"></i> SDG Goals</h5>
+                </div>
+                <div class="card-body">
+                    {% if sdg_submission.sdg1 %}
+                    <div class="mb-3 p-3 border rounded bg-light">
+                        <strong class="text-success">{{ sdg_submission.sdg1 }}</strong>
+                        <p class="mb-0 mt-2">{{ sdg_submission.sdg1_justification|default:"No justification" }}</p>
+                    </div>
+                    {% endif %}
+                    {% if sdg_submission.sdg2 %}
+                    <div class="mb-3 p-3 border rounded bg-light">
+                        <strong class="text-success">{{ sdg_submission.sdg2 }}</strong>
+                        <p class="mb-0 mt-2">{{ sdg_submission.sdg2_justification|default:"No justification" }}</p>
+                    </div>
+                    {% endif %}
+                    {% if sdg_submission.sdg3 %}
+                    <div class="mb-3 p-3 border rounded bg-light">
+                        <strong class="text-success">{{ sdg_submission.sdg3 }}</strong>
+                        <p class="mb-0 mt-2">{{ sdg_submission.sdg3_justification|default:"No justification" }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if sdg_submission.wp1 or sdg_submission.wp2 or sdg_submission.wp3 %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Work Packages</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% if sdg_submission.wp1 %}
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-light">
+                                <strong>WP1: </strong>{{ sdg_submission.wp1 }}
+                                <p class="mb-0 mt-2 text-muted small">{{ sdg_submission.wp1_justification }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if sdg_submission.wp2 %}
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-light">
+                                <strong>WP2: </strong>{{ sdg_submission.wp2 }}
+                                <p class="mb-0 mt-2 text-muted small">{{ sdg_submission.wp2_justification }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if sdg_submission.wp3 %}
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-light">
+                                <strong>WP3: </strong>{{ sdg_submission.wp3 }}
+                                <p class="mb-0 mt-2 text-muted small">{{ sdg_submission.wp3_justification }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if sdg_submission.po1 or sdg_submission.po2 or sdg_submission.po3 %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="bi bi-trophy"></i> Outcomes</h5>
+                </div>
+                <div class="card-body">
+                    <label class="form-label fw-bold">Program Outcomes</label>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        {% if sdg_submission.po1 %}<span class="badge bg-secondary">{{ sdg_submission.po1 }}</span>{% endif %}
+                        {% if sdg_submission.po2 %}<span class="badge bg-secondary">{{ sdg_submission.po2 }}</span>{% endif %}
+                        {% if sdg_submission.po3 %}<span class="badge bg-secondary">{{ sdg_submission.po3 }}</span>{% endif %}
+                    </div>
+                    {% if sdg_submission.pso1 or sdg_submission.pso2 %}
+                    <label class="form-label fw-bold">Program Specific Outcomes</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if sdg_submission.pso1 %}<span class="badge bg-primary">{{ sdg_submission.pso1 }}</span>{% endif %}
+                        {% if sdg_submission.pso2 %}<span class="badge bg-primary">{{ sdg_submission.pso2 }}</span>{% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% elif not group %}
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i> Create or join a group to access SDG submission.
+            </div>
+            {% elif not is_leader %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Only the group leader can submit and edit SDG information.
+            </div>
+            {% elif coordinator_approval and coordinator_approval.status != 'approved' %}
+            <div class="alert alert-warning">
+                <i class="bi bi-clock-history"></i> SDG submission is available after coordinator approval.
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i> Request coordinator approval to enable SDG submission.
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
-
-        {% if can_submit_sdg %}
-        <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="submit_sdg">
-
-            <h6 class="mb-2">SECTION 1 – SDG Mapping Matrix</h6>
-            <div class="table-responsive mb-4">
-                <table class="table table-bordered align-middle">
-                    <thead>
-                        <tr>
-                            <th>SDG 1</th>
-                            <th>SDG 1 Justification</th>
-                            <th>SDG 2</th>
-                            <th>SDG 2 Justification</th>
-                            <th>SDG 3</th>
-                            <th>SDG 3 Justification</th>
-                            <th>SDG 4</th>
-                            <th>SDG 4 Justification</th>
-                            <th>SDG 5</th>
-                            <th>SDG 5 Justification</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="text" class="form-control" name="sdg1"></td>
-                            <td><textarea class="form-control" name="sdg1_justification" rows="2"></textarea></td>
-                            <td><input type="text" class="form-control" name="sdg2"></td>
-                            <td><textarea class="form-control" name="sdg2_justification" rows="2"></textarea></td>
-                            <td><input type="text" class="form-control" name="sdg3"></td>
-                            <td><textarea class="form-control" name="sdg3_justification" rows="2"></textarea></td>
-                            <td><input type="text" class="form-control" name="sdg4"></td>
-                            <td><textarea class="form-control" name="sdg4_justification" rows="2"></textarea></td>
-                            <td><input type="text" class="form-control" name="sdg5"></td>
-                            <td><textarea class="form-control" name="sdg5_justification" rows="2"></textarea></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <h6 class="mb-2">SECTION 2 – WP Mapping Matrix</h6>
-            <div class="table-responsive mb-4">
-                <table class="table table-bordered align-middle">
-                    <thead>
-                        <tr>
-                            <th>WP1</th>
-                            <th>WP1 Justification</th>
-                            <th>WP2</th>
-                            <th>WP2 Justification</th>
-                            <th>WP3</th>
-                            <th>WP3 Justification</th>
-                            <th>WP4</th>
-                            <th>WP4 Justification</th>
-                            <th>WP5</th>
-                            <th>WP5 Justification</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="text" class="form-control" name="wp1"></td>
-                            <td><textarea class="form-control" name="wp1_justification" rows="2"></textarea></td>
-                            <td><input type="text" class="form-control" name="wp2"></td>
-                            <td><textarea class="form-control" name="wp2_justification" rows="2"></textarea></td>
-                            <td><input type="text" class="form-control" name="wp3"></td>
-                            <td><textarea class="form-control" name="wp3_justification" rows="2"></textarea></td>
-                            <td><input type="text" class="form-control" name="wp4"></td>
-                            <td><textarea class="form-control" name="wp4_justification" rows="2"></textarea></td>
-                            <td><input type="text" class="form-control" name="wp5"></td>
-                            <td><textarea class="form-control" name="wp5_justification" rows="2"></textarea></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <h6 class="mb-2">SECTION 3 – PO and PSO Mapping Matrix</h6>
-            <div class="table-responsive mb-4">
-                <table class="table table-bordered align-middle">
-                    <thead>
-                        <tr>
-                            <th>PO1</th>
-                            <th>PO2</th>
-                            <th>PO3</th>
-                            <th>PO4</th>
-                            <th>PO5</th>
-                            <th>PSO1</th>
-                            <th>PSO2</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="text" class="form-control" name="po1"></td>
-                            <td><input type="text" class="form-control" name="po2"></td>
-                            <td><input type="text" class="form-control" name="po3"></td>
-                            <td><input type="text" class="form-control" name="po4"></td>
-                            <td><input type="text" class="form-control" name="po5"></td>
-                            <td><input type="text" class="form-control" name="pso1"></td>
-                            <td><input type="text" class="form-control" name="pso2"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Submit SDG Matrix</button>
-        </form>
-        {% elif sdg_submission and sdg_submission.is_submitted %}
-            <h6 class="mb-2">SECTION 1 – SDG Mapping Matrix</h6>
-            <div class="table-responsive mb-4">
-                <table class="table table-bordered align-middle">
-                    <thead>
-                        <tr>
-                            <th>SDG 1</th>
-                            <th>SDG 1 Justification</th>
-                            <th>SDG 2</th>
-                            <th>SDG 2 Justification</th>
-                            <th>SDG 3</th>
-                            <th>SDG 3 Justification</th>
-                            <th>SDG 4</th>
-                            <th>SDG 4 Justification</th>
-                            <th>SDG 5</th>
-                            <th>SDG 5 Justification</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{{ sdg_submission.sdg1 }}</td>
-                            <td>{{ sdg_submission.sdg1_justification }}</td>
-                            <td>{{ sdg_submission.sdg2 }}</td>
-                            <td>{{ sdg_submission.sdg2_justification }}</td>
-                            <td>{{ sdg_submission.sdg3 }}</td>
-                            <td>{{ sdg_submission.sdg3_justification }}</td>
-                            <td>{{ sdg_submission.sdg4 }}</td>
-                            <td>{{ sdg_submission.sdg4_justification }}</td>
-                            <td>{{ sdg_submission.sdg5 }}</td>
-                            <td>{{ sdg_submission.sdg5_justification }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <h6 class="mb-2">SECTION 2 – WP Mapping Matrix</h6>
-            <div class="table-responsive mb-4">
-                <table class="table table-bordered align-middle">
-                    <thead>
-                        <tr>
-                            <th>WP1</th>
-                            <th>WP1 Justification</th>
-                            <th>WP2</th>
-                            <th>WP2 Justification</th>
-                            <th>WP3</th>
-                            <th>WP3 Justification</th>
-                            <th>WP4</th>
-                            <th>WP4 Justification</th>
-                            <th>WP5</th>
-                            <th>WP5 Justification</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{{ sdg_submission.wp1 }}</td>
-                            <td>{{ sdg_submission.wp1_justification }}</td>
-                            <td>{{ sdg_submission.wp2 }}</td>
-                            <td>{{ sdg_submission.wp2_justification }}</td>
-                            <td>{{ sdg_submission.wp3 }}</td>
-                            <td>{{ sdg_submission.wp3_justification }}</td>
-                            <td>{{ sdg_submission.wp4 }}</td>
-                            <td>{{ sdg_submission.wp4_justification }}</td>
-                            <td>{{ sdg_submission.wp5 }}</td>
-                            <td>{{ sdg_submission.wp5_justification }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <h6 class="mb-2">SECTION 3 – PO and PSO Mapping Matrix</h6>
-            <div class="table-responsive mb-4">
-                <table class="table table-bordered align-middle">
-                    <thead>
-                        <tr>
-                            <th>PO1</th>
-                            <th>PO2</th>
-                            <th>PO3</th>
-                            <th>PO4</th>
-                            <th>PO5</th>
-                            <th>PSO1</th>
-                            <th>PSO2</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{{ sdg_submission.po1 }}</td>
-                            <td>{{ sdg_submission.po2 }}</td>
-                            <td>{{ sdg_submission.po3 }}</td>
-                            <td>{{ sdg_submission.po4 }}</td>
-                            <td>{{ sdg_submission.po5 }}</td>
-                            <td>{{ sdg_submission.pso1 }}</td>
-                            <td>{{ sdg_submission.pso2 }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        {% elif not group %}
-        <p class="text-muted mb-0">Create or join a group to submit SDG.</p>
-        {% elif not is_leader %}
-        <p class="text-muted mb-0">Only the group leader can submit SDG.</p>
-        {% elif coordinator_approval and coordinator_approval.status != 'approved' %}
-        <p class="text-muted mb-0">SDG can be submitted only after coordinator approval.</p>
-        {% else %}
-        <p class="text-muted mb-0">Request coordinator approval to enable SDG submission.</p>
-        {% endif %}
     </div>
 
     <!-- Abstract Tab -->
