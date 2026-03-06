@@ -81,6 +81,22 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div style="flex: 1;">
                     <h6 class="mb-2">Group Leader: {{ approval.group.leader.username }}</h6>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <strong style="color: #e5e7eb;">Full Name:</strong>
+                            <p style="color: #9ca3af; margin: 0;">{{ approval.group.leader.first_name }} {{ approval.group.leader.last_name }}</p>
+                        </div>
+                        {% if approval.group.leader.student_profile %}
+                        <div>
+                            <strong style="color: #e5e7eb;">Class:</strong>
+                            <p style="color: #9ca3af; margin: 0;">{{ approval.group.leader.student_profile.class_name|default:"N/A" }}</p>
+                        </div>
+                        <div>
+                            <strong style="color: #e5e7eb;">CGP:</strong>
+                            <p style="color: #fdba74; font-weight: 600; margin: 0;">{{ approval.group.leader.student_profile.cgp|default:"N/A" }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
                     <p class="mb-2"><strong style="color: #e5e7eb;">Group Members:</strong></p>
                     <table class="table table-sm table-glass mb-2">
                         <thead>
@@ -88,6 +104,7 @@
                                 <th>Username</th>
                                 <th>Name</th>
                                 <th>Roll No</th>
+                                <th>CGP</th>
                                 <th>Role</th>
                             </tr>
                         </thead>
@@ -96,6 +113,7 @@
                                 <td>{{ approval.group.leader.username }}</td>
                                 <td>{{ approval.group.leader.first_name }} {{ approval.group.leader.last_name }}</td>
                                 <td>{{ approval.group.leader.student_profile.roll_number|default:"-" }}</td>
+                                <td style="color: #fdba74; font-weight: 600;">{{ approval.group.leader.student_profile.cgp|default:"-" }}</td>
                                 <td><span class="badge badge-info">Leader</span></td>
                             </tr>
                             {% for member in approval.group.groupmember_set.all %}
@@ -104,6 +122,7 @@
                                 <td>{{ member.user.username }}</td>
                                 <td>{{ member.user.first_name }} {{ member.user.last_name }}</td>
                                 <td>{{ member.user.student_profile.roll_number|default:"-" }}</td>
+                                <td style="color: #fdba74; font-weight: 600;">{{ member.user.student_profile.cgp|default:"-" }}</td>
                                 <td>Member</td>
                             </tr>
                             {% endif %}

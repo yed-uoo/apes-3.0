@@ -516,7 +516,7 @@ def guide_requests(request):
 			messages.info(request, "Request rejected.")
 		return redirect("guide_requests")
 
-	pending_requests = GuideRequest.objects.filter(guide=request.user, status=GuideRequest.STATUS_PENDING).select_related("group", "group__leader")
+	pending_requests = GuideRequest.objects.filter(guide=request.user, status=GuideRequest.STATUS_PENDING).select_related("group", "group__leader", "group__leader__student_profile")
 	context = {"pending_requests": pending_requests}
 	return render(request, "guide_requests.html", context)
 
