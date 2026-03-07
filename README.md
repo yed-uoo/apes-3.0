@@ -30,4 +30,4 @@ Minimal Django project for student mini project workflow.
 
    - `python manage.py runserver`
 
-Login at `/login/`..
+Login at `/login/`.
