@@ -1,24 +1,110 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h3 class="mb-4">Coordinator Dashboard</h3>
+<style>
+    .dashboard-title {
+        color: #e5e7eb;
+        font-weight: 700;
+    }
+
+    .coordinator-card {
+        background: rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(40px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 12px !important;
+    }
+
+    .coordinator-card h5,
+    .coordinator-card h6 {
+        color: #e5e7eb;
+        font-weight: 600;
+    }
+
+    .coordinator-card p {
+        color: #9ca3af;
+    }
+
+    .table-glass {
+        color: #e5e7eb;
+        background: transparent !important;
+    }
+
+    .table-glass thead {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .table-glass thead th {
+        color: #f3f4f6;
+        font-weight: 600;
+        border: none;
+        background: transparent !important;
+    }
+
+    .table-glass tbody {
+        background: transparent !important;
+    }
+
+    .table-glass tbody tr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        background: transparent !important;
+    }
+
+    .table-glass tbody td {
+        color: #e5e7eb;
+        border: none;
+        background: transparent !important;
+    }
+
+    .accordion-button {
+        color: #e5e7eb !important;
+        background: transparent !important;
+    }
+
+    .accordion-button:not(.collapsed) {
+        background: rgba(249, 115, 22, 0.1) !important;
+        color: #fdba74 !important;
+    }
+
+    .accordion-body {
+        background: rgba(255, 255, 255, 0.02);
+    }
+</style>
+
+<h3 class="mb-4 dashboard-title">Coordinator Dashboard</h3>
 
 <div class="mb-4">
-    <h5>Pending Approval Requests</h5>
+    <h5 style="color: #e5e7eb;">Pending Approval Requests</h5>
     {% if pending_approvals %}
     <div class="list-group">
         {% for approval in pending_approvals %}
-        <div class="list-group-item">
+        <div class="list-group-item coordinator-card">
             <div class="d-flex justify-content-between align-items-start">
-                <div>
+                <div style="flex: 1;">
                     <h6 class="mb-2">Group Leader: {{ approval.group.leader.username }}</h6>
-                    <p class="mb-2"><strong>Group Members:</strong></p>
-                    <table class="table table-sm table-bordered mb-2">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <strong style="color: #e5e7eb;">Full Name:</strong>
+                            <p style="color: #9ca3af; margin: 0;">{{ approval.group.leader.first_name }} {{ approval.group.leader.last_name }}</p>
+                        </div>
+                        {% if approval.group.leader.student_profile %}
+                        <div>
+                            <strong style="color: #e5e7eb;">Class:</strong>
+                            <p style="color: #9ca3af; margin: 0;">{{ approval.group.leader.student_profile.class_name|default:"N/A" }}</p>
+                        </div>
+                        <div>
+                            <strong style="color: #e5e7eb;">CGP:</strong>
+                            <p style="color: #fdba74; font-weight: 600; margin: 0;">{{ approval.group.leader.student_profile.cgp|default:"N/A" }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <p class="mb-2"><strong style="color: #e5e7eb;">Group Members:</strong></p>
+                    <table class="table table-sm table-glass mb-2">
                         <thead>
                             <tr>
                                 <th>Username</th>
                                 <th>Name</th>
                                 <th>Roll No</th>
+                                <th>CGP</th>
                                 <th>Role</th>
                             </tr>
                         </thead>
@@ -27,7 +113,8 @@
                                 <td>{{ approval.group.leader.username }}</td>
                                 <td>{{ approval.group.leader.first_name }} {{ approval.group.leader.last_name }}</td>
                                 <td>{{ approval.group.leader.student_profile.roll_number|default:"-" }}</td>
-                                <td><span class="badge bg-primary">Leader</span></td>
+                                <td style="color: #fdba74; font-weight: 600;">{{ approval.group.leader.student_profile.cgp|default:"-" }}</td>
+                                <td><span class="badge badge-info">Leader</span></td>
                             </tr>
                             {% for member in approval.group.groupmember_set.all %}
                             {% if member.user != approval.group.leader %}
@@ -35,6 +122,7 @@
                                 <td>{{ member.user.username }}</td>
                                 <td>{{ member.user.first_name }} {{ member.user.last_name }}</td>
                                 <td>{{ member.user.student_profile.roll_number|default:"-" }}</td>
+                                <td style="color: #fdba74; font-weight: 600;">{{ member.user.student_profile.cgp|default:"-" }}</td>
                                 <td>Member</td>
                             </tr>
                             {% endif %}
@@ -62,10 +150,10 @@
 </div>
 
 <div class="mb-4">
-    <h5>Pending Topic Approvals</h5>
+    <h5 style="color: #e5e7eb;">Pending Topic Approvals</h5>
     {% if coordinator_pending_abstracts %}
     <div class="table-responsive">
-        <table class="table table-bordered table-sm align-middle">
+        <table class="table table-bordered table-sm align-middle table-glass">
             <thead>
                 <tr>
                     <th>Group</th>
@@ -83,8 +171,8 @@
                     <td>{{ abstract.group.id }}</td>
                     <td>{{ abstract.group.leader.username }}</td>
                     <td>{{ abstract.title }}</td>
-                    <td><span class="badge bg-success">Approved</span></td>
-                    <td><span class="badge bg-warning text-dark">Pending</span></td>
+                    <td><span class="badge badge-success">Approved</span></td>
+                    <td><span class="badge badge-warning">Pending</span></td>
                     <td>{{ abstract.submitted_at|date:"M d, Y H:i" }}</td>
                     <td>
                         <form method="post" class="d-inline">
@@ -105,10 +193,10 @@
 </div>
 
 <div class="mb-4">
-    <h5>All Groups in Assigned Class(es)</h5>
+    <h5 style="color: #e5e7eb;">All Groups in Assigned Class(es)</h5>
     {% if assigned_classes %}
     <p class="text-muted mb-3">
-        <strong>Assigned Class(es):</strong> {{ assigned_classes|join:", " }}
+        <strong style="color: #e5e7eb;">Assigned Class(es):</strong> {{ assigned_classes|join:", " }}
     </p>
     {% else %}
     <p class="text-muted mb-3">No classes assigned yet based on coordinator approvals.</p>
@@ -117,32 +205,32 @@
     {% if group_details %}
     <div class="accordion" id="groupAccordion">
         {% for item in group_details %}
-        <div class="accordion-item mb-2">
+        <div class="accordion-item mb-2 coordinator-card" style="border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.06) !important;">
             <h2 class="accordion-header" id="heading{{ item.group.id }}">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                     data-bs-target="#collapse{{ item.group.id }}" aria-expanded="false"
                     aria-controls="collapse{{ item.group.id }}">
                     <div class="d-flex flex-wrap gap-2 align-items-center">
                         <span><strong>Group {{ item.group.id }}</strong></span>
-                        <span class="badge bg-info text-dark">Size {{ item.group_size }}</span>
+                        <span class="badge badge-info">Size {{ item.group_size }}</span>
                         {% if item.coordinator_approval %}
                             {% if item.coordinator_approval.status == 'approved' %}
-                            <span class="badge bg-success">Approved</span>
+                            <span class="badge badge-success">Approved</span>
                             {% elif item.coordinator_approval.status == 'pending' %}
-                            <span class="badge bg-warning text-dark">Pending</span>
+                            <span class="badge badge-warning">Pending</span>
                             {% else %}
-                            <span class="badge bg-danger">Rejected</span>
+                            <span class="badge badge-danger">Rejected</span>
                             {% endif %}
                         {% else %}
-                        <span class="badge bg-secondary">Approval Not Requested</span>
+                        <span class="badge badge-secondary">Approval Not Requested</span>
                         {% endif %}
 
                         {% if item.assigned_guide %}
-                        <span class="badge bg-primary">Guide Assigned</span>
+                        <span class="badge badge-success">Guide Assigned</span>
                         {% endif %}
 
                         {% if item.approved_abstract %}
-                        <span class="badge bg-success">Topic Approved</span>
+                        <span class="badge badge-success">Topic Approved</span>
                         {% endif %}
                     </div>
                 </button>
@@ -152,30 +240,30 @@
                 <div class="accordion-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <p class="mb-1"><strong>Group ID:</strong> {{ item.group.id }}</p>
-                            <p class="mb-1"><strong>Class:</strong> {{ item.class_name|default:"-" }}</p>
-                            <p class="mb-1"><strong>Department:</strong> {{ item.department|default:"-" }}</p>
-                            <p class="mb-1"><strong>Leader:</strong> {{ item.group.leader.username }}
+                            <p class="mb-1"><strong style="color: #e5e7eb;">Group ID:</strong> {{ item.group.id }}</p>
+                            <p class="mb-1"><strong style="color: #e5e7eb;">Class:</strong> {{ item.class_name|default:"-" }}</p>
+                            <p class="mb-1"><strong style="color: #e5e7eb;">Department:</strong> {{ item.department|default:"-" }}</p>
+                            <p class="mb-1"><strong style="color: #e5e7eb;">Leader:</strong> {{ item.group.leader.username }}
                                 ({{ item.group.leader.first_name }} {{ item.group.leader.last_name }})</p>
-                            <p class="mb-1"><strong>Group Size:</strong> {{ item.group_size }}</p>
-                            <p class="mb-0"><strong>Created:</strong> {{ item.group.created_at|date:"M d, Y H:i" }}</p>
+                            <p class="mb-1"><strong style="color: #e5e7eb;">Group Size:</strong> {{ item.group_size }}</p>
+                            <p class="mb-0"><strong style="color: #e5e7eb;">Created:</strong> {{ item.group.created_at|date:"M d, Y H:i" }}</p>
                         </div>
                         <div class="col-md-6">
-                            <p class="mb-1"><strong>Coordinator Approval:</strong>
+                            <p class="mb-1"><strong style="color: #e5e7eb;">Coordinator Approval:</strong>
                                 {% if item.coordinator_approval %}
                                     {% if item.coordinator_approval.status == 'approved' %}
-                                    <span class="badge bg-success">Approved</span>
+                                    <span class="badge badge-success">Approved</span>
                                     {% elif item.coordinator_approval.status == 'pending' %}
-                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    <span class="badge badge-warning">Pending</span>
                                     {% else %}
-                                    <span class="badge bg-danger">Rejected</span>
+                                    <span class="badge badge-danger">Rejected</span>
                                     {% endif %}
                                 {% else %}
-                                <span class="badge bg-secondary">Not Requested</span>
+                                <span class="badge badge-secondary">Not Requested</span>
                                 {% endif %}
                             </p>
 
-                            <p class="mb-1"><strong>Assigned Guide:</strong>
+                            <p class="mb-1"><strong style="color: #e5e7eb;">Assigned Guide:</strong>
                                 {% if item.assigned_guide %}
                                 {{ item.assigned_guide.get_full_name|default:item.assigned_guide.username }}
                                 {% else %}
@@ -183,21 +271,21 @@
                                 {% endif %}
                             </p>
 
-                            <p class="mb-1"><strong>Guide Request Status:</strong>
+                            <p class="mb-1"><strong style="color: #e5e7eb;">Guide Request Status:</strong>
                                 {% if item.latest_guide_request %}
                                     {% if item.latest_guide_request.status == 'accepted' %}
-                                    <span class="badge bg-success">Approved</span>
+                                    <span class="badge badge-success">Approved</span>
                                     {% elif item.latest_guide_request.status == 'pending' %}
-                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    <span class="badge badge-warning">Pending</span>
                                     {% else %}
-                                    <span class="badge bg-danger">Rejected</span>
+                                    <span class="badge badge-danger">Rejected</span>
                                     {% endif %}
                                 {% else %}
-                                <span class="badge bg-secondary">Not Requested</span>
+                                <span class="badge badge-secondary">Not Requested</span>
                                 {% endif %}
                             </p>
 
-                            <p class="mb-1"><strong>Selected Topic:</strong>
+                            <p class="mb-1"><strong style="color: #e5e7eb;">Selected Topic:</strong>
                                 {% if item.approved_abstract %}
                                 {{ item.approved_abstract.title }}
                                 {% else %}
@@ -205,50 +293,50 @@
                                 {% endif %}
                             </p>
                             {% if item.approved_abstract %}
-                            <p class="mb-1"><strong>Topic Submitted:</strong> {{ item.approved_abstract.submitted_at|date:"M d, Y H:i" }}</p>
+                            <p class="mb-1"><strong style="color: #e5e7eb;">Topic Submitted:</strong> {{ item.approved_abstract.submitted_at|date:"M d, Y H:i" }}</p>
                             {% endif %}
 
-                            <p class="mb-1"><strong>SDG:</strong></p>
+                            <p class="mb-1"><strong style="color: #e5e7eb;">SDG:</strong></p>
                             {% if item.sdg and item.sdg.is_submitted %}
-                            <div class="border rounded p-2 bg-light">
-                                <span class="badge bg-success mb-2">Submitted</span>
+                            <div class="border rounded p-2" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);">
+                                <span class="badge badge-success mb-2">Submitted</span>
                                 <div class="mb-2">
                                     <small class="text-muted">Submitted: {{ item.sdg.created_at|date:"M d, Y H:i" }}</small>
                                 </div>
 
                                 {% if item.sdg.sdg1 %}
                                 <div class="mb-3">
-                                    <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg1 }}</p>
-                                    <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg1_justification|default:"-" }}</p>
+                                    <p class="mb-1"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg1 }}</p>
+                                    <p class="mb-0"><strong style="color: #9ca3af;">Justification:</strong><br>{{ item.sdg.sdg1_justification|default:"-" }}</p>
                                 </div>
                                 {% endif %}
                                 {% if item.sdg.sdg2 %}
                                 <div class="mb-3">
-                                    <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg2 }}</p>
-                                    <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg2_justification|default:"-" }}</p>
+                                    <p class="mb-1"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg2 }}</p>
+                                    <p class="mb-0"><strong style="color: #9ca3af;">Justification:</strong><br>{{ item.sdg.sdg2_justification|default:"-" }}</p>
                                 </div>
                                 {% endif %}
                                 {% if item.sdg.sdg3 %}
                                 <div class="mb-3">
-                                    <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg3 }}</p>
-                                    <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg3_justification|default:"-" }}</p>
+                                    <p class="mb-1"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg3 }}</p>
+                                    <p class="mb-0"><strong style="color: #9ca3af;">Justification:</strong><br>{{ item.sdg.sdg3_justification|default:"-" }}</p>
                                 </div>
                                 {% endif %}
                                 {% if item.sdg.sdg4 %}
                                 <div class="mb-3">
-                                    <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg4 }}</p>
-                                    <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg4_justification|default:"-" }}</p>
+                                    <p class="mb-1"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg4 }}</p>
+                                    <p class="mb-0"><strong style="color: #9ca3af;">Justification:</strong><br>{{ item.sdg.sdg4_justification|default:"-" }}</p>
                                 </div>
                                 {% endif %}
                                 {% if item.sdg.sdg5 %}
                                 <div class="mb-0">
-                                    <p class="mb-1"><strong>SDG:</strong> {{ item.sdg.sdg5 }}</p>
-                                    <p class="mb-0"><strong>Justification:</strong><br>{{ item.sdg.sdg5_justification|default:"-" }}</p>
+                                    <p class="mb-1"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg5 }}</p>
+                                    <p class="mb-0"><strong style="color: #9ca3af;">Justification:</strong><br>{{ item.sdg.sdg5_justification|default:"-" }}</p>
                                 </div>
                                 {% endif %}
                             </div>
                             {% else %}
-                            <span class="badge bg-secondary">Not Submitted</span>
+                            <span class="badge badge-secondary">Not Submitted</span>
                             {% endif %}
                         </div>
                     </div>
@@ -261,7 +349,7 @@
                         </button>
                         <div class="collapse mt-2" id="members{{ item.group.id }}">
                             <div class="table-responsive">
-                                <table class="table table-sm table-bordered mb-0">
+                                <table class="table table-sm table-bordered mb-0 table-glass">
                                     <thead>
                                         <tr>
                                             <th>Username</th>
@@ -278,7 +366,7 @@
                                             <td>{{ member.user.student_profile.register_number|default:"-" }}</td>
                                             <td>
                                                 {% if member.user == item.group.leader %}
-                                                <span class="badge bg-primary">Leader</span>
+                                                <span class="badge badge-success">Leader</span>
                                                 {% else %}
                                                 Member
                                                 {% endif %}

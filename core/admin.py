@@ -5,10 +5,18 @@ from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequ
 
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
-	list_display = ("user", "class_name", "roll_number", "register_number", "department")
+	list_display = ("user", "class_name", "roll_number", "register_number", "department", "cgp")
 	search_fields = ("user__username", "user__email", "user__first_name", "user__last_name", "roll_number", "register_number")
 	list_filter = ("department", "class_name")
 	ordering = ("user__username",)
+	fieldsets = (
+		("User Information", {
+			"fields": ("user",)
+		}),
+		("Academic Details", {
+			"fields": ("class_name", "roll_number", "register_number", "department", "cgp")
+		}),
+	)
 
 
 @admin.register(FacultyProfile)

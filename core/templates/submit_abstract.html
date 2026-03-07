@@ -1,19 +1,54 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+    .form-page-title {
+        color: #e5e7eb;
+        font-weight: 700;
+    }
+
+    .form-card {
+        background: rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(40px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 16px !important;
+    }
+
+    .form-card .card-body {
+        color: #e5e7eb;
+    }
+
+    .form-card .card-title {
+        color: #e5e7eb;
+        font-weight: 600;
+    }
+
+    .form-card p {
+        color: #9ca3af;
+    }
+
+    .form-text {
+        color: #9ca3af !important;
+    }
+
+    .text-danger {
+        color: #fca5a5 !important;
+    }
+</style>
+
 <div class="row">
     <div class="col-lg-8 mx-auto">
-        <h3 class="mb-4">Submit Abstract</h3>
+        <h3 class="mb-4 form-page-title">Submit Abstract</h3>
 
-        <div class="card mb-4">
+        <div class="card form-card mb-4">
             <div class="card-body">
                 <h5 class="card-title">Group Information</h5>
-                <p><strong>Group Leader:</strong> {{ group.leader.username }}</p>
-                <p><strong>Assigned Guide:</strong> {{ guide.username }}</p>
+                <p><strong style="color: #e5e7eb;">Group Leader:</strong> <span style="color: #9ca3af;">{{ group.leader.username }}</span></p>
+                <p><strong style="color: #e5e7eb;">Assigned Guide:</strong> <span style="color: #9ca3af;">{{ guide.username }}</span></p>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card form-card">
             <div class="card-body">
                 <h5 class="card-title">Submit New Abstract</h5>
                 <form method="post" enctype="multipart/form-data" id="abstractForm">
@@ -49,48 +84,48 @@
         </div>
 
         {% if previous_abstracts %}
-        <div class="card mt-4">
+        <div class="card form-card mt-4">
             <div class="card-body">
                 <h5 class="card-title">Recent Submissions</h5>
                 <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
+                    <table class="table table-sm" style="color: #e5e7eb;">
+                        <thead style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                             <tr>
-                                <th>Title</th>
-                                <th>Submitted</th>
-                                <th>Guide</th>
-                                <th>Coordinator</th>
-                                <th>Final</th>
+                                <th style="color: #f3f4f6; font-weight: 600; border: none;">Title</th>
+                                <th style="color: #f3f4f6; font-weight: 600; border: none;">Submitted</th>
+                                <th style="color: #f3f4f6; font-weight: 600; border: none;">Guide</th>
+                                <th style="color: #f3f4f6; font-weight: 600; border: none;">Coordinator</th>
+                                <th style="color: #f3f4f6; font-weight: 600; border: none;">Final</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for abstract in previous_abstracts|slice:":3" %}
-                            <tr>
-                                <td>{{ abstract.title }}</td>
-                                <td>{{ abstract.submitted_at|date:"M d, Y" }}</td>
-                                <td>
+                            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                <td style="color: #e5e7eb; border: none;">{{ abstract.title }}</td>
+                                <td style="color: #e5e7eb; border: none;">{{ abstract.submitted_at|date:"M d, Y" }}</td>
+                                <td style="color: #e5e7eb; border: none;">
                                     {% if abstract.guide_status == "pending" %}
-                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        <span class="badge badge-warning">Pending</span>
                                     {% elif abstract.guide_status == "approved" %}
-                                        <span class="badge bg-success">Approved</span>
+                                        <span class="badge badge-success">Approved</span>
                                     {% else %}
-                                        <span class="badge bg-danger">Rejected</span>
+                                        <span class="badge badge-danger">Rejected</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td style="color: #e5e7eb; border: none;">
                                     {% if abstract.coordinator_status == "pending" %}
-                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        <span class="badge badge-warning">Pending</span>
                                     {% elif abstract.coordinator_status == "approved" %}
-                                        <span class="badge bg-success">Approved</span>
+                                        <span class="badge badge-success">Approved</span>
                                     {% else %}
-                                        <span class="badge bg-danger">Rejected</span>
+                                        <span class="badge badge-danger">Rejected</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td style="color: #e5e7eb; border: none;">
                                     {% if abstract.is_final_approved %}
-                                    <span class="badge bg-success">Selected</span>
+                                    <span class="badge badge-success">Selected</span>
                                     {% else %}
-                                    <span class="badge bg-warning text-dark">Not Selected</span>
+                                    <span class="badge badge-warning">Not Selected</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -98,7 +133,7 @@
                         </tbody>
                     </table>
                 </div>
-                <a href="{% url 'abstract_status' %}" class="btn btn-sm btn-link">View All Submissions →</a>
+                <a href="{% url 'abstract_status' %}" class="btn btn-sm btn-link" style="color: #fb923c;">View All Submissions →</a>
             </div>
         </div>
         {% endif %}

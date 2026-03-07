@@ -1,28 +1,106 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+    .status-title {
+        color: #e5e7eb;
+        font-weight: 700;
+    }
+
+    .status-card {
+        background: rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(40px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 16px !important;
+    }
+
+    .status-card .card-body {
+        color: #e5e7eb;
+    }
+
+    .status-heading {
+        color: #e5e7eb;
+    }
+
+    .status-text-muted {
+        color: #9ca3af;
+    }
+
+    .status-table {
+        color: #e5e7eb;
+    }
+
+    .status-table thead {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .status-table thead th {
+        color: #f3f4f6;
+        font-weight: 600;
+        border: none;
+        background: transparent;
+    }
+
+    .status-table tbody tr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .status-table tbody td {
+        color: #e5e7eb;
+        border: none;
+    }
+
+    .status-alert {
+        background: rgba(59, 130, 246, 0.1) !important;
+        border: 1px solid rgba(59, 130, 246, 0.3) !important;
+        color: #bfdbfe !important;
+        border-radius: 12px !important;
+    }
+
+    .status-alert h5 {
+        color: #bfdbfe;
+    }
+
+    .collapse-content {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border-radius: 12px;
+    }
+
+    .btn-view-details {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(249, 115, 22, 0.3) !important;
+        color: #fb923c !important;
+        backdrop-filter: blur(30px) !important;
+    }
+
+    .btn-view-details:hover {
+        background: rgba(249, 115, 22, 0.2) !important;
+        border-color: rgba(249, 115, 22, 0.6) !important;
+    }
+</style>
+
 <div class="row">
     <div class="col-lg-10 mx-auto">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3>Abstract Submission Status</h3>
+            <h3 class="status-title">Abstract Submission Status</h3>
             <a href="{% url 'submit_abstract' %}" class="btn btn-primary">Submit New Abstract</a>
         </div>
 
-        <div class="mb-3">
-            <h6>Selected Topic</h6>
+        <div class="mb-3 status-card p-3">
+            <h6 class="status-heading">Selected Topic</h6>
             {% if selected_topic %}
-            <span class="badge bg-success">Selected</span>
-            <span class="ms-2"><strong>{{ selected_topic.title }}</strong></span>
+            <span class="badge badge-success">Selected</span>
+            <span class="ms-2"><strong style="color: #e5e7eb;">{{ selected_topic.title }}</strong></span>
             {% else %}
-            <span class="text-muted">No selected topic yet.</span>
+            <span class="status-text-muted">No selected topic yet.</span>
             {% endif %}
         </div>
 
         {% if abstracts %}
-        <div class="card">
+        <div class="card status-card">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover status-table">
                         <thead>
                             <tr>
                                 <th>Title</th>
@@ -41,9 +119,102 @@
                                 <td>
                                     <strong>{{ abstract.title }}</strong>
                                     {% if abstract.guide_status == "pending" and abstract.coordinator_status == "pending" %}
-                                    <span class="badge bg-warning text-dark ms-2">Latest</span>
+                                    <span class="badge badge-warning ms-2">Latest</span>
                                     {% endif %}
                                 </td>
+                                <td>{{ abstract.submitted_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    {% if abstract.guide_status == "pending" %}
+                                    <span class="badge badge-warning">Pending</span>
+                                    {% elif abstract.guide_status == "approved" %}
+                                    <span class="badge badge-success">Approved</span>
+                                    {% else %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if abstract.coordinator_status == "pending" %}
+                                    <span class="badge badge-warning">Pending</span>
+                                    {% elif abstract.coordinator_status == "approved" %}
+                                    <span class="badge badge-success">Approved</span>
+                                    {% else %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if abstract.is_final_approved %}
+                                    <span class="badge badge-success">Selected</span>
+                                    {% elif abstract.guide_status == "rejected" or abstract.coordinator_status == "rejected" %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                    {% else %}
+                                    <span class="badge badge-warning">Not Selected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if abstract.reviewed_by %}
+                                    {{ abstract.reviewed_by.username }}
+                                    {% else %}
+                                    <span class="status-text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if abstract.reviewed_at %}
+                                    {{ abstract.reviewed_at|date:"M d, Y H:i" }}
+                                    {% else %}
+                                    <span class="status-text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-view-details" data-bs-toggle="collapse"
+                                        data-bs-target="#abstract-{{ abstract.id }}">
+                                        View Details
+                                    </button>
+                                    <a href="{% url 'download_abstract' abstract.id %}"
+                                        class="btn btn-sm btn-view-details">
+                                        Download PDF
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr class="collapse" id="abstract-{{ abstract.id }}">
+                                <td colspan="8">
+                                    <div class="collapse-content p-3">
+                                        <h6 style="color: #e5e7eb;">Abstract Text:</h6>
+                                        <p class="mb-3" style="color: #9ca3af;">{{ abstract.abstract_text|linebreaks }}</p>
+
+                                        {% if abstract.feedback %}
+                                        {% if abstract.guide_status == "approved" or abstract.coordinator_status == "approved" %}
+                                        <div class="alert alert-success" style="background: rgba(34, 197, 94, 0.1) !important; border: 1px solid rgba(34, 197, 94, 0.3) !important; color: #86efac !important;">
+                                            {% else %}
+                                            <div class="alert alert-danger" style="background: rgba(239, 68, 68, 0.1) !important; border: 1px solid rgba(239, 68, 68, 0.3) !important; color: #fca5a5 !important;">
+                                                {% endif %}
+                                                <h6 style="color: inherit;">Faculty Feedback:</h6>
+                                                <p class="mb-0" style="color: inherit;">{{ abstract.feedback|linebreaks }}</p>
+                                            </div>
+                                            {% endif %}
+
+                                            <p class="mb-0" style="color: #9ca3af;">
+                                                <strong style="color: #e5e7eb;">PDF File:</strong> {{ abstract.pdf_filename }}
+                                                ({{ abstract.pdf_size|filesizeformat }})
+                                            </p>
+                                        </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert status-alert">
+            <h5>No Abstracts Submitted Yet</h5>
+            <p class="mb-0">You haven't submitted any abstracts yet. Click the button above to submit your first
+                abstract.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
                                 <td>{{ abstract.submitted_at|date:"M d, Y H:i" }}</td>
                                 <td>
                                     {% if abstract.guide_status == "pending" %}

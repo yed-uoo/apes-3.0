@@ -230,6 +230,37 @@ def mini_project(request):
 		and (not sdg_submission or not sdg_submission.is_submitted)
 	)
 
+	# Prepare selected SDGs for display
+	selected_sdgs = []
+	sdg_names = {
+		'1': 'No Poverty',
+		'2': 'Zero Hunger',
+		'3': 'Good Health and Well-being',
+		'4': 'Quality Education',
+		'5': 'Gender Equality',
+		'6': 'Clean Water and Sanitation',
+		'7': 'Affordable and Clean Energy',
+		'8': 'Decent Work and Economic Growth',
+		'9': 'Industry, Innovation and Infrastructure',
+		'10': 'Reduced Inequalities',
+		'11': 'Sustainable Cities and Communities',
+		'12': 'Responsible Consumption and Production',
+		'13': 'Climate Action',
+		'14': 'Life Below Water',
+		'15': 'Life on Land',
+		'16': 'Peace, Justice and Strong Institutions',
+		'17': 'Partnerships for the Goals'
+	}
+	
+	if sdg_submission:
+		for i in range(1, 6):
+			sdg_field_value = getattr(sdg_submission, f"sdg{i}", "")
+			if sdg_field_value:
+				selected_sdgs.append({
+					'number': sdg_field_value,
+					'name': sdg_names.get(sdg_field_value, f'SDG {sdg_field_value}')
+				})
+
 	context = {
 		"group": group,
 		"is_leader": is_leader,
@@ -245,8 +276,97 @@ def mini_project(request):
 		"assigned_guide": assigned_guide,
 		"can_submit_sdg": can_submit_sdg,
 		"selected_topic": selected_topic,
+		"selected_sdgs": selected_sdgs,
 	}
 	return render(request, "mini_project.html", context)
+
+
+@login_required
+def sdg_submission(request):
+	if not _is_student(request.user):
+		messages.error(request, "Only students can access this page.")
+		return redirect("dashboard")
+
+	group = _get_group_for_user(request.user)
+	is_leader = group and group.leader == request.user
+
+	if request.method == "POST":
+		if not group:
+			messages.error(request, "You must be in a group to submit SDG.")
+			return redirect("mini_project")
+
+		if group.leader != request.user:
+			messages.error(request, "Only the group leader can submit SDG.")
+			return redirect("sdg_submission")
+
+		coordinator_approval = CoordinatorApproval.objects.filter(
+			group=group,
+			status=CoordinatorApproval.STATUS_APPROVED,
+		).first()
+		if not coordinator_approval:
+			messages.error(request, "Coordinator approval is required before SDG submission.")
+			return redirect("sdg_submission")
+
+		if SustainableDevelopmentGoal.objects.filter(group=group).exists():
+			messages.info(request, "SDG already submitted for this group.")
+			return redirect("sdg_submission")
+
+		# Collect selected SDG goals (1-17)
+		selected_sdgs = []
+		for i in range(1, 6):
+			sdg_value = request.POST.get(f"sdg{i}", "").strip()
+			if sdg_value:
+				selected_sdgs.append(sdg_value)
+
+		# Validate selection
+		if len(selected_sdgs) < 4 or len(selected_sdgs) > 5:
+			messages.error(request, "You must select between 4 and 5 SDG goals.")
+			return redirect("sdg_submission")
+
+		# Check for duplicates
+		if len(selected_sdgs) != len(set(selected_sdgs)):
+			messages.error(request, "Cannot select the same SDG goal multiple times.")
+			return redirect("sdg_submission")
+
+		# Create SDG record with selected goal numbers stored in SDG fields
+		sdg_data = {
+			"group": group,
+			"submitted_by": request.user,
+			"is_submitted": True,
+		}
+
+		# Store SDG goal numbers in the sdg1-sdg5 fields
+		for idx, sdg_num in enumerate(selected_sdgs, 1):
+			sdg_data[f"sdg{idx}"] = sdg_num
+
+		SustainableDevelopmentGoal.objects.create(**sdg_data)
+		messages.success(request, f"SDG submitted successfully with {len(selected_sdgs)} goals selected.")
+		return redirect("mini_project")
+
+	# GET request - show SDG submission form
+	coordinator_approval = CoordinatorApproval.objects.filter(
+		group=group,
+		status=CoordinatorApproval.STATUS_APPROVED,
+	).first() if group else None
+
+	sdg_submission = SustainableDevelopmentGoal.objects.filter(group=group).first() if group else None
+
+	can_submit_sdg = bool(
+		group
+		and is_leader
+		and coordinator_approval
+		and coordinator_approval.status == CoordinatorApproval.STATUS_APPROVED
+		and (not sdg_submission or not sdg_submission.is_submitted)
+	)
+
+	context = {
+		"group": group,
+		"is_leader": is_leader,
+		"coordinator_approval": coordinator_approval,
+		"sdg_submission": sdg_submission,
+		"can_submit_sdg": can_submit_sdg,
+	}
+	return render(request, "sdg_submission.html", context)
 
 
 @login_required
@@ -415,7 +535,7 @@ def guide_requests(request):
 			messages.info(request, "Request rejected.")
 		return redirect("guide_requests")
 
-	pending_requests = GuideRequest.objects.filter(guide=request.user, status=GuideRequest.STATUS_PENDING).select_related("group", "group__leader")
+	pending_requests = GuideRequest.objects.filter(guide=request.user, status=GuideRequest.STATUS_PENDING).select_related("group", "group__leader", "group__leader__student_profile")
 	context = {"pending_requests": pending_requests}
 	return render(request, "guide_requests.html", context)
 
@@ -881,6 +1001,44 @@ def profile(request):
 	
 	if _is_student(request.user):
 		context["student_profile"] = request.user.student_profile
+		# Fetch the student's group and its SDG submission
+		group = _get_group_for_user(request.user)
+		if group:
+			sdg_submission = SustainableDevelopmentGoal.objects.filter(group=group).first()
+			context["student_group"] = group
+			context["sdg_submission"] = sdg_submission
+			
+			# Create a list of selected SDG goals with their names
+			sdg_names = {
+				'1': 'No Poverty',
+				'2': 'Zero Hunger',
+				'3': 'Good Health and Well-being',
+				'4': 'Quality Education',
+				'5': 'Gender Equality',
+				'6': 'Clean Water and Sanitation',
+				'7': 'Affordable and Clean Energy',
+				'8': 'Decent Work and Economic Growth',
+				'9': 'Industry, Innovation and Infrastructure',
+				'10': 'Reduced Inequalities',
+				'11': 'Sustainable Cities and Communities',
+				'12': 'Responsible Consumption and Production',
+				'13': 'Climate Action',
+				'14': 'Life Below Water',
+				'15': 'Life on Land',
+				'16': 'Peace, Justice and Strong Institutions',
+				'17': 'Partnerships for the Goals'
+			}
+			
+			selected_sdgs = []
+			if sdg_submission:
+				for i in range(1, 6):
+					sdg_field_value = getattr(sdg_submission, f"sdg{i}", "")
+					if sdg_field_value:
+						selected_sdgs.append({
+							'number': sdg_field_value,
+							'name': sdg_names.get(sdg_field_value, f'SDG {sdg_field_value}')
+						})
+			context["selected_sdgs"] = selected_sdgs
 	elif hasattr(request.user, "faculty_profile"):
 		context["faculty_profile"] = request.user.faculty_profile
 	

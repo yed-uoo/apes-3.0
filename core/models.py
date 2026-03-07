@@ -10,6 +10,7 @@ class StudentProfile(models.Model):
 	roll_number = models.CharField(max_length=50, blank=True, null=True)
 	register_number = models.CharField(max_length=50, blank=True, null=True)
 	department = models.CharField(max_length=100, blank=True, null=True)
+	cgp = models.DecimalField(max_digits=3, decimal_places=2, blank=True, null=True)
 
 	def __str__(self):
 		return f"{self.user.username} - Student"

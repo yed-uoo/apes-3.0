@@ -1,55 +1,66 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h3 class="mb-4">Review Abstracts</h3>
+<h3 class="mb-4" style="color: #e5e7eb;">Review Abstracts</h3>
 
-<ul class="nav nav-tabs mb-4" id="abstractTabs" role="tablist">
+<ul class="nav nav-tabs mb-4" id="abstractTabs" role="tablist" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
     <li class="nav-item" role="presentation">
         <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button"
-            role="tab">
-            Pending <span class="badge bg-warning text-dark">{{ pending_abstracts.count }}</span>
+            role="tab" style="color: #9ca3af; border-color: rgba(255, 255, 255, 0.2);">
+            Pending <span class="badge" style="background-color: rgba(234, 179, 8, 0.2); color: #fbbf24; border: 1px solid rgba(251, 146, 60, 0.3);">{{ pending_abstracts.count }}</span>
         </button>
     </li>
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button"
-            role="tab">
-            Guide Approved <span class="badge bg-success">{{ approved_abstracts.count }}</span>
+            role="tab" style="color: #9ca3af; border-color: rgba(255, 255, 255, 0.2);">
+            Guide Approved <span class="badge" style="background-color: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3);">{{ approved_abstracts.count }}</span>
         </button>
     </li>
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button"
-            role="tab">
-            Guide Rejected <span class="badge bg-danger">{{ rejected_abstracts.count }}</span>
+            role="tab" style="color: #9ca3af; border-color: rgba(255, 255, 255, 0.2);">
+            Guide Rejected <span class="badge" style="background-color: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3);">{{ rejected_abstracts.count }}</span>
         </button>
     </li>
 </ul>
+
+<style>
+    .nav-link.active {
+        color: #fdba74 !important;
+        border-bottom-color: #fb923c !important;
+        background-color: rgba(249, 115, 22, 0.1) !important;
+    }
+    .nav-link:hover {
+        color: #fbbf24 !important;
+    }
+</style>
 
 <div class="tab-content" id="abstractTabsContent">
     <!-- Pending Tab -->
     <div class="tab-pane fade show active" id="pending" role="tabpanel">
         {% if pending_abstracts %}
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden;">
                 <thead>
-                    <tr>
-                        <th>Group Leader</th>
-                        <th>Title</th>
-                        <th>Submitted Date</th>
-                        <th>PDF Size</th>
-                        <th>Actions</th>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03);">
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Group Leader</th>
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Title</th>
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Submitted Date</th>
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">PDF Size</th>
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for abstract in pending_abstracts %}
-                    <tr>
-                        <td>{{ abstract.group.leader.username }}</td>
-                        <td><strong>{{ abstract.title }}</strong></td>
-                        <td>{{ abstract.submitted_at|date:"M d, Y H:i" }}</td>
-                        <td>{{ abstract.pdf_size|filesizeformat }}</td>
-                        <td>
-                            <a href="{% url 'review_abstract' abstract.id %}" class="btn btn-sm btn-primary">Review</a>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background-color 0.3s ease;">
+                        <td style="color: #e5e7eb; padding: 12px;">{{ abstract.group.leader.username }}</td>
+                        <td style="color: #e5e7eb; padding: 12px; font-weight: 600;">{{ abstract.title }}</td>
+                        <td style="color: #9ca3af; padding: 12px;">{{ abstract.submitted_at|date:"M d, Y H:i" }}</td>
+                        <td style="color: #9ca3af; padding: 12px;">{{ abstract.pdf_size|filesizeformat }}</td>
+                        <td style="padding: 12px;">
+                            <a href="{% url 'review_abstract' abstract.id %}" class="btn btn-sm" style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.9) 0%, rgba(217, 119, 6, 0.9) 100%); border: 1px solid rgba(249, 115, 22, 0.3); color: #fff; font-weight: 500; padding: 6px 12px; border-radius: 8px; text-decoration: none; display: inline-block; transition: all 0.3s ease;">Review</a>
                             <a href="{% url 'download_abstract' abstract.id %}"
-                                class="btn btn-sm btn-outline-secondary">Download PDF</a>
+                                class="btn btn-sm" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: #e5e7eb; font-weight: 500; padding: 6px 12px; border-radius: 8px; text-decoration: none; display: inline-block; transition: all 0.3s ease;">Download PDF</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -57,7 +68,7 @@
             </table>
         </div>
         {% else %}
-        <div class="alert alert-info">No pending abstracts to review.</div>
+        <div style="background: rgba(3, 102, 214, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #bfdbfe; padding: 12px 16px; border-radius: 12px;">No pending abstracts to review.</div>
         {% endif %}
     </div>
 
@@ -65,28 +76,28 @@
     <div class="tab-pane fade" id="approved" role="tabpanel">
         {% if approved_abstracts %}
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden;">
                 <thead>
-                    <tr>
-                        <th>Group Leader</th>
-                        <th>Title</th>
-                        <th>Submitted Date</th>
-                        <th>Approved Date</th>
-                        <th>Actions</th>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03);">
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Group Leader</th>
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Title</th>
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Submitted Date</th>
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Approved Date</th>
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for abstract in approved_abstracts %}
-                    <tr>
-                        <td>{{ abstract.group.leader.username }}</td>
-                        <td><strong>{{ abstract.title }}</strong></td>
-                        <td>{{ abstract.submitted_at|date:"M d, Y" }}</td>
-                        <td>{{ abstract.reviewed_at|date:"M d, Y" }}</td>
-                        <td>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background-color 0.3s ease;">
+                        <td style="color: #e5e7eb; padding: 12px;">{{ abstract.group.leader.username }}</td>
+                        <td style="color: #e5e7eb; padding: 12px; font-weight: 600;">{{ abstract.title }}</td>
+                        <td style="color: #9ca3af; padding: 12px;">{{ abstract.submitted_at|date:"M d, Y" }}</td>
+                        <td style="color: #9ca3af; padding: 12px;">{{ abstract.reviewed_at|date:"M d, Y" }}</td>
+                        <td style="padding: 12px;">
                             <a href="{% url 'review_abstract' abstract.id %}"
-                                class="btn btn-sm btn-outline-primary">View</a>
+                                class="btn btn-sm" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(249, 115, 22, 0.3); color: #fdba74; font-weight: 500; padding: 6px 12px; border-radius: 8px; text-decoration: none; display: inline-block; transition: all 0.3s ease;">View</a>
                             <a href="{% url 'download_abstract' abstract.id %}"
-                                class="btn btn-sm btn-outline-secondary">Download PDF</a>
+                                class="btn btn-sm" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: #e5e7eb; font-weight: 500; padding: 6px 12px; border-radius: 8px; text-decoration: none; display: inline-block; transition: all 0.3s ease;">Download PDF</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -94,7 +105,7 @@
             </table>
         </div>
         {% else %}
-        <div class="alert alert-info">No guide-approved abstracts yet.</div>
+        <div style="background: rgba(3, 102, 214, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #bfdbfe; padding: 12px 16px; border-radius: 12px;">No guide-approved abstracts yet.</div>
         {% endif %}
     </div>
 
@@ -102,28 +113,28 @@
     <div class="tab-pane fade" id="rejected" role="tabpanel">
         {% if rejected_abstracts %}
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden;">
                 <thead>
-                    <tr>
-                        <th>Group Leader</th>
-                        <th>Title</th>
-                        <th>Submitted Date</th>
-                        <th>Rejected Date</th>
-                        <th>Actions</th>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03);">
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Group Leader</th>
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Title</th>
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Submitted Date</th>
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Rejected Date</th>
+                        <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for abstract in rejected_abstracts %}
-                    <tr>
-                        <td>{{ abstract.group.leader.username }}</td>
-                        <td><strong>{{ abstract.title }}</strong></td>
-                        <td>{{ abstract.submitted_at|date:"M d, Y" }}</td>
-                        <td>{{ abstract.reviewed_at|date:"M d, Y" }}</td>
-                        <td>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background-color 0.3s ease;">
+                        <td style="color: #e5e7eb; padding: 12px;">{{ abstract.group.leader.username }}</td>
+                        <td style="color: #e5e7eb; padding: 12px; font-weight: 600;">{{ abstract.title }}</td>
+                        <td style="color: #9ca3af; padding: 12px;">{{ abstract.submitted_at|date:"M d, Y" }}</td>
+                        <td style="color: #9ca3af; padding: 12px;">{{ abstract.reviewed_at|date:"M d, Y" }}</td>
+                        <td style="padding: 12px;">
                             <a href="{% url 'review_abstract' abstract.id %}"
-                                class="btn btn-sm btn-outline-primary">View</a>
+                                class="btn btn-sm" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; font-weight: 500; padding: 6px 12px; border-radius: 8px; text-decoration: none; display: inline-block; transition: all 0.3s ease;">View</a>
                             <a href="{% url 'download_abstract' abstract.id %}"
-                                class="btn btn-sm btn-outline-secondary">Download PDF</a>
+                                class="btn btn-sm" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: #e5e7eb; font-weight: 500; padding: 6px 12px; border-radius: 8px; text-decoration: none; display: inline-block; transition: all 0.3s ease;">Download PDF</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -131,7 +142,7 @@
             </table>
         </div>
         {% else %}
-        <div class="alert alert-info">No guide-rejected abstracts.</div>
+        <div style="background: rgba(3, 102, 214, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #bfdbfe; padding: 12px 16px; border-radius: 12px;">No guide-rejected abstracts.</div>
         {% endif %}
     </div>
 </div>

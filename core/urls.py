@@ -10,6 +10,7 @@ urlpatterns = [
     path("role-selection/", views.role_selection, name="role_selection"),
     path("profile/", views.profile, name="profile"),
     path("mini-project/", views.mini_project, name="mini_project"),
+    path("sdg-submission/", views.sdg_submission, name="sdg_submission"),
     path("group-requests/", views.group_requests, name="group_requests"),
     # dashboard convenience links
     path("group-members/", views.group_members, name="group_members"),
