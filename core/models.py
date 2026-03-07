@@ -113,6 +113,9 @@ class Abstract(models.Model):
 	pdf_filename = models.CharField(max_length=255, null=True, blank=True)
 	pdf_size = models.IntegerField(null=True, blank=True)
 	status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+	guide_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+	coordinator_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+	is_final_approved = models.BooleanField(default=False)
 	feedback = models.TextField(null=True, blank=True)
 	submitted_at = models.DateTimeField(auto_now_add=True)
 	reviewed_at = models.DateTimeField(null=True, blank=True)
@@ -123,4 +126,56 @@ class Abstract(models.Model):
 
 	def __str__(self):
 		return f"{self.title} - {self.group.leader.username}"
+
+
+class SustainableDevelopmentGoal(models.Model):
+	group = models.OneToOneField(Group, on_delete=models.CASCADE, related_name="sdg")
+	
+	# Project Information
+	project_title = models.CharField(max_length=500, default="", blank=True)
+	project_description = models.TextField(default="", blank=True)
+	
+	# SDG Goals
+	sdg1 = models.CharField(max_length=255, default="", blank=True)
+	sdg1_justification = models.TextField(default="", blank=True)
+	sdg2 = models.CharField(max_length=255, default="", blank=True)
+	sdg2_justification = models.TextField(default="", blank=True)
+	sdg3 = models.CharField(max_length=255, default="", blank=True)
+	sdg3_justification = models.TextField(default="", blank=True)
+	sdg4 = models.CharField(max_length=255, default="", blank=True)
+	sdg4_justification = models.TextField(default="", blank=True)
+	sdg5 = models.CharField(max_length=255, default="", blank=True)
+	sdg5_justification = models.TextField(default="", blank=True)
+	
+	# Work Packages
+	wp1 = models.CharField(max_length=255, default="", blank=True)
+	wp1_justification = models.TextField(default="", blank=True)
+	wp2 = models.CharField(max_length=255, default="", blank=True)
+	wp2_justification = models.TextField(default="", blank=True)
+	wp3 = models.CharField(max_length=255, default="", blank=True)
+	wp3_justification = models.TextField(default="", blank=True)
+	wp4 = models.CharField(max_length=255, default="", blank=True)
+	wp4_justification = models.TextField(default="", blank=True)
+	wp5 = models.CharField(max_length=255, default="", blank=True)
+	wp5_justification = models.TextField(default="", blank=True)
+
+	# Program Outcomes
+	po1 = models.CharField(max_length=100, default="", blank=True)
+	po2 = models.CharField(max_length=100, default="", blank=True)
+	po3 = models.CharField(max_length=100, default="", blank=True)
+	po4 = models.CharField(max_length=100, default="", blank=True)
+	po5 = models.CharField(max_length=100, default="", blank=True)
+	pso1 = models.CharField(max_length=100, default="", blank=True)
+	pso2 = models.CharField(max_length=100, default="", blank=True)
+
+	submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="submitted_sdgs")
+	is_submitted = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return f"SDG - Group {self.group_id}"
+
+	@property
+	def content(self):
+		return f"SDG1: {self.sdg1}\nSDG2: {self.sdg2}\nSDG3: {self.sdg3}\nSDG4: {self.sdg4}\nSDG5: {self.sdg5}"
 

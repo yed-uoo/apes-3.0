@@ -8,6 +8,16 @@
             <a href="{% url 'submit_abstract' %}" class="btn btn-primary">Submit New Abstract</a>
         </div>
 
+        <div class="mb-3">
+            <h6>Selected Topic</h6>
+            {% if selected_topic %}
+            <span class="badge bg-success">Selected</span>
+            <span class="ms-2"><strong>{{ selected_topic.title }}</strong></span>
+            {% else %}
+            <span class="text-muted">No selected topic yet.</span>
+            {% endif %}
+        </div>
+
         {% if abstracts %}
         <div class="card">
             <div class="card-body">
@@ -17,7 +27,9 @@
                             <tr>
                                 <th>Title</th>
                                 <th>Submitted Date</th>
-                                <th>Status</th>
+                                <th>Guide</th>
+                                <th>Coordinator</th>
+                                <th>Final</th>
                                 <th>Reviewed By</th>
                                 <th>Reviewed Date</th>
                                 <th>Actions</th>
@@ -28,18 +40,36 @@
                             <tr>
                                 <td>
                                     <strong>{{ abstract.title }}</strong>
-                                    {% if abstract.status == "pending" %}
+                                    {% if abstract.guide_status == "pending" and abstract.coordinator_status == "pending" %}
                                     <span class="badge bg-warning text-dark ms-2">Latest</span>
                                     {% endif %}
                                 </td>
                                 <td>{{ abstract.submitted_at|date:"M d, Y H:i" }}</td>
                                 <td>
-                                    {% if abstract.status == "pending" %}
-                                    <span class="badge bg-warning text-dark">Pending Review</span>
-                                    {% elif abstract.status == "approved" %}
+                                    {% if abstract.guide_status == "pending" %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    {% elif abstract.guide_status == "approved" %}
                                     <span class="badge bg-success">Approved</span>
                                     {% else %}
                                     <span class="badge bg-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if abstract.coordinator_status == "pending" %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    {% elif abstract.coordinator_status == "approved" %}
+                                    <span class="badge bg-success">Approved</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if abstract.is_final_approved %}
+                                    <span class="badge bg-success">Selected</span>
+                                    {% elif abstract.guide_status == "rejected" or abstract.coordinator_status == "rejected" %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                    {% else %}
+                                    <span class="badge bg-warning text-dark">Not Selected</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -68,13 +98,13 @@
                                 </td>
                             </tr>
                             <tr class="collapse" id="abstract-{{ abstract.id }}">
-                                <td colspan="6" class="bg-light">
+                                <td colspan="8" class="bg-light">
                                     <div class="p-3">
                                         <h6>Abstract Text:</h6>
                                         <p class="mb-3">{{ abstract.abstract_text|linebreaks }}</p>
 
                                         {% if abstract.feedback %}
-                                        {% if abstract.status == "approved" %}
+                                        {% if abstract.guide_status == "approved" or abstract.coordinator_status == "approved" %}
                                         <div class="alert alert-success">
                                             {% else %}
                                             <div class="alert alert-danger">

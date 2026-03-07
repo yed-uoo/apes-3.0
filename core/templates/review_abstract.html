@@ -20,10 +20,19 @@
                         <p><strong>Submitted:</strong> {{ abstract.submitted_at|date:"M d, Y H:i" }}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Status:</strong>
-                            {% if abstract.status == "pending" %}
-                            <span class="badge bg-warning text-dark">Pending Review</span>
-                            {% elif abstract.status == "approved" %}
+                        <p><strong>Guide Status:</strong>
+                            {% if abstract.guide_status == "pending" %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            {% elif abstract.guide_status == "approved" %}
+                            <span class="badge bg-success">Approved</span>
+                            {% else %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </p>
+                        <p><strong>Coordinator Status:</strong>
+                            {% if abstract.coordinator_status == "pending" %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            {% elif abstract.coordinator_status == "approved" %}
                             <span class="badge bg-success">Approved</span>
                             {% else %}
                             <span class="badge bg-danger">Rejected</span>
@@ -73,7 +82,7 @@
         </div>
 
         <!-- Review Form -->
-        {% if abstract.status == "pending" %}
+        {% if abstract.guide_status == "pending" %}
         <div class="card border-warning">
             <div class="card-header bg-warning text-dark">
                 <h5 class="mb-0">Review Decision</h5>
@@ -103,7 +112,7 @@
         </div>
         {% else %}
         <!-- Already Reviewed -->
-        {% if abstract.status == "approved" %}
+        {% if abstract.guide_status == "approved" %}
         <div class="card border-success">
             <div class="card-header bg-success text-white">
                 {% else %}

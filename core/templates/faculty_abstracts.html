@@ -13,13 +13,13 @@
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button"
             role="tab">
-            Approved <span class="badge bg-success">{{ approved_abstracts.count }}</span>
+            Guide Approved <span class="badge bg-success">{{ approved_abstracts.count }}</span>
         </button>
     </li>
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button"
             role="tab">
-            Rejected <span class="badge bg-danger">{{ rejected_abstracts.count }}</span>
+            Guide Rejected <span class="badge bg-danger">{{ rejected_abstracts.count }}</span>
         </button>
     </li>
 </ul>
@@ -94,7 +94,7 @@
             </table>
         </div>
         {% else %}
-        <div class="alert alert-info">No approved abstracts yet.</div>
+        <div class="alert alert-info">No guide-approved abstracts yet.</div>
         {% endif %}
     </div>
 
@@ -131,7 +131,7 @@
             </table>
         </div>
         {% else %}
-        <div class="alert alert-info">No rejected abstracts.</div>
+        <div class="alert alert-info">No guide-rejected abstracts.</div>
         {% endif %}
     </div>
 </div>
