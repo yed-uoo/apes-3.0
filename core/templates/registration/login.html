@@ -1,28 +1,80 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-    <div class="bg-white rounded-4 shadow-sm p-4" style="max-width: 420px; width: 100%;">
-        <div class="text-center mb-4">
+<style>
+    .login-container {
+        min-height: calc(100vh - 100px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .login-card {
+        background: rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(40px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        max-width: 420px;
+        width: 100%;
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .login-header h1 {
+        color: #e5e7eb;
+        font-weight: 700;
+    }
+
+    .login-header p {
+        color: #9ca3af;
+        font-size: 0.875rem;
+    }
+
+    .login-form-label {
+        color: #9ca3af;
+        font-weight: 500;
+    }
+
+    .login-form-text {
+        text-align: center;
+        color: #9ca3af;
+        font-size: 0.875rem;
+    }
+
+    .alert-error {
+        background: rgba(239, 68, 68, 0.1) !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        color: #fca5a5 !important;
+        border-radius: 12px !important;
+    }
+</style>
+
+<div class="login-container">
+    <div class="login-card p-4 p-md-5">
+        <div class="login-header">
             <h1 class="fw-bold fs-3 mb-2">Project Evaluation System</h1>
-            <p class="text-muted small mb-0">Login to your account</p>
+            <p class="mb-0">Login to your account</p>
         </div>
 
         <form method="post">
             {% csrf_token %}
             
             <div class="mb-3">
-                <label for="username" class="form-label fw-semibold">Username</label>
+                <label for="username" class="form-label fw-semibold login-form-label">Username</label>
                 <input type="text" name="username" id="username" class="form-control form-control-lg" required>
             </div>
 
             <div class="mb-3">
-                <label for="password" class="form-label fw-semibold">Password</label>
+                <label for="password" class="form-label fw-semibold login-form-label">Password</label>
                 <input type="password" name="password" id="password" class="form-control form-control-lg" required>
             </div>
 
             {% if form.errors %}
-                <div class="alert alert-danger mb-3">
+                <div class="alert alert-error mb-3">
                     Invalid credentials. Please try again.
                 </div>
             {% endif %}
@@ -32,8 +84,8 @@
             </button>
         </form>
 
-        <div class="text-center mt-4">
-            <p class="text-muted small mb-0">Mini Project Management System</p>
+        <div class="login-form-text mt-4">
+            <p class="mb-0">Mini Project Management System</p>
         </div>
     </div>
 </div>

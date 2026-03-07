@@ -1,8 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="fw-bold fs-3 mb-4">Mini Project Management</h1>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
 
+<<<<<<< HEAD
 <div class="row g-4">
     <!-- Left Sidebar -->
     <div class="col-lg-3">
@@ -202,10 +207,656 @@
                             </div>
                         </div>
                     </div>
+=======
+    .dashboard-container {
+        display: flex;
+        min-height: calc(100vh - 100px);
+        background: transparent;
+        width: 100%;
+    }
 
+    .sidebar {
+        width: 260px;
+        background: rgba(13, 15, 21, 0.95);
+        backdrop-filter: blur(32px);
+        color: #e5e7eb;
+        padding: 30px 0;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 100;
+        flex-shrink: 0;
+    }
+
+    .sidebar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(249, 115, 22, 0) 0%, rgba(249, 115, 22, 0.2) 50%, rgba(249, 115, 22, 0) 100%);
+        pointer-events: none;
+    }
+
+    .sidebar-brand {
+        padding: 0 20px 30px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .sidebar-brand h5 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: #e5e7eb;
+    }
+
+    .sidebar-menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar-menu li {
+        margin: 0;
+    }
+
+    .sidebar-menu a {
+        display: flex;
+        align-items: center;
+        padding: 15px 20px;
+        color: #9ca3af;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+        cursor: pointer;
+    }
+
+    .sidebar-menu a:hover,
+    .sidebar-menu a.active {
+        background: rgba(249, 115, 22, 0.15);
+        color: #fdba74;
+        border-left-color: #fb923c;
+        padding-left: 24px;
+    }
+
+    .sidebar-menu i {
+        margin-right: 12px;
+        font-size: 18px;
+    }
+
+    .main-content {
+        flex: 1;
+        padding: 40px;
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 40px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .page-header h1 {
+        font-size: 32px;
+        font-weight: 700;
+        color: #e5e7eb;
+        margin: 0;
+        text-align: center;
+    }
+
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Card Styles - Glassmorphic */
+    .info-card {
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(40px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .info-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0) 100%);
+        pointer-events: none;
+        opacity: 0.5;
+    }
+
+    .info-card:hover {
+        border-color: rgba(249, 115, 22, 0.3);
+        box-shadow: 0 8px 32px rgba(249, 115, 22, 0.15);
+    }
+
+    .info-card h5 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #e5e7eb;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .info-card i {
+        margin-right: 10px;
+        color: #fb923c;
+        font-size: 20px;
+    }
+
+    .info-card p,
+    .info-card small {
+        position: relative;
+        z-index: 2;
+        color: #9ca3af;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .status-badge.success {
+        background: rgba(34, 197, 94, 0.2);
+        color: #86efac;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .status-badge.warning {
+        background: rgba(251, 146, 60, 0.2);
+        color: #fed7aa;
+        border: 1px solid rgba(251, 146, 60, 0.3);
+    }
+
+    .status-badge.danger {
+        background: rgba(239, 68, 68, 0.2);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .status-badge.info {
+        background: rgba(59, 130, 246, 0.2);
+        color: #bfdbfe;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    /* Form Styles */
+    .form-group-custom {
+        margin-bottom: 20px;
+    }
+
+    .form-group-custom label {
+        font-weight: 600;
+        color: #9ca3af;
+        margin-bottom: 8px;
+        display: block;
+        font-size: 14px;
+    }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.08) !important;
+        backdrop-filter: blur(30px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 12px !important;
+        color: #e5e7eb !important;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+        transition: all 0.3s ease;
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+
+    .form-control::placeholder {
+        color: #6b7280;
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(249, 115, 22, 0.6) !important;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2), inset 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+        color: #e5e7eb !important;
+    }
+
+    .form-select {
+        background: rgba(255, 255, 255, 0.08) !important;
+        backdrop-filter: blur(30px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 12px !important;
+        color: #e5e7eb !important;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .form-select:focus {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(249, 115, 22, 0.6) !important;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2), inset 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+        color: #e5e7eb !important;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.9) 0%, rgba(217, 119, 6, 0.9) 100%) !important;
+        border: 1px solid rgba(249, 115, 22, 0.3) !important;
+        color: white !important;
+        border-radius: 12px !important;
+        padding: 10px 24px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 16px rgba(249, 115, 22, 0.2) !important;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #f97316 0%, #d97706 100%) !important;
+        box-shadow: 0 12px 24px rgba(249, 115, 22, 0.3) !important;
+        transform: translateY(-2px);
+        border-color: rgba(249, 115, 22, 0.5) !important;
+    }
+
+    /* Member List */
+    .member-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .member-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(249, 115, 22, 0.3);
+    }
+
+    .member-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.8) 0%, rgba(217, 119, 6, 0.8) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        margin-right: 12px;
+        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+    }
+
+    .member-info {
+        flex: 1;
+    }
+
+    .member-name {
+        font-weight: 600;
+        color: #e5e7eb;
+        font-size: 14px;
+    }
+
+    .member-role {
+        font-size: 12px;
+        color: #9ca3af;
+    }
+
+    .member-badge {
+        padding: 4px 12px;
+        background: rgba(34, 197, 94, 0.2);
+        color: #86efac;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    /* Alert Styles */
+    .alert {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        backdrop-filter: blur(40px) !important;
+        border-radius: 12px !important;
+        color: #e5e7eb !important;
+    }
+
+    .alert-warning {
+        background: rgba(251, 146, 60, 0.1) !important;
+        border: 1px solid rgba(251, 146, 60, 0.3) !important;
+        color: #fed7aa !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            padding: 20px 0;
+            top: auto;
+            border-right: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            flex-direction: column;
+            min-height: auto;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h5><i class="bi bi-graph-up"></i> APES 3.0</h5>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#group" class="tab-link active"><i class="bi bi-people-fill"></i> Group</a></li>
+            <li><a href="#requests" class="tab-link"><i class="bi bi-inbox"></i> Requests</a></li>
+            <li><a href="#guide" class="tab-link"><i class="bi bi-person-badge"></i> Guide</a></li>
+            <li><a href="#sdg" class="tab-link"><i class="bi bi-globe"></i> SDG</a></li>
+            <li><a href="#abstract" class="tab-link"><i class="bi bi-file-text"></i> Abstract</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Mini Project Management</h1>
+        </div>
+
+        <!-- Group Tab -->
+        <div id="group" class="tab-content active">
+            <!-- Add Group Member -->
+            <div class="info-card">
+                <h5><i class="bi bi-person-plus"></i> Add Group Member</h5>
+                <form class="row g-3 mb-3" method="get">
+                    <div class="col-md-7">
+                        <input type="text" class="form-control" name="q" placeholder="Search by username or email" value="{{ query }}">
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-primary w-100" type="submit"><i class="bi bi-search"></i> Search</button>
+                    </div>
+                </form>
+
+                <form method="post" class="row g-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="send_group_request">
+                    <div class="col-md-8">
+                        <select class="form-control" name="to_user_id" {% if group_full %}disabled{% endif %}>
+                            <option value="">Select user</option>
+                            {% for student in available_students %}
+                            <option value="{{ student.id }}">{{ student.username }} ({{ student.email }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-primary w-100" type="submit" {% if group_full %}disabled{% endif %}>
+                            <i class="bi bi-send"></i> Send Request
+                        </button>
+                    </div>
+                </form>
+                {% if group_full %}
+                <div class="alert alert-warning mt-3 mb-0">
+                    <i class="bi bi-info-circle"></i> Group is locked at 5 members.
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Group Status -->
+            <div class="info-card">
+                <h5><i class="bi bi-info-circle"></i> Group Status</h5>
+                {% if group %}
+                <div style="background: rgba(255, 255, 255, 0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <p style="margin-bottom: 10px; color: #e5e7eb;"><strong>Leader:</strong> {{ group.leader.username }}</p>
+                    <p style="margin-bottom: 10px; color: #e5e7eb;"><strong>Group Size:</strong> {{ group_size }} / 5</p>
+                    {% if group_ready %}
+                    <span class="status-badge success">✓ Eligible to request guide</span>
+                    {% else %}
+                    <span class="status-badge warning">⚠ Minimum size 4 required</span>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p style="color: #9ca3af; margin: 0;">You are not in a group yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- Coordinator Approval -->
+            <div class="info-card">
+                <h5><i class="bi bi-check-circle"></i> Coordinator Approval Status</h5>
+                {% if group and group_ready %}
+                    {% if coordinator_approval %}
+                        {% if coordinator_approval.status == 'pending' %}
+                        <span class="status-badge warning">⏳ Pending</span>
+                        <p style="color: #9ca3af; margin-top: 10px;">Waiting for coordinator approval.</p>
+                        {% elif coordinator_approval.status == 'approved' %}
+                        <span class="status-badge success">✓ Approved</span>
+                        <p style="color: #9ca3af; margin-top: 10px;">Your group has been approved by the coordinator.</p>
+                        {% elif coordinator_approval.status == 'rejected' %}
+                        <span class="status-badge danger">✗ Rejected</span>
+                        <p style="color: #9ca3af; margin-top: 10px;">Your group was rejected. You can request approval again.</p>
+                        {% if is_leader %}
+                        <a class="btn btn-primary mt-3" href="{% url 'request_coordinator_approval' %}">
+                            <i class="bi bi-arrow-repeat"></i> Request Approval Again
+                        </a>
+                        {% endif %}
+                        {% endif %}
+                    {% else %}
+                        {% if is_leader %}
+                        <p style="color: #9ca3af; margin-bottom: 15px;">No coordinator approval requested yet.</p>
+                        <a class="btn btn-primary" href="{% url 'request_coordinator_approval' %}">
+                            <i class="bi bi-plus-circle"></i> Request Coordinator Approval
+                        </a>
+                        {% else %}
+                        <p style="color: #9ca3af;">The group leader needs to request coordinator approval.</p>
+                        {% endif %}
+                    {% endif %}
+                {% elif group %}
+                <p style="color: #9ca3af;">Group must have at least 4 members to request coordinator approval.</p>
+                {% else %}
+                <p style="color: #9ca3af;">Create a group first.</p>
+                {% endif %}
+            </div>
+
+            <!-- Selected Topic -->
+            <div class="info-card">
+                <h5><i class="bi bi-bookmark-star"></i> Selected Topic</h5>
+                {% if selected_topic %}
+                <div style="background: rgba(34, 197, 94, 0.1); padding: 15px; border-radius: 12px; border-left: 4px solid rgba(34, 197, 94, 0.3);">
+                    <span class="status-badge success">Selected</span>
+                    <h6 style="margin: 10px 0 5px 0; font-weight: 600; color: #e5e7eb;">{{ selected_topic.title }}</h6>
+                    <small style="color: #86efac;">Approved on {{ selected_topic.reviewed_at|date:"M d, Y H:i" }}</small>
+                </div>
+                {% else %}
+                <p style="color: #9ca3af; margin: 0;">No selected topic yet. Topic is selected only after guide and coordinator approvals.</p>
+                {% endif %}
+            </div>
+
+            <!-- Assigned Guide -->
+            <div class="info-card">
+                <h5><i class="bi bi-mortarboard"></i> Assigned Guide</h5>
+                {% if assigned_guide %}
+                <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 12px; border-left: 4px solid rgba(59, 130, 246, 0.3);">
+                    <span class="status-badge info">Assigned</span>
+                    <p style="margin: 10px 0 0 0; font-weight: 600; color: #bfdbfe;">{{ assigned_guide.get_full_name|default:assigned_guide.username }}</p>
+                </div>
+                {% else %}
+                <p style="color: #9ca3af; margin: 0;">No guide assigned yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- Group Members -->
+            <div class="info-card">
+                <h5><i class="bi bi-people"></i> Group Members</h5>
+                {% if group_members %}
+                <div>
+                    {% for member in group_members %}
+                    <div class="member-item">
+                        <div class="member-avatar">{{ member.user.username|first|upper }}</div>
+                        <div class="member-info">
+                            <div class="member-name">{{ member.user.username }}</div>
+                            {% if member.user == group.leader %}
+                            <div class="member-role">Group Leader</div>
+                            {% else %}
+                            <div class="member-role">Member</div>
+                            {% endif %}
+                        </div>
+                        {% if member.user == group.leader %}
+                        <span class="member-badge">Leader</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p style="color: #9ca3af; margin: 0;">No members yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Requests Tab -->
+        <div id="requests" class="tab-content">
+            <div class="info-card">
+                <h5><i class="bi bi-inbox"></i> Group Requests</h5>
+                <a class="btn btn-primary mb-3" href="/group-requests/">
+                    <i class="bi bi-arrow-right"></i> View All Requests
+                </a>
+            </div>
+
+            <div class="info-card">
+                <h5><i class="bi bi-send"></i> Sent Requests</h5>
+                {% if sent_requests %}
+                <div>
+                    {% for req in sent_requests %}
+                    <div class="member-item" style="justify-content: space-between;">
+                        <div>
+                            <div class="member-name">{{ req.recipient.username }}</div>
+                            <div class="member-role">{{ req.recipient.email }}</div>
+                        </div>
+                        <span class="status-badge {% if req.status == 'accepted' %}success{% elif req.status == 'pending' %}warning{% else %}danger{% endif %}">
+                            {{ req.status|upper }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p style="color: #9ca3af; margin: 0;">No requests sent.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Guide Tab -->
+        <div id="guide" class="tab-content">
+            <div class="info-card">
+                <h5><i class="bi bi-person-badge"></i> Request Guide</h5>
+                <p style="color: #9ca3af; margin-bottom: 20px;">Submit a request to assign a guide to your group.</p>
+                <a class="btn btn-primary" href="/guide-request/">
+                    <i class="bi bi-arrow-right"></i> Request Guide
+                </a>
+            </div>
+        </div>
+
+        <!-- SDG Tab -->
+        <div id="sdg" class="tab-content">
+            <div class="info-card">
+                <h5><i class="bi bi-globe"></i> Sustainable Development Goals (SDG)</h5>
+                
+                {% if selected_sdgs %}
+                    <p style="color: #9ca3af; margin-bottom: 20px;"><strong>Selected SDG Goals:</strong></p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                        {% for sdg in selected_sdgs %}
+                        <div style="background: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.3); border-radius: 8px; padding: 15px; display: flex; align-items: center; gap: 12px;">
+                            <div style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.8) 0%, rgba(217, 119, 6, 0.8) 100%); color: white; width: 45px; height: 45px; min-width: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem;">
+                                {{ sdg.number }}
+                            </div>
+                            <div>
+                                <p style="color: #fdba74; font-weight: 600; margin-bottom: 4px; font-size: 0.9rem;">SDG #{{ sdg.number }}</p>
+                                <p style="color: #e5e7eb; margin: 0; font-size: 0.85rem;">{{ sdg.name }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if is_leader %}
+                    <a class="btn btn-outline-secondary btn-sm" href="{% url 'sdg_submission' %}">
+                        <i class="bi bi-pencil"></i> Edit SDG Selection
+                    </a>
+                    {% endif %}
+                {% else %}
+                    <p style="color: #9ca3af; margin-bottom: 20px;">Submit your project's SDG alignment and work packages.</p>
+                    <a class="btn btn-primary" href="{% url 'sdg_submission' %}">
+                        <i class="bi bi-arrow-right"></i> Go to SDG Submission
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+>>>>>>> 6257406cfeef8d19d9faeb763a634ff639bd471c
+
+        <!-- Abstract Tab -->
+        <div id="abstract" class="tab-content">
+            <div class="info-card">
+                <h5><i class="bi bi-file-text"></i> Project Abstract</h5>
+                <p style="color: #9ca3af; margin-bottom: 20px;">Submit your project abstract and review status.</p>
+                <div style="display: flex; gap: 10px;">
+                    <a class="btn btn-primary" href="{% url 'submit_abstract' %}">
+                        <i class="bi bi-plus-circle"></i> Submit Abstract
+                    </a>
+                    <a class="btn btn-primary" href="{% url 'abstract_status' %}" style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.9) 0%, rgba(217, 119, 6, 0.9) 100%); border: 1px solid rgba(249, 115, 22, 0.3);">
+                        <i class="bi bi-info-circle"></i> View Status
+                    </a>
                 </div>
             </div>
         </div>
+<<<<<<< HEAD
 
         <!-- Group Tab -->
         <div class="tab-pane fade" id="group" role="tabpanel">
@@ -1051,4 +1702,29 @@
     }
 </style>
 
+=======
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.tab-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all tabs and links
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-link').forEach(l => {
+                l.classList.remove('active');
+            });
+            
+            // Add active class to clicked link and corresponding tab
+            const tabId = this.getAttribute('href').substring(1);
+            document.getElementById(tabId).classList.add('active');
+            this.classList.add('active');
+        });
+    });
+</script>
+>>>>>>> 6257406cfeef8d19d9faeb763a634ff639bd471c
 {% endblock %}

@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .sdg-container {
+        background: rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(40px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 12px !important;
+        padding: 30px;
+        color: #e5e7eb;
+    }
+
+    .sdg-title {
+        color: #e5e7eb;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .sdg-subtitle {
+        color: #9ca3af;
+        margin-bottom: 30px;
+        font-size: 0.95rem;
+    }
+
+    .sdg-selection-group {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .sdg-selection-label {
+        color: #f3f4f6;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: #e5e7eb !important;
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.12) !important;
+        border-color: rgba(249, 115, 22, 0.5) !important;
+        color: #e5e7eb !important;
+        box-shadow: 0 0 0 0.2rem rgba(249, 115, 22, 0.25) !important;
+    }
+
+    .form-control option {
+        background: #1f2937;
+        color: #e5e7eb;
+    }
+
+    .form-control option:checked {
+        background: linear-gradient(#f97316, #f97316);
+    }
+
+    .info-text {
+        color: #9ca3af;
+        font-size: 0.9rem;
+        margin-top: 5px;
+        margin-bottom: 20px;
+    }
+
+    .btn-action {
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.9) 0%, rgba(217, 119, 6, 0.9) 100%) !important;
+        border: 1px solid rgba(249, 115, 22, 0.3) !important;
+        color: white !important;
+        font-weight: 600;
+    }
+
+    .btn-action:hover {
+        background: linear-gradient(135deg, #f97316 0%, #d97706 100%) !important;
+    }
+
+    .validation-message {
+        color: #fca5a5;
+        font-size: 0.9rem;
+        margin-top: 5px;
+        display: none;
+    }
+
+    .validation-message.show {
+        display: block;
+    }
+
+    .success-message {
+        background: rgba(34, 197, 94, 0.2) !important;
+        border: 1px solid rgba(34, 197, 94, 0.3) !important;
+        color: #86efac;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .sdg-description {
+        color: #9ca3af;
+        font-size: 0.85rem;
+        margin-top: 8px;
+        font-style: italic;
+    }
+
+    .selected-sdgs-display {
+        background: rgba(249, 115, 22, 0.1);
+        border: 1px solid rgba(249, 115, 22, 0.3);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        display: none;
+    }
+
+    .selected-sdgs-display.show {
+        display: block;
+    }
+
+    .selected-sdg-badge {
+        display: inline-block;
+        background: rgba(249, 115, 22, 0.3);
+        border: 1px solid rgba(249, 115, 22, 0.5);
+        color: #fdba74;
+        padding: 6px 12px;
+        border-radius: 20px;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+</style>
+
+<h3 class="mb-4" style="color: #e5e7eb; font-weight: 700;">Sustainable Development Goals (SDG) Submission</h3>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% if sdg_submission and sdg_submission.is_submitted %}
+<div class="success-message">
+    <strong>✓ SDG already submitted</strong> for your group. Thank you for completing the SDG alignment!
+</div>
+<div style="text-align: center; margin-top: 30px;">
+    <a class="btn btn-outline-secondary" href="{% url 'mini_project' %}">Back to Mini Project</a>
+</div>
+{% else %}
+
+{% if not can_submit_sdg %}
+<div class="alert alert-warning" role="alert">
+    <strong>Note:</strong> You need to meet the following requirements to submit SDG:
+    <ul class="mb-0 mt-2">
+        <li>Be the group leader</li>
+        <li>Have a group formed (minimum 4 members)</li>
+        <li>Have coordinator approval for your group</li>
+    </ul>
+</div>
+<div style="text-align: center; margin-top: 30px;">
+    <a class="btn btn-outline-secondary" href="{% url 'mini_project' %}">Back to Mini Project</a>
+</div>
+{% else %}
+
+<div class="sdg-container">
+    <h5 class="sdg-subtitle">Select 4-5 Sustainable Development Goals (SDGs) that align with your project</h5>
+
+    <form method="post" id="sdgForm" onsubmit="return validateSDGSelection()">
+        {% csrf_token %}
+
+        <div class="selected-sdgs-display" id="selectedDisplay">
+            <strong style="color: #fdba74;">Selected SDGs:</strong>
+            <div id="selectedBadgesContainer" style="margin-top: 10px;"></div>
+        </div>
+
+        <!-- SDG Selection Fields -->
+        {% for i in "01234" %}
+        <div class="sdg-selection-group">
+            <label class="sdg-selection-label">SDG Goal {{ forloop.counter }} {% if forloop.counter <= 4 %}<span style="color: #ef4444;">*</span>{% endif %}</label>
+            <select class="form-control sdg-select" name="sdg{{ forloop.counter }}" data-sdg-number="{{ forloop.counter }}">
+                <option value="">-- Select a Goal --</option>
+                <option value="1">1. No Poverty – End poverty in all its forms everywhere.</option>
+                <option value="2">2. Zero Hunger – End hunger, achieve food security, improve nutrition.</option>
+                <option value="3">3. Good Health and Well-being – Ensure healthy lives and promote well-being for all.</option>
+                <option value="4">4. Quality Education – Ensure inclusive and equitable quality education.</option>
+                <option value="5">5. Gender Equality – Achieve gender equality and empower all women and girls.</option>
+                <option value="6">6. Clean Water and Sanitation – Ensure availability and sustainable management of water.</option>
+                <option value="7">7. Affordable and Clean Energy – Ensure access to affordable, reliable, sustainable energy.</option>
+                <option value="8">8. Decent Work and Economic Growth – Promote sustained, inclusive economic growth.</option>
+                <option value="9">9. Industry, Innovation and Infrastructure – Build resilient infrastructure and foster innovation.</option>
+                <option value="10">10. Reduced Inequalities – Reduce inequality within and among countries.</option>
+                <option value="11">11. Sustainable Cities and Communities – Make cities inclusive, safe, resilient.</option>
+                <option value="12">12. Responsible Consumption and Production – Ensure sustainable consumption patterns.</option>
+                <option value="13">13. Climate Action – Take urgent action to combat climate change.</option>
+                <option value="14">14. Life Below Water – Conserve and sustainably use oceans and marine resources.</option>
+                <option value="15">15. Life on Land – Protect and promote sustainable use of terrestrial ecosystems.</option>
+                <option value="16">16. Peace, Justice and Strong Institutions – Promote peaceful and inclusive societies.</option>
+                <option value="17">17. Partnerships for the Goals – Strengthen global partnerships.</option>
+            </select>
+            <div class="info-text">
+                {% if forloop.counter <= 4 %}
+                    Required (minimum 4 selections needed)
+                {% else %}
+                    Optional (select up to 5 goals)
+                {% endif %}
+            </div>
+            <div class="validation-message" id="error{{ forloop.counter }}"></div>
+        </div>
+        {% endfor %}
+
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+            <p style="color: #9ca3af; margin-bottom: 0; font-size: 0.9rem;">
+                <strong>Selection Summary:</strong> <span id="selectedCount" style="color: #fdba74;">0</span> / 5 goals selected
+                <span id="selectionStatus" style="color: #f87171; margin-left: 15px;"></span>
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-action">Submit SDG Selection</button>
+            <a href="{% url 'mini_project' %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    const sdgGoals = {
+        '1': 'No Poverty',
+        '2': 'Zero Hunger',
+        '3': 'Good Health and Well-being',
+        '4': 'Quality Education',
+        '5': 'Gender Equality',
+        '6': 'Clean Water and Sanitation',
+        '7': 'Affordable and Clean Energy',
+        '8': 'Decent Work and Economic Growth',
+        '9': 'Industry, Innovation and Infrastructure',
+        '10': 'Reduced Inequalities',
+        '11': 'Sustainable Cities and Communities',
+        '12': 'Responsible Consumption and Production',
+        '13': 'Climate Action',
+        '14': 'Life Below Water',
+        '15': 'Life on Land',
+        '16': 'Peace, Justice and Strong Institutions',
+        '17': 'Partnerships for the Goals'
+    };
+
+    const sdgSelects = document.querySelectorAll('.sdg-select');
+
+    // Update selected SDGs display and count
+    function updateSDGDisplay() {
+        const selectedSDGs = [];
+        sdgSelects.forEach(select => {
+            if (select.value) {
+                selectedSDGs.push({
+                    value: select.value,
+                    label: sdgGoals[select.value]
+                });
+            }
+        });
+
+        const selectedCount = selectedSDGs.length;
+        document.getElementById('selectedCount').textContent = selectedCount;
+
+        const selectedDisplay = document.getElementById('selectedDisplay');
+        const badgesContainer = document.getElementById('selectedBadgesContainer');
+
+        if (selectedCount > 0) {
+            selectedDisplay.classList.add('show');
+            badgesContainer.innerHTML = selectedSDGs.map(sdg => 
+                `<span class="selected-sdg-badge">SDG #${sdg.value}: ${sdg.label}</span>`
+            ).join('');
+        } else {
+            selectedDisplay.classList.remove('show');
+            badgesContainer.innerHTML = '';
+        }
+
+        // Update selection status
+        const statusSpan = document.getElementById('selectionStatus');
+        if (selectedCount < 4) {
+            statusSpan.textContent = `(Need ${4 - selectedCount} more)`;
+            statusSpan.style.color = '#f87171';
+        } else if (selectedCount >= 4 && selectedCount <= 5) {
+            statusSpan.textContent = '✓ Valid selection';
+            statusSpan.style.color = '#86efac';
+        } else {
+            statusSpan.textContent = 'Maximum 5 goals allowed';
+            statusSpan.style.color = '#f87171';
+        }
+    }
+
+    // Validate SDG selection
+    function validateSDGSelection() {
+        // Clear previous errors
+        document.querySelectorAll('.validation-message').forEach(el => {
+            el.classList.remove('show');
+            el.textContent = '';
+        });
+
+        const selectedSDGs = [];
+        const selectedValues = new Set();
+
+        sdgSelects.forEach((select, index) => {
+            if (select.value) {
+                selectedSDGs.push(select.value);
+                selectedValues.add(select.value);
+            }
+        });
+
+        // Check for duplicates
+        if (selectedValues.size !== selectedSDGs.length) {
+            alert('Error: Cannot select the same SDG goal multiple times.');
+            return false;
+        }
+
+        // Check minimum selection
+        if (selectedSDGs.length < 4) {
+            alert(`Error: You must select at least 4 SDG goals. Currently selected: ${selectedSDGs.length}`);
+            return false;
+        }
+
+        // Check maximum selection
+        if (selectedSDGs.length > 5) {
+            alert('Error: You can select a maximum of 5 SDG goals.');
+            return false;
+        }
+
+        return true;
+    }
+
+    // Prevent selecting duplicate SDGs
+    sdgSelects.forEach((select, index) => {
+        select.addEventListener('change', function() {
+            const selectedValue = this.value;
+            let isDuplicate = false;
+
+            // Check if this value is already selected in another dropdown
+            sdgSelects.forEach((otherSelect, otherIndex) => {
+                if (index !== otherIndex && otherSelect.value === selectedValue && selectedValue !== '') {
+                    isDuplicate = true;
+                }
+            });
+
+            if (isDuplicate) {
+                alert('This SDG goal is already selected. Please choose a different goal.');
+                this.value = '';
+            }
+
+            updateSDGDisplay();
+        });
+    });
+
+    // Initial display update
+    updateSDGDisplay();
+</script>
+
+{% endif %}
+{% endif %}
+
+{% endblock %}
