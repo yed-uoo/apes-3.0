@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-=wyu1pj9betbypq&%xox(i94lo4$=#v7em!e#2u4^j$+nigbxg
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 
 # Application definition
@@ -44,6 +44,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "core.middleware.EnsureCSRFCookieMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -125,6 +126,15 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB in bytes
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
+
+# Local dev cookie settings to avoid collisions across multiple Django apps
+# running on localhost/127.0.0.1 in the same browser profile.
+SESSION_COOKIE_NAME = 'apes3_sessionid'
+CSRF_COOKIE_NAME = 'apes3_csrftoken'
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+]
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

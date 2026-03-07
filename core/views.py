@@ -211,6 +211,33 @@ def mini_project(request):
 		and (not sdg_submission or not sdg_submission.is_submitted)
 	)
 
+	selected_sdgs = []
+	selected_wps = []
+	po_pso_pairs = []
+	if sdg_submission:
+		for i in range(1, 6):
+			title = getattr(sdg_submission, f'sdg{i}', '').strip()
+			if title:
+				selected_sdgs.append({
+					'number': i,
+					'title': title,
+					'justification': getattr(sdg_submission, f'sdg{i}_justification', '').strip(),
+				})
+		for i in range(1, 6):
+			title = getattr(sdg_submission, f'wp{i}', '').strip()
+			if title:
+				selected_wps.append({
+					'number': i,
+					'title': title,
+					'justification': getattr(sdg_submission, f'wp{i}_justification', '').strip(),
+				})
+		po_pso_pairs = [
+			('PO1', sdg_submission.po1), ('PO2', sdg_submission.po2),
+			('PO3', sdg_submission.po3), ('PO4', sdg_submission.po4),
+			('PO5', sdg_submission.po5), ('PSO1', sdg_submission.pso1),
+			('PSO2', sdg_submission.pso2),
+		]
+
 	context = {
 		"group": group,
 		"is_leader": is_leader,
@@ -223,6 +250,9 @@ def mini_project(request):
 		"query": query,
 		"coordinator_approval": coordinator_approval,
 		"sdg_submission": sdg_submission,
+		"selected_sdgs": selected_sdgs,
+		"selected_wps": selected_wps,
+		"po_pso_pairs": po_pso_pairs,
 		"assigned_guide": assigned_guide,
 		"can_submit_sdg": can_submit_sdg,
 		"selected_topic": selected_topic,
