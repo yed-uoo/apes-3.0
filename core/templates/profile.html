@@ -164,11 +164,43 @@
                         <span class="fw-semibold profile-item-label">Department:</span>
                         <span class="profile-item-value">{{ student_profile.department|default:"Not set" }}</span>
                     </li>
+                    
+                    <li class="list-group-item d-flex justify-content-between align-items-start border-0 px-0 py-3" style="background: transparent;">
+                        <span class="fw-semibold profile-item-label">CGP:</span>
+                        <span class="profile-item-value">{{ student_profile.cgp|default:"Not set" }}</span>
+                    </li>
                 </ul>
                 
                 <div class="alert profile-alert mt-3">
                     <small>Academic information can only be updated by administrators.</small>
                 </div>
+                
+                {% if selected_sdgs %}
+                <div class="section-divider my-4"></div>
+                <h6 class="fw-semibold mb-3 section-title">Selected SDG Goals</h6>
+                
+                <div class="row">
+                    {% for sdg in selected_sdgs %}
+                    <div class="col-12 mb-3">
+                        <div style="background: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.3); border-radius: 8px; padding: 12px 16px;">
+                            <div class="d-flex align-items-center">
+                                <span style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.8) 0%, rgba(217, 119, 6, 0.8) 100%); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-right: 12px; flex-shrink: 0;">
+                                    {{ sdg.number }}
+                                </span>
+                                <div>
+                                    <p class="mb-0" style="color: #fdba74; font-weight: 600;">SDG #{{ sdg.number }}</p>
+                                    <p class="mb-0 profile-item-value">{{ sdg.name }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% elif student_group %}
+                <div class="section-divider my-4"></div>
+                <h6 class="fw-semibold mb-3 section-title">Selected SDG Goals</h6>
+                <p class="profile-item-label">No SDG goals selected yet.</p>
+                {% endif %}
                 {% endif %}
 
                 {% if faculty_profile %}
