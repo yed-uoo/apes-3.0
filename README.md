@@ -1,4 +1,4 @@
-# Project Evaluation System
+# Project Hub
 
 Minimal Django project for student mini project workflow.
 

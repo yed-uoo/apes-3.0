@@ -4,77 +4,76 @@
 <div class="row">
     <div class="col-lg-10 mx-auto">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3>Review Abstract</h3>
-            <a href="{% url 'faculty_abstracts' %}" class="btn btn-outline-secondary">← Back to List</a>
+            <h3 style="color: #e5e7eb;">Review Abstract</h3>
+            <a href="{% url 'faculty_abstracts' %}" class="btn" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: #e5e7eb; font-weight: 500; padding: 8px 16px; border-radius: 8px; text-decoration: none; transition: all 0.3s ease;">← Back to List</a>
         </div>
 
         <!-- Abstract Details -->
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">{{ abstract.title }}</h5>
+        <div style="background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; margin-bottom: 24px; overflow: hidden;">
+            <div style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.9) 0%, rgba(217, 119, 6, 0.9) 100%); padding: 16px; border-bottom: 1px solid rgba(249, 115, 22, 0.3);">
+                <h5 style="margin: 0; color: #fff;">{{ abstract.title }}</h5>
             </div>
-            <div class="card-body">
+            <div style="padding: 24px;">
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <p><strong>Group Leader:</strong> {{ abstract.group.leader.username }}</p>
-                        <p><strong>Submitted:</strong> {{ abstract.submitted_at|date:"M d, Y H:i" }}</p>
+                        <p style="color: #e5e7eb; margin-bottom: 8px;"><strong style="color: #fdba74;">Group Leader:</strong> <span style="color: #9ca3af;">{{ abstract.group.leader.username }}</span></p>
+                        <p style="color: #e5e7eb; margin-bottom: 8px;"><strong style="color: #fdba74;">Submitted:</strong> <span style="color: #9ca3af;">{{ abstract.submitted_at|date:"M d, Y H:i" }}</span></p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Guide Status:</strong>
+                        <p style="color: #e5e7eb; margin-bottom: 8px;"><strong style="color: #fdba74;">Guide Status:</strong>
                             {% if abstract.guide_status == "pending" %}
-                            <span class="badge bg-warning text-dark">Pending</span>
+                            <span style="background-color: rgba(234, 179, 8, 0.2); color: #fbbf24; border: 1px solid rgba(251, 146, 60, 0.3); padding: 4px 8px; border-radius: 6px; display: inline-block;">Pending</span>
                             {% elif abstract.guide_status == "approved" %}
-                            <span class="badge bg-success">Approved</span>
+                            <span style="background-color: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); padding: 4px 8px; border-radius: 6px; display: inline-block;">Approved</span>
                             {% else %}
-                            <span class="badge bg-danger">Rejected</span>
+                            <span style="background-color: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); padding: 4px 8px; border-radius: 6px; display: inline-block;">Rejected</span>
                             {% endif %}
                         </p>
-                        <p><strong>Coordinator Status:</strong>
+                        <p style="color: #e5e7eb; margin-bottom: 8px;"><strong style="color: #fdba74;">Coordinator Status:</strong>
                             {% if abstract.coordinator_status == "pending" %}
-                            <span class="badge bg-warning text-dark">Pending</span>
+                            <span style="background-color: rgba(234, 179, 8, 0.2); color: #fbbf24; border: 1px solid rgba(251, 146, 60, 0.3); padding: 4px 8px; border-radius: 6px; display: inline-block;">Pending</span>
                             {% elif abstract.coordinator_status == "approved" %}
-                            <span class="badge bg-success">Approved</span>
+                            <span style="background-color: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); padding: 4px 8px; border-radius: 6px; display: inline-block;">Approved</span>
                             {% else %}
-                            <span class="badge bg-danger">Rejected</span>
+                            <span style="background-color: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); padding: 4px 8px; border-radius: 6px; display: inline-block;">Rejected</span>
                             {% endif %}
                         </p>
-                        <p><strong>PDF File:</strong> {{ abstract.pdf_filename }} ({{ abstract.pdf_size|filesizeformat
-                            }})</p>
+                        <p style="color: #e5e7eb; margin-bottom: 0;"><strong style="color: #fdba74;">PDF File:</strong> <span style="color: #9ca3af;">{{ abstract.pdf_filename }} ({{ abstract.pdf_size|filesizeformat }})</span></p>
                     </div>
                 </div>
 
-                <h6>Group Members:</h6>
-                <table class="table table-sm table-bordered mb-3">
+                <h6 style="color: #e5e7eb; margin-top: 16px; margin-bottom: 12px;">Group Members:</h6>
+                <table style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; overflow: hidden; width: 100%;">
                     <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Name</th>
-                            <th>Roll No</th>
-                            <th>Role</th>
+                        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03);">
+                            <th style="color: #9ca3af; font-weight: 600; padding: 10px;">Username</th>
+                            <th style="color: #9ca3af; font-weight: 600; padding: 10px;">Name</th>
+                            <th style="color: #9ca3af; font-weight: 600; padding: 10px;">Roll No</th>
+                            <th style="color: #9ca3af; font-weight: 600; padding: 10px;">Role</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for member in group_members %}
-                        <tr>
-                            <td>{{ member.user.username }}</td>
-                            <td>{{ member.user.first_name }} {{ member.user.last_name }}</td>
-                            <td>{{ member.user.student_profile.roll_number|default:"-" }}</td>
-                            <td>{% if member.user == abstract.group.leader %}<span
-                                    class="badge bg-info text-dark">Leader</span>{% else %}Member{% endif %}</td>
+                        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                            <td style="color: #e5e7eb; padding: 10px;">{{ member.user.username }}</td>
+                            <td style="color: #e5e7eb; padding: 10px;">{{ member.user.first_name }} {{ member.user.last_name }}</td>
+                            <td style="color: #9ca3af; padding: 10px;">{{ member.user.student_profile.roll_number|default:"-" }}</td>
+                            <td style="padding: 10px;">{% if member.user == abstract.group.leader %}<span
+                                    style="background-color: rgba(59, 130, 246, 0.2); color: #bfdbfe; border: 1px solid rgba(59, 130, 246, 0.3); padding: 4px 8px; border-radius: 6px; display: inline-block;">Leader</span>{% else %}<span style="color: #9ca3af;">Member</span>{% endif %}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
 
-                <hr>
+                <hr style="border-color: rgba(255, 255, 255, 0.1); margin: 20px 0;">
 
-                <h6>Abstract Text:</h6>
-                <div class="p-3 bg-light rounded">
+                <h6 style="color: #e5e7eb; margin-bottom: 12px;">Abstract Text:</h6>
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 16px; border-radius: 8px; color: #9ca3af;">
                     {{ abstract.abstract_text|linebreaks }}
                 </div>
 
-                <div class="mt-3">
-                    <a href="{% url 'download_abstract' abstract.id %}" class="btn btn-outline-primary">
+                <div style="margin-top: 16px;">
+                    <a href="{% url 'download_abstract' abstract.id %}" class="btn" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(249, 115, 22, 0.3); color: #fdba74; font-weight: 500; padding: 8px 16px; border-radius: 8px; text-decoration: none; display: inline-block; transition: all 0.3s ease;">
                         📄 Download PDF
                     </a>
                 </div>
@@ -83,27 +82,26 @@
 
         <!-- Review Form -->
         {% if abstract.guide_status == "pending" %}
-        <div class="card border-warning">
-            <div class="card-header bg-warning text-dark">
-                <h5 class="mb-0">Review Decision</h5>
+        <div style="background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(40px); border: 1px solid rgba(234, 179, 8, 0.2); border-radius: 16px; overflow: hidden;">
+            <div style="background: linear-gradient(135deg, rgba(234, 179, 8, 0.9) 0%, rgba(217, 119, 6, 0.9) 100%); padding: 16px; border-bottom: 1px solid rgba(234, 179, 8, 0.3);">
+                <h5 style="margin: 0; color: #000;">Review Decision</h5>
             </div>
-            <div class="card-body">
+            <div style="padding: 24px;">
                 <form method="post" id="reviewForm">
                     {% csrf_token %}
 
-                    <div class="mb-3">
-                        <label for="feedback" class="form-label">Feedback (Optional for approval, Required for
-                            rejection)</label>
-                        <textarea class="form-control" id="feedback" name="feedback" rows="5"
-                            placeholder="Provide feedback to the students..."></textarea>
-                        <div class="form-text">Your feedback will be visible to all group members.</div>
+                    <div style="margin-bottom: 16px;">
+                        <label for="feedback" style="display: block; color: #e5e7eb; font-weight: 500; margin-bottom: 8px;">Feedback (Optional for approval, Required for rejection)</label>
+                        <textarea id="feedback" name="feedback" rows="5"
+                            placeholder="Provide feedback to the students..." style="width: 100%; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: #e5e7eb; padding: 12px; border-radius: 8px; font-family: inherit; box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3); transition: all 0.3s ease;"></textarea>
+                        <div style="color: #9ca3af; font-size: 0.875rem; margin-top: 6px;">Your feedback will be visible to all group members.</div>
                     </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" name="action" value="approve" class="btn btn-success">
+                    <div style="display: flex; gap: 12px;">
+                        <button type="submit" name="action" value="approve" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.9) 0%, rgba(22, 163, 74, 0.9) 100%); border: 1px solid rgba(34, 197, 94, 0.3); color: #fff; font-weight: 500; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
                             ✓ Approve Abstract
                         </button>
-                        <button type="submit" name="action" value="reject" class="btn btn-danger" id="rejectBtn">
+                        <button type="submit" name="action" value="reject" id="rejectBtn" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.9) 100%); border: 1px solid rgba(239, 68, 68, 0.3); color: #fff; font-weight: 500; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
                             ✗ Reject Abstract
                         </button>
                     </div>
@@ -113,25 +111,25 @@
         {% else %}
         <!-- Already Reviewed -->
         {% if abstract.guide_status == "approved" %}
-        <div class="card border-success">
-            <div class="card-header bg-success text-white">
+        <div style="background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(40px); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 16px; overflow: hidden;">
+            <div style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.9) 0%, rgba(22, 163, 74, 0.9) 100%); padding: 16px; border-bottom: 1px solid rgba(34, 197, 94, 0.3);">
                 {% else %}
-                <div class="card border-danger">
-                    <div class="card-header bg-danger text-white">
+                <div style="background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(40px); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 16px; overflow: hidden;">
+                    <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.9) 100%); padding: 16px; border-bottom: 1px solid rgba(239, 68, 68, 0.3);">
                         {% endif %}
-                        <h5 class="mb-0">Review Completed</h5>
+                        <h5 style="margin: 0; color: #fff;">Review Completed</h5>
                     </div>
-                    <div class="card-body">
-                        <p><strong>Reviewed By:</strong> {{ abstract.reviewed_by.username }}</p>
-                        <p><strong>Reviewed On:</strong> {{ abstract.reviewed_at|date:"M d, Y H:i" }}</p>
+                    <div style="padding: 24px;">
+                        <p style="color: #e5e7eb; margin-bottom: 8px;"><strong style="color: #fdba74;">Reviewed By:</strong> <span style="color: #9ca3af;">{{ abstract.reviewed_by.username }}</span></p>
+                        <p style="color: #e5e7eb; margin-bottom: 8px;"><strong style="color: #fdba74;">Reviewed On:</strong> <span style="color: #9ca3af;">{{ abstract.reviewed_at|date:"M d, Y H:i" }}</span></p>
 
                         {% if abstract.feedback %}
-                        <h6>Feedback Provided:</h6>
-                        <div class="p-3 bg-light rounded">
+                        <h6 style="color: #e5e7eb; margin-top: 16px; margin-bottom: 12px;">Feedback Provided:</h6>
+                        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 16px; border-radius: 8px; color: #9ca3af;">
                             {{ abstract.feedback|linebreaks }}
                         </div>
                         {% else %}
-                        <p class="text-muted">No feedback provided.</p>
+                        <p style="color: #9ca3af;">No feedback provided.</p>
                         {% endif %}
                     </div>
                 </div>

@@ -1,10 +1,182 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h3 class="mb-4">Student Dashboard</h3>
-<div class="d-flex gap-3 flex-wrap">
-    <a class="btn btn-primary" href="/mini-project/">Mini Project</a>
-    <button class="btn btn-outline-secondary" disabled>Main Project (Placeholder)</button>
-    <button class="btn btn-outline-secondary" disabled>Course Project (Placeholder)</button>
+<style>
+    .dashboard-title {
+        color: #e5e7eb;
+        font-weight: 700;
+    }
+
+    .project-card {
+        transition: all 0.3s ease;
+        border: none !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(40px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 16px !important;
+    }
+
+    .project-card:hover {
+        border-color: rgba(249, 115, 22, 0.3) !important;
+        box-shadow: 0 8px 32px rgba(249, 115, 22, 0.15) !important;
+        transform: translateY(-4px);
+    }
+
+    .project-card .card-body {
+        color: #e5e7eb;
+    }
+
+    .project-card h5 {
+        color: #e5e7eb;
+        font-weight: 600;
+    }
+
+    .project-card .text-muted {
+        color: #9ca3af !important;
+    }
+
+    .icon-bg {
+        background: rgba(249, 115, 22, 0.1) !important;
+        border-radius: 12px;
+    }
+
+    .badge-coming {
+        background: rgba(107, 114, 128, 0.2) !important;
+        color: #d1d5db !important;
+        border: 1px solid rgba(107, 114, 128, 0.3);
+    }
+</style>
+
+<h1 class="fw-bold fs-3 mb-4 dashboard-title">Dashboard</h1>
+
+<div class="row g-4">
+    <!-- Mini Project Card -->
+    <div class="col-md-4">
+        <a href="/mini-project/" class="text-decoration-none" style="transition: 0.2s;">
+            <div class="card project-card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-3 icon-bg p-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="text-warning" viewBox="0 0 16 16">
+                                <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold mb-2">Mini Project</h5>
+                    <p class="text-muted small mb-0">Manage your mini project submissions and team collaboration</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Main Project Card -->
+    <div class="col-md-4">
+        <div class="card project-card shadow-sm h-100" style="opacity: 0.7;">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-3 icon-bg p-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" style="color: #9ca3af;" viewBox="0 0 16 16">
+                            <path d="M4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4zm0 1h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
+                        </svg>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-2">Main Project</h5>
+                <p class="text-muted small mb-2">Comprehensive capstone project work</p>
+                <span class="badge badge-coming">Coming Soon</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Project Card -->
+    <div class="col-md-4">
+        <div class="card project-card shadow-sm h-100" style="opacity: 0.7;">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-3 icon-bg p-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" style="color: #9ca3af;" viewBox="0 0 16 16">
+                            <path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.917l-7.5-3.5Z"/>
+                        </svg>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-2">Course Project</h5>
+                <p class="text-muted small mb-2">Subject-specific project assignments</p>
+                <span class="badge badge-coming">Coming Soon</span>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+/* Sidebar Styles */
+.nav-link {
+    color: #4b5563;
+    transition: all 0.2s ease-in-out;
+    font-weight: 500;
+    font-size: 0.95rem;
+    border: 1px solid transparent;
+}
+
+.nav-link:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+    transform: translateX(4px);
+}
+
+.nav-link.active {
+    background-color: #dc3545;
+    color: white !important;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+}
+
+.nav-link i {
+    width: 20px;
+    text-align: center;
+}
+
+/* Card Hover Effect */
+.hover-lift {
+    transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Timeline Styles */
+.timeline-item {
+    position: relative;
+}
+
+.timeline-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 23px;
+    top: 48px;
+    bottom: -16px;
+    width: 2px;
+    background: linear-gradient(to bottom, #e5e7eb, #f3f4f6);
+}
+
+/* Badge Styles */
+.badge {
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav-link {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    .nav-link i {
+        font-size: 1rem !important;
+    }
+}
+</style>
+
 {% endblock %}

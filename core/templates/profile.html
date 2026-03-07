@@ -1,131 +1,225 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h3 class="mb-4">User Profile</h3>
+<style>
+    .profile-header {
+        color: #e5e7eb;
+        font-weight: 700;
+    }
 
-<div class="card">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Profile Information</h5>
-    </div>
-    <div class="card-body">
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <strong>First Name:</strong>
+    .profile-card {
+        background: rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(40px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 16px !important;
+    }
+
+    .profile-card .card-header {
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.8) 0%, rgba(217, 119, 6, 0.8) 100%) !important;
+        border: none !important;
+        border-radius: 15px 15px 0 0 !important;
+        color: white !important;
+    }
+
+    .profile-card .card-body {
+        color: #e5e7eb;
+    }
+
+    .profile-item-label {
+        color: #9ca3af !important;
+        font-weight: 500;
+    }
+
+    .profile-item-value {
+        color: #e5e7eb !important;
+        font-weight: 500;
+    }
+
+    .profile-card .badge {
+        font-weight: 600;
+    }
+
+    .badge-student {
+        background: rgba(59, 130, 246, 0.2) !important;
+        color: #bfdbfe !important;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .badge-guide {
+        background: rgba(34, 197, 94, 0.2) !important;
+        color: #86efac !important;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .badge-coordinator {
+        background: rgba(251, 146, 60, 0.2) !important;
+        color: #fed7aa !important;
+        border: 1px solid rgba(251, 146, 60, 0.3);
+    }
+
+    .badge-no-role {
+        background: rgba(107, 114, 128, 0.2) !important;
+        color: #d1d5db !important;
+        border: 1px solid rgba(107, 114, 128, 0.3);
+    }
+
+    .profile-alert {
+        background: rgba(59, 130, 246, 0.1) !important;
+        border: 1px solid rgba(59, 130, 246, 0.3) !important;
+        color: #bfdbfe !important;
+    }
+
+    .back-button {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: #e5e7eb !important;
+        backdrop-filter: blur(30px) !important;
+    }
+
+    .back-button:hover {
+        background: rgba(255, 255, 255, 0.12) !important;
+        border-color: rgba(249, 115, 22, 0.4) !important;
+    }
+
+    .section-divider {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .section-title {
+        color: #e5e7eb;
+        font-weight: 600;
+    }
+</style>
+
+<h1 class="fw-bold fs-3 mb-4 profile-header">Profile</h1>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card profile-card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0 fw-semibold">Profile Information</h5>
             </div>
-            <div class="col-md-8">
-                {{ user.first_name|default:"Not set" }}
-            </div>
-        </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <strong>Last Name:</strong>
-            </div>
-            <div class="col-md-8">
-                {{ user.last_name|default:"Not set" }}
-            </div>
-        </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <strong>Username:</strong>
-            </div>
-            <div class="col-md-8">
-                {{ user.username }}
-            </div>
-        </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <strong>Email:</strong>
-            </div>
-            <div class="col-md-8">
-                {{ user.email }}
-            </div>
-        </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <strong>Role:</strong>
-            </div>
-            <div class="col-md-8">
-                {% if is_student %}
-                    <span class="badge bg-info">Student</span>
-                {% elif is_guide and is_coordinator %}
-                    <span class="badge bg-success">Guide</span>
-                    <span class="badge bg-warning text-dark">Coordinator</span>
-                {% elif is_guide %}
-                    <span class="badge bg-success">Guide</span>
-                {% elif is_coordinator %}
-                    <span class="badge bg-warning text-dark">Coordinator</span>
-                {% else %}
-                    <span class="badge bg-secondary">No Role Assigned</span>
+            <div class="card-body p-4">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-start border-0 px-0 py-3" style="background: transparent;">
+                        <span class="fw-semibold profile-item-label">First Name:</span>
+                        <span class="profile-item-value">{{ user.first_name|default:"Not set" }}</span>
+                    </li>
+                    
+                    <li class="list-group-item d-flex justify-content-between align-items-start border-0 px-0 py-3" style="background: transparent;">
+                        <span class="fw-semibold profile-item-label">Last Name:</span>
+                        <span class="profile-item-value">{{ user.last_name|default:"Not set" }}</span>
+                    </li>
+                    
+                    <li class="list-group-item d-flex justify-content-between align-items-start border-0 px-0 py-3" style="background: transparent;">
+                        <span class="fw-semibold profile-item-label">Username:</span>
+                        <span class="profile-item-value">{{ user.username }}</span>
+                    </li>
+                    
+                    <li class="list-group-item d-flex justify-content-between align-items-start border-0 px-0 py-3" style="background: transparent;">
+                        <span class="fw-semibold profile-item-label">Email:</span>
+                        <span class="profile-item-value">{{ user.email }}</span>
+                    </li>
+                    
+                    <li class="list-group-item d-flex justify-content-between align-items-start border-0 px-0 py-3" style="background: transparent;">
+                        <span class="fw-semibold profile-item-label">Role:</span>
+                        <div>
+                            {% if is_student %}
+                                <span class="badge badge-student">Student</span>
+                            {% elif is_guide and is_coordinator %}
+                                <span class="badge badge-guide">Guide</span>
+                                <span class="badge badge-coordinator">Coordinator</span>
+                            {% elif is_guide %}
+                                <span class="badge badge-guide">Guide</span>
+                            {% elif is_coordinator %}
+                                <span class="badge badge-coordinator">Coordinator</span>
+                            {% else %}
+                                <span class="badge badge-no-role">No Role Assigned</span>
+                            {% endif %}
+                        </div>
+                    </li>
+                </ul>
+
+                {% if is_student and student_profile %}
+                <div class="section-divider my-4"></div>
+                <h6 class="fw-semibold mb-3 section-title">Academic Information</h6>
+                
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-start border-0 px-0 py-3" style="background: transparent;">
+                        <span class="fw-semibold profile-item-label">Class:</span>
+                        <span class="profile-item-value">{{ student_profile.class_name|default:"Not set" }}</span>
+                    </li>
+                    
+                    <li class="list-group-item d-flex justify-content-between align-items-start border-0 px-0 py-3" style="background: transparent;">
+                        <span class="fw-semibold profile-item-label">Roll Number:</span>
+                        <span class="profile-item-value">{{ student_profile.roll_number|default:"Not set" }}</span>
+                    </li>
+                    
+                    <li class="list-group-item d-flex justify-content-between align-items-start border-0 px-0 py-3" style="background: transparent;">
+                        <span class="fw-semibold profile-item-label">Register Number:</span>
+                        <span class="profile-item-value">{{ student_profile.register_number|default:"Not set" }}</span>
+                    </li>
+                    
+                    <li class="list-group-item d-flex justify-content-between align-items-start border-0 px-0 py-3" style="background: transparent;">
+                        <span class="fw-semibold profile-item-label">Department:</span>
+                        <span class="profile-item-value">{{ student_profile.department|default:"Not set" }}</span>
+                    </li>
+                    
+                    <li class="list-group-item d-flex justify-content-between align-items-start border-0 px-0 py-3" style="background: transparent;">
+                        <span class="fw-semibold profile-item-label">CGP:</span>
+                        <span class="profile-item-value">{{ student_profile.cgp|default:"Not set" }}</span>
+                    </li>
+                </ul>
+                
+                <div class="alert profile-alert mt-3">
+                    <small>Academic information can only be updated by administrators.</small>
+                </div>
+                
+                {% if selected_sdgs %}
+                <div class="section-divider my-4"></div>
+                <h6 class="fw-semibold mb-3 section-title">Selected SDG Goals</h6>
+                
+                <div class="row">
+                    {% for sdg in selected_sdgs %}
+                    <div class="col-12 mb-3">
+                        <div style="background: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.3); border-radius: 8px; padding: 12px 16px;">
+                            <div class="d-flex align-items-center">
+                                <span style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.8) 0%, rgba(217, 119, 6, 0.8) 100%); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-right: 12px; flex-shrink: 0;">
+                                    {{ sdg.number }}
+                                </span>
+                                <div>
+                                    <p class="mb-0" style="color: #fdba74; font-weight: 600;">SDG #{{ sdg.number }}</p>
+                                    <p class="mb-0 profile-item-value">{{ sdg.name }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% elif student_group %}
+                <div class="section-divider my-4"></div>
+                <h6 class="fw-semibold mb-3 section-title">Selected SDG Goals</h6>
+                <p class="profile-item-label">No SDG goals selected yet.</p>
+                {% endif %}
+                {% endif %}
+
+                {% if faculty_profile %}
+                <div class="section-divider my-4"></div>
+                <h6 class="fw-semibold mb-3 section-title">Faculty Information</h6>
+                
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-start border-0 px-0 py-3" style="background: transparent;">
+                        <span class="fw-semibold profile-item-label">Department:</span>
+                        <span class="profile-item-value">{{ faculty_profile.department|default:"Not set" }}</span>
+                    </li>
+                </ul>
                 {% endif %}
             </div>
         </div>
 
-        {% if is_student and student_profile %}
-        <hr>
-        <h6 class="mb-3">Academic Information</h6>
-        
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <strong>Class:</strong>
-            </div>
-            <div class="col-md-8">
-                {{ student_profile.class_name|default:"Not set" }}
-            </div>
+        <div class="mt-4">
+            <a class="btn back-button px-4 py-2 fw-semibold" href="{% url 'dashboard' %}">Back to Dashboard</a>
         </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <strong>Roll Number:</strong>
-            </div>
-            <div class="col-md-8">
-                {{ student_profile.roll_number|default:"Not set" }}
-            </div>
-        </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <strong>Register Number:</strong>
-            </div>
-            <div class="col-md-8">
-                {{ student_profile.register_number|default:"Not set" }}
-            </div>
-        </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <strong>Department:</strong>
-            </div>
-            <div class="col-md-8">
-                {{ student_profile.department|default:"Not set" }}
-            </div>
-        </div>
-        
-        <div class="alert alert-info mt-3">
-            <small>Academic information can only be updated by administrators.</small>
-        </div>
-        {% endif %}
-
-        {% if faculty_profile %}
-        <hr>
-        <h6 class="mb-3">Faculty Information</h6>
-        
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <strong>Department:</strong>
-            </div>
-            <div class="col-md-8">
-                {{ faculty_profile.department|default:"Not set" }}
-            </div>
-        </div>
-        {% endif %}
     </div>
-</div>
-
-<div class="mt-3">
-    <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Back to Dashboard</a>
 </div>
 {% endblock %}

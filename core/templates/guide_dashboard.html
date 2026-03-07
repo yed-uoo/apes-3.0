@@ -1,24 +1,97 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h3 class="mb-4">Guide Dashboard</h3>
-<div class="d-flex gap-3 flex-wrap">
-    <a class="btn btn-primary" href="/guide-requests/">Guide Requests</a>
-    <a class="btn btn-success" href="{% url 'faculty_abstracts' %}">Review Abstracts</a>
+<style>
+    .dashboard-title {
+        color: #e5e7eb;
+        font-weight: 700;
+    }
+
+    .guide-card {
+        background: rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(40px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 12px !important;
+    }
+
+    .guide-card h6 {
+        color: #e5e7eb;
+        font-weight: 600;
+    }
+
+    .guide-card p {
+        color: #9ca3af;
+    }
+
+    .guide-item-label {
+        color: #e5e7eb;
+        font-weight: 600;
+    }
+
+    .btn-action {
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.9) 0%, rgba(217, 119, 6, 0.9) 100%) !important;
+        border: 1px solid rgba(249, 115, 22, 0.3) !important;
+        color: white !important;
+    }
+
+    .btn-action:hover {
+        background: linear-gradient(135deg, #f97316 0%, #d97706 100%) !important;
+    }
+</style>
+
+<h3 class="mb-4 dashboard-title">Guide Dashboard</h3>
+<div class="d-flex gap-3 flex-wrap mb-4">
+    <a class="btn btn-action" href="/guide-requests/">Guide Requests</a>
+    <a class="btn btn-action" href="{% url 'faculty_abstracts' %}">Review Abstracts</a>
 </div>
 
 <div class="mt-4">
-    <h5>Assigned Group SDGs</h5>
+    <h5 style="color: #e5e7eb;">Assigned Group SDGs</h5>
     {% if assigned_groups %}
     <div class="list-group">
         {% for item in assigned_groups %}
-        <div class="list-group-item">
+        <div class="list-group-item guide-card">
             <h6 class="mb-2">Group Leader: {{ item.group.leader.username }}</h6>
-            {% if item.sdg %}
-            <span class="badge bg-success mb-2">Submitted</span>
-            <p class="mb-0" style="white-space: pre-line;">{{ item.sdg.content }}</p>
+            {% if item.sdg and item.sdg.is_submitted %}
+            <span class="badge badge-success mb-2">Submitted</span>
+            {% if item.sdg.created_at %}
+            <div class="mb-2">
+                <small class="text-muted">Submitted: {{ item.sdg.created_at|date:"M d, Y H:i" }}</small>
+            </div>
+            {% endif %}
+
+            {% if item.sdg.sdg1 %}
+            <div class="mb-3">
+                <p class="mb-1"><span class="guide-item-label">SDG:</span> {{ item.sdg.sdg1 }}</p>
+                <p class="mb-0"><span class="guide-item-label">Justification:</span><br>{{ item.sdg.sdg1_justification|default:"-" }}</p>
+            </div>
+            {% endif %}
+            {% if item.sdg.sdg2 %}
+            <div class="mb-3">
+                <p class="mb-1"><span class="guide-item-label">SDG:</span> {{ item.sdg.sdg2 }}</p>
+                <p class="mb-0"><span class="guide-item-label">Justification:</span><br>{{ item.sdg.sdg2_justification|default:"-" }}</p>
+            </div>
+            {% endif %}
+            {% if item.sdg.sdg3 %}
+            <div class="mb-3">
+                <p class="mb-1"><span class="guide-item-label">SDG:</span> {{ item.sdg.sdg3 }}</p>
+                <p class="mb-0"><span class="guide-item-label">Justification:</span><br>{{ item.sdg.sdg3_justification|default:"-" }}</p>
+            </div>
+            {% endif %}
+            {% if item.sdg.sdg4 %}
+            <div class="mb-3">
+                <p class="mb-1"><span class="guide-item-label">SDG:</span> {{ item.sdg.sdg4 }}</p>
+                <p class="mb-0"><span class="guide-item-label">Justification:</span><br>{{ item.sdg.sdg4_justification|default:"-" }}</p>
+            </div>
+            {% endif %}
+            {% if item.sdg.sdg5 %}
+            <div class="mb-0">
+                <p class="mb-1"><span class="guide-item-label">SDG:</span> {{ item.sdg.sdg5 }}</p>
+                <p class="mb-0"><span class="guide-item-label">Justification:</span><br>{{ item.sdg.sdg5_justification|default:"-" }}</p>
+            </div>
+            {% endif %}
             {% else %}
-            <span class="badge bg-secondary">Not Submitted</span>
+            <span class="badge badge-secondary">Not Submitted</span>
             {% endif %}
         </div>
         {% endfor %}

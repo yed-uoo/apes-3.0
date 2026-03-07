@@ -1,18 +1,62 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row justify-content-center mt-5">
+<style>
+    .role-section {
+        min-height: calc(100vh - 150px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .role-card {
+        background: rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(40px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 16px !important;
+        color: #e5e7eb;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+    }
+
+    .role-card .card-body {
+        color: #e5e7eb;
+    }
+
+    .role-title {
+        color: #e5e7eb;
+        font-weight: 600;
+    }
+
+    .role-text {
+        color: #9ca3af;
+    }
+
+    .role-button {
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.9) 0%, rgba(217, 119, 6, 0.9) 100%) !important;
+        border: 1px solid rgba(249, 115, 22, 0.3) !important;
+        color: white !important;
+        font-weight: 600;
+        border-radius: 12px !important;
+    }
+
+    .role-button:hover {
+        background: linear-gradient(135deg, #f97316 0%, #d97706 100%) !important;
+        box-shadow: 0 12px 24px rgba(249, 115, 22, 0.3) !important;
+    }
+</style>
+
+<div class="role-section">
     <div class="col-md-6">
-        <div class="card shadow">
+        <div class="card role-card shadow-sm">
             <div class="card-body text-center p-5">
-                <h4 class="card-title mb-3">Welcome, {{ user.first_name|default:user.username }}!</h4>
-                <p class="text-muted mb-4">You have multiple roles. Please select how you'd like to proceed:</p>
-                <form method="post" class="d-flex justify-content-center gap-3">
+                <h4 class="role-title mb-3">Welcome, {{ user.first_name|default:user.username }}!</h4>
+                <p class="role-text mb-4">You have multiple roles. Please select how you'd like to proceed:</p>
+                <form method="post" class="d-flex justify-content-center gap-3 flex-wrap">
                     {% csrf_token %}
-                    <button type="submit" name="role" value="guide" class="btn btn-primary btn-lg px-4">
+                    <button type="submit" name="role" value="guide" class="btn role-button px-4">
                         Enter as Guide
                     </button>
-                    <button type="submit" name="role" value="coordinator" class="btn btn-success btn-lg px-4">
+                    <button type="submit" name="role" value="coordinator" class="btn role-button px-4">
                         Enter as Coordinator
                     </button>
                 </form>
