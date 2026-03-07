@@ -2,14 +2,27 @@
 
 {% block content %}
 <style>
+    /* Hide base template navbar for mini project */
+    .navbar {
+        display: none !important;
+    }
+
     body {
         margin: 0;
         padding: 0;
+        overflow-x: hidden;
+    }
+
+    /* Remove base template container padding for full-width layout */
+    .container {
+        padding: 0 !important;
+        max-width: none !important;
+        margin: 0 !important;
     }
 
     .dashboard-container {
         display: flex;
-        min-height: calc(100vh - 100px);
+        min-height: 100vh;
         background: transparent;
         margin-left: 260px;
     }
@@ -22,11 +35,11 @@
         padding: 30px 0;
         position: fixed;
         left: 0;
-        top: 100px;
-        height: calc(100vh - 100px);
+        top: 0;
+        height: 100vh;
         overflow-y: auto;
         border-right: 1px solid rgba(255, 255, 255, 0.1);
-        z-index: 100;
+        z-index: 1000;
     }
 
     .sidebar::before {
@@ -365,6 +378,10 @@
 
     /* Responsive */
     @media (max-width: 768px) {
+        .navbar {
+            display: flex !important;
+        }
+
         .sidebar {
             width: 100%;
             height: auto;
@@ -373,21 +390,26 @@
             top: auto;
             border-right: none;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
         }
 
         .main-content {
-            margin-left: 0;
             padding: 20px;
         }
 
         .dashboard-container {
             flex-direction: column;
             min-height: auto;
+            margin-left: 0;
         }
 
         .page-header {
             flex-direction: column;
             align-items: flex-start;
+        }
+
+        .container {
+            padding: 0 15px !important;
         }
     }
 </style>
@@ -396,7 +418,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-brand">
-            <h5><i class="bi bi-graph-up"></i> APES 3.0</h5>
+            <h5><i class="bi bi-graph-up"></i> Project Hub</h5>
         </div>
         <ul class="sidebar-menu">
             <li><a href="#group" class="tab-link active"><i class="bi bi-people-fill"></i> Group</a></li>
@@ -642,11 +664,17 @@
         <div id="abstract" class="tab-content">
             <div class="info-card">
                 <h5><i class="bi bi-file-text"></i> Project Abstract</h5>
+                {% if selected_topic %}
+                <p style="color: #86efac; margin-bottom: 20px;">Abstract already selected: <strong style="color: #e5e7eb;">{{ selected_topic.title }}</strong></p>
+                {% else %}
                 <p style="color: #9ca3af; margin-bottom: 20px;">Submit your project abstract and review status.</p>
+                {% endif %}
                 <div style="display: flex; gap: 10px;">
+                    {% if not selected_topic %}
                     <a class="btn btn-primary" href="{% url 'submit_abstract' %}">
                         <i class="bi bi-plus-circle"></i> Submit Abstract
                     </a>
+                    {% endif %}
                     <a class="btn btn-primary" href="{% url 'abstract_status' %}" style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.9) 0%, rgba(217, 119, 6, 0.9) 100%); border: 1px solid rgba(249, 115, 22, 0.3);">
                         <i class="bi bi-info-circle"></i> View Status
                     </a>

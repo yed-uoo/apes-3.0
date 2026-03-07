@@ -587,6 +587,11 @@ def submit_abstract(request):
 		messages.error(request, "Your group must have an accepted guide before submitting an abstract.")
 		return redirect("guide_request")
 
+	selected_topic = Abstract.objects.filter(group=group, is_final_approved=True).order_by("-submitted_at").first()
+	if selected_topic and request.method == "POST":
+		messages.info(request, "Abstract already selected. New submissions are not allowed for this group.")
+		return redirect("abstract_status")
+
 	if request.method == "POST":
 		title = request.POST.get("title", "").strip()
 		abstract_text = request.POST.get("abstract_text", "").strip()
@@ -635,6 +640,7 @@ def submit_abstract(request):
 	context = {
 		"group": group,
 		"guide": guide,
+		"selected_topic": selected_topic,
 		"previous_abstracts": previous_abstracts,
 	}
 	return render(request, "submit_abstract.html", context)
@@ -761,11 +767,6 @@ def review_abstract(request, abstract_id):
 	return render(request, "review_abstract.html", context)
 
 
-@login_required
-def download_abstract(request, abstract_id):
-	abstract = get_object_or_404(Abstract, id=abstract_id)
-
-	# Check access: either student in the group or assigned faculty
 @login_required
 def download_abstract(request, abstract_id):
 	abstract = get_object_or_404(Abstract, id=abstract_id)

@@ -34,6 +34,48 @@
     .text-danger {
         color: #fca5a5 !important;
     }
+
+    .form-card .form-label {
+        color: #e5e7eb;
+        font-weight: 600;
+    }
+
+    .form-card .form-control {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: #e5e7eb !important;
+    }
+
+    .form-card .form-control::placeholder {
+        color: #9ca3af;
+    }
+
+    .form-card .form-control:focus {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(249, 115, 22, 0.6) !important;
+        box-shadow: 0 0 0 0.2rem rgba(249, 115, 22, 0.2) !important;
+        color: #e5e7eb !important;
+    }
+
+    .form-card input[type="file"]::file-selector-button {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #e5e7eb;
+        border-radius: 8px;
+        margin-right: 10px;
+    }
+
+    .recent-table {
+        --bs-table-color: #e5e7eb;
+        --bs-table-bg: transparent;
+        --bs-table-border-color: rgba(255, 255, 255, 0.1);
+        margin-bottom: 0;
+    }
+
+    .recent-table > :not(caption) > * > * {
+        background-color: transparent !important;
+        box-shadow: none !important;
+    }
 </style>
 
 <div class="row">
@@ -50,6 +92,14 @@
 
         <div class="card form-card">
             <div class="card-body">
+                {% if selected_topic %}
+                <h5 class="card-title">Abstract Already Selected</h5>
+                <div class="alert" style="background: rgba(34, 197, 94, 0.1) !important; border: 1px solid rgba(34, 197, 94, 0.3) !important; color: #86efac !important; border-radius: 12px !important;">
+                    <strong>Selected Topic:</strong> {{ selected_topic.title }}
+                    <div style="margin-top: 6px; color: #86efac;">This group already has a final approved abstract. New submissions are not allowed.</div>
+                </div>
+                <a href="{% url 'abstract_status' %}" class="btn btn-primary">View Submission Status</a>
+                {% else %}
                 <h5 class="card-title">Submit New Abstract</h5>
                 <form method="post" enctype="multipart/form-data" id="abstractForm">
                     {% csrf_token %}
@@ -80,6 +130,7 @@
                         <a href="{% url 'abstract_status' %}" class="btn btn-outline-secondary">View Submission History</a>
                     </div>
                 </form>
+                {% endif %}
             </div>
         </div>
 
@@ -88,7 +139,7 @@
             <div class="card-body">
                 <h5 class="card-title">Recent Submissions</h5>
                 <div class="table-responsive">
-                    <table class="table table-sm" style="color: #e5e7eb;">
+                    <table class="table table-sm recent-table" style="color: #e5e7eb;">
                         <thead style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                             <tr>
                                 <th style="color: #f3f4f6; font-weight: 600; border: none;">Title</th>
@@ -105,27 +156,27 @@
                                 <td style="color: #e5e7eb; border: none;">{{ abstract.submitted_at|date:"M d, Y" }}</td>
                                 <td style="color: #e5e7eb; border: none;">
                                     {% if abstract.guide_status == "pending" %}
-                                        <span class="badge badge-warning">Pending</span>
+                                        <span class="badge bg-warning text-dark">Pending</span>
                                     {% elif abstract.guide_status == "approved" %}
-                                        <span class="badge badge-success">Approved</span>
+                                        <span class="badge bg-success">Approved</span>
                                     {% else %}
-                                        <span class="badge badge-danger">Rejected</span>
+                                        <span class="badge bg-danger">Rejected</span>
                                     {% endif %}
                                 </td>
                                 <td style="color: #e5e7eb; border: none;">
                                     {% if abstract.coordinator_status == "pending" %}
-                                        <span class="badge badge-warning">Pending</span>
+                                        <span class="badge bg-warning text-dark">Pending</span>
                                     {% elif abstract.coordinator_status == "approved" %}
-                                        <span class="badge badge-success">Approved</span>
+                                        <span class="badge bg-success">Approved</span>
                                     {% else %}
-                                        <span class="badge badge-danger">Rejected</span>
+                                        <span class="badge bg-danger">Rejected</span>
                                     {% endif %}
                                 </td>
                                 <td style="color: #e5e7eb; border: none;">
                                     {% if abstract.is_final_approved %}
-                                    <span class="badge badge-success">Selected</span>
+                                    <span class="badge bg-success">Selected</span>
                                     {% else %}
-                                    <span class="badge badge-warning">Not Selected</span>
+                                    <span class="badge bg-warning text-dark">Not Selected</span>
                                     {% endif %}
                                 </td>
                             </tr>
