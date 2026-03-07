@@ -1,44 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-<<<<<<< HEAD
-<div class="row g-0 vh-100">
-    <!-- Sidebar -->
-    <div class="col-md-3 col-lg-2 bg-white border-end shadow-sm" style="min-height: 100vh;">
-        <div class="position-sticky" style="top: 0; padding-top: 1.5rem;">
-            <div class="px-3 py-2">
-                <h6 class="text-uppercase text-secondary fw-semibold mb-4 px-3" style="font-size: 0.7rem; letter-spacing: 1px;">NAVIGATION</h6>
-                <nav class="nav flex-column gap-1">
-                    <a class="nav-link active d-flex align-items-center px-3 py-2 rounded-3 mb-1" href="{% url 'dashboard' %}">
-                        <i class="bi bi-speedometer2 me-3" style="font-size: 1.1rem;"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a class="nav-link d-flex align-items-center px-3 py-2 rounded-3 mb-1" href="{% url 'mini_project' %}">
-                        <i class="bi bi-people me-3" style="font-size: 1.1rem;"></i>
-                        <span>Group Members</span>
-                    </a>
-                    <a class="nav-link d-flex align-items-center px-3 py-2 rounded-3 mb-1" href="{% url 'guide_request' %}">
-                        <i class="bi bi-person-badge me-3" style="font-size: 1.1rem;"></i>
-                        <span>Guide Request</span>
-                    </a>
-                    <a class="nav-link d-flex align-items-center px-3 py-2 rounded-3 mb-1" href="{% url 'abstract_status' %}">
-                        <i class="bi bi-file-text me-3" style="font-size: 1.1rem;"></i>
-                        <span>Abstract Status</span>
-                    </a>
-                    <a class="nav-link d-flex align-items-center px-3 py-2 rounded-3 mb-1 position-relative" href="{% url 'group_requests' %}">
-                        <i class="bi bi-envelope me-3" style="font-size: 1.1rem;"></i>
-                        <span>Requests</span>
-                        {% if pending_requests_count > 0 %}
-                        <span class="badge bg-danger rounded-pill ms-auto">{{ pending_requests_count }}</span>
-                        {% endif %}
-                    </a>
-                    <hr class="my-3 mx-3">
-                    <a class="nav-link d-flex align-items-center px-3 py-2 rounded-3 mb-1" href="{% url 'profile' %}">
-                        <i class="bi bi-person me-3" style="font-size: 1.1rem;"></i>
-                        <span>Profile</span>
-                    </a>
-                </nav>
-=======
 <style>
     .dashboard-title {
         color: #e5e7eb;
@@ -121,107 +83,10 @@
                 <h5 class="fw-bold mb-2">Main Project</h5>
                 <p class="text-muted small mb-2">Comprehensive capstone project work</p>
                 <span class="badge badge-coming">Coming Soon</span>
->>>>>>> 6257406cfeef8d19d9faeb763a634ff639bd471c
             </div>
         </div>
     </div>
 
-<<<<<<< HEAD
-    <!-- Main Content -->
-    <div class="col-md-9 col-lg-10 bg-light overflow-auto" style="height: 100vh;">
-        <div class="p-4 p-lg-5">
-            <!-- Welcome Header -->
-            <div class="mb-5">
-                <h2 class="fw-bold mb-2" style="font-size: 2rem;">Hello, {{ user.first_name|default:user.username }}! 👋</h2>
-                <p class="text-muted mb-0" style="font-size: 0.95rem;">Welcome to your Student Dashboard</p>
-            </div>
-
-            <!-- Quick Action Cards -->
-            <div class="row g-4 mb-5">
-                <!-- Group Members Card -->
-                <div class="col-md-6 col-lg-4">
-                    <div class="card shadow-sm border-0 rounded-4 h-100 hover-lift">
-                        <div class="card-body p-4 d-flex flex-column">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="bg-primary bg-opacity-10 rounded-3 p-3 me-3">
-                                    <i class="bi bi-people-fill text-primary" style="font-size: 1.5rem;"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-semibold mb-1">Group Members</h6>
-                                    <p class="text-muted small mb-0">Manage your team</p>
-                                </div>
-                            </div>
-                            {% if group %}
-                            <div class="bg-light rounded-3 p-3 mb-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted small">Current Size</span>
-                                    <strong class="text-primary" style="font-size: 1.25rem;">{{ group_size }}/5</strong>
-                                </div>
-                            </div>
-                            {% else %}
-                            <div class="alert alert-info py-2 px-3 mb-3 small">
-                                <i class="bi bi-info-circle me-1"></i>No group yet
-                            </div>
-                            {% endif %}
-                            <a href="{% url 'mini_project' %}" class="btn btn-danger mt-auto w-100">
-                                <i class="bi bi-arrow-right-circle me-2"></i>Manage Group
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Request Guide Card -->
-                <div class="col-md-6 col-lg-4">
-                    <div class="card shadow-sm border-0 rounded-4 h-100 hover-lift">
-                        <div class="card-body p-4 d-flex flex-column">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="bg-success bg-opacity-10 rounded-3 p-3 me-3">
-                                    <i class="bi bi-person-badge-fill text-success" style="font-size: 1.5rem;"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-semibold mb-1">Guide Request</h6>
-                                    <p class="text-muted small mb-0">Request faculty guide</p>
-                                </div>
-                            </div>
-                            {% if group_ready %}
-                            <div class="alert alert-success py-2 px-3 mb-3 small">
-                                <i class="bi bi-check-circle-fill me-1"></i>Group ready
-                            </div>
-                            {% else %}
-                            <div class="alert alert-warning py-2 px-3 mb-3 small">
-                                <i class="bi bi-exclamation-triangle-fill me-1"></i>Need 4+ members
-                            </div>
-                            {% endif %}
-                            <a href="{% url 'guide_request' %}" class="btn btn-danger mt-auto w-100">
-                                <i class="bi bi-arrow-right-circle me-2"></i>Request Guide
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Abstract Status Card -->
-                <div class="col-md-6 col-lg-4">
-                    <div class="card shadow-sm border-0 rounded-4 h-100 hover-lift">
-                        <div class="card-body p-4 d-flex flex-column">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="bg-info bg-opacity-10 rounded-3 p-3 me-3">
-                                    <i class="bi bi-file-earmark-text-fill text-info" style="font-size: 1.5rem;"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-semibold mb-1">Abstract Status</h6>
-                                    <p class="text-muted small mb-0">Track your abstract</p>
-                                </div>
-                            </div>
-                            <div class="bg-light rounded-3 p-3 mb-3">
-                                <p class="text-muted small mb-0">Submit and monitor your project proposal</p>
-                            </div>
-                            <a href="{% url 'abstract_status' %}" class="btn btn-danger mt-auto w-100">
-                                <i class="bi bi-arrow-right-circle me-2"></i>View Status
-                            </a>
-                        </div>
-                    </div>
-                </div>
-=======
     <!-- Course Project Card -->
     <div class="col-md-4">
         <div class="card project-card shadow-sm h-100" style="opacity: 0.7;">
@@ -236,7 +101,6 @@
                 <h5 class="fw-bold mb-2">Course Project</h5>
                 <p class="text-muted small mb-2">Subject-specific project assignments</p>
                 <span class="badge badge-coming">Coming Soon</span>
->>>>>>> 6257406cfeef8d19d9faeb763a634ff639bd471c
             </div>
 
         <!-- Project Status Section -->
