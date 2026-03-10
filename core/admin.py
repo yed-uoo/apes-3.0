@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, StudentProfile, FacultyProfile, SustainableDevelopmentGoal
+from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, Notification, StudentProfile, FacultyProfile, SustainableDevelopmentGoal
 
 
 @admin.register(StudentProfile)
@@ -21,9 +21,9 @@ class StudentProfileAdmin(admin.ModelAdmin):
 
 @admin.register(FacultyProfile)
 class FacultyProfileAdmin(admin.ModelAdmin):
-	list_display = ("user", "department", "is_guide", "is_coordinator")
+	list_display = ("user", "department", "is_guide", "is_coordinator", "is_hod")
 	search_fields = ("user__username", "user__email", "user__first_name", "user__last_name")
-	list_filter = ("is_guide", "is_coordinator", "department")
+	list_filter = ("is_guide", "is_coordinator", "is_hod", "department")
 	ordering = ("user__username",)
 	fieldsets = (
 		("User Information", {
@@ -33,7 +33,7 @@ class FacultyProfileAdmin(admin.ModelAdmin):
 			"fields": ("department",)
 		}),
 		("Roles", {
-			"fields": ("is_guide", "is_coordinator"),
+			"fields": ("is_guide", "is_coordinator", "is_hod"),
 			"description": "Select the roles for this faculty member."
 		}),
 	)
@@ -91,5 +91,14 @@ class AbstractAdmin(admin.ModelAdmin):
 class SustainableDevelopmentGoalAdmin(admin.ModelAdmin):
 	list_display = ("group", "submitted_by", "created_at")
 	search_fields = ("group__leader__username", "submitted_by__username", "sdg1", "sdg2", "sdg3", "sdg4", "sdg5")
+	ordering = ("-created_at",)
+	readonly_fields = ("created_at",)
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+	list_display = ("recipient", "notif_type", "is_read", "created_at", "related_abstract")
+	search_fields = ("recipient__username", "message")
+	list_filter = ("notif_type", "is_read", "created_at")
 	ordering = ("-created_at",)
 	readonly_fields = ("created_at",)

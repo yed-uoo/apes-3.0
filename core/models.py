@@ -21,6 +21,7 @@ class FacultyProfile(models.Model):
 	department = models.CharField(max_length=100, blank=True, null=True)
 	is_guide = models.BooleanField(default=False)
 	is_coordinator = models.BooleanField(default=False)
+	is_hod = models.BooleanField(default=False)
 
 	def __str__(self):
 		roles = []
@@ -28,6 +29,8 @@ class FacultyProfile(models.Model):
 			roles.append("Guide")
 		if self.is_coordinator:
 			roles.append("Coordinator")
+		if self.is_hod:
+			roles.append("HOD")
 		role_str = ", ".join(roles) if roles else "Faculty"
 		return f"{self.user.username} - {role_str}"
 
@@ -116,7 +119,10 @@ class Abstract(models.Model):
 	status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
 	guide_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
 	coordinator_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+	hod_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
 	is_final_approved = models.BooleanField(default=False)
+	presentation_approved = models.BooleanField(default=False)
+	final_approved = models.BooleanField(default=False)
 	feedback = models.TextField(null=True, blank=True)
 	submitted_at = models.DateTimeField(auto_now_add=True)
 	reviewed_at = models.DateTimeField(null=True, blank=True)
@@ -179,4 +185,30 @@ class SustainableDevelopmentGoal(models.Model):
 	@property
 	def content(self):
 		return f"SDG1: {self.sdg1}\nSDG2: {self.sdg2}\nSDG3: {self.sdg3}\nSDG4: {self.sdg4}\nSDG5: {self.sdg5}"
+
+
+class Notification(models.Model):
+	NOTIF_COORDINATOR_FORWARD = "coordinator_forward"
+	NOTIF_PRESENTATION_READY = "presentation_ready"
+	NOTIF_FINAL_APPROVAL = "final_approval"
+	NOTIF_TYPE_CHOICES = [
+		(NOTIF_COORDINATOR_FORWARD, "Coordinator Forwarded Project"),
+		(NOTIF_PRESENTATION_READY, "Project Ready for Presentation Approval"),
+		(NOTIF_FINAL_APPROVAL, "Final Project Requires Approval"),
+	]
+
+	recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+	notif_type = models.CharField(max_length=50, choices=NOTIF_TYPE_CHOICES, default=NOTIF_COORDINATOR_FORWARD)
+	message = models.TextField()
+	related_abstract = models.ForeignKey(
+		"Abstract", on_delete=models.CASCADE, null=True, blank=True, related_name="notifications"
+	)
+	created_at = models.DateTimeField(auto_now_add=True)
+	is_read = models.BooleanField(default=False)
+
+	class Meta:
+		ordering = ["-created_at"]
+
+	def __str__(self):
+		return f"Notification for {self.recipient.username}: {self.message[:50]}"
 

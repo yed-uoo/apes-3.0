@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, StudentProfile, FacultyProfile, SustainableDevelopmentGoal
+from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, Notification, StudentProfile, FacultyProfile, SustainableDevelopmentGoal
 
 
 def _is_student(user):
@@ -19,6 +19,10 @@ def _is_guide(user):
 
 def _is_coordinator(user):
 	return hasattr(user, "faculty_profile") and user.faculty_profile.is_coordinator
+
+
+def _is_hod(user):
+	return hasattr(user, "faculty_profile") and user.faculty_profile.is_hod
 
 
 def _has_dual_faculty_roles(user):
@@ -70,6 +74,8 @@ def dashboard(request):
 	elif _is_coordinator(request.user):
 		request.session["active_role"] = "coordinator"
 		return redirect("coordinator_dashboard")
+	elif _is_hod(request.user):
+		return redirect("hod_dashboard")
 	
 	# Get student-specific data for dashboard
 	group = _get_group_for_user(request.user)
@@ -879,6 +885,17 @@ def coordinator_dashboard(request):
 				abstract.reviewed_at = timezone.now()
 				abstract.reviewed_by = request.user
 				abstract.save()
+				# Notify HODs in the same department
+				dept = getattr(getattr(abstract.group.leader, "student_profile", None), "department", None)
+				if dept:
+					hod_users = User.objects.filter(faculty_profile__is_hod=True, faculty_profile__department=dept)
+					for hod_user in hod_users:
+						Notification.objects.create(
+							recipient=hod_user,
+							notif_type=Notification.NOTIF_COORDINATOR_FORWARD,
+							message=f"Coordinator '{request.user.get_full_name() or request.user.username}' has forwarded abstract '{abstract.title}' for HOD review.",
+							related_abstract=abstract,
+						)
 				messages.success(request, "Abstract approved by coordinator. Topic selected.")
 			elif abstract_action == "reject":
 				abstract.coordinator_status = Abstract.STATUS_REJECTED
@@ -1005,6 +1022,7 @@ def profile(request):
 		"is_student": _is_student(request.user),
 		"is_guide": _is_guide(request.user),
 		"is_coordinator": _is_coordinator(request.user),
+		"is_hod": _is_hod(request.user),
 	}
 	
 	if _is_student(request.user):
@@ -1053,5 +1071,92 @@ def profile(request):
 	return render(request, "profile.html", context)
 
 
+@login_required
+def hod_dashboard(request):
+	if not _is_hod(request.user):
+		messages.error(request, "Only HOD can access this page.")
+		return redirect("dashboard")
 
+	hod_profile = request.user.faculty_profile
+	dept = hod_profile.department
 
+	# Handle HOD actions
+	if request.method == "POST":
+		abstract_id = request.POST.get("abstract_id")
+		action = request.POST.get("action")
+
+		if abstract_id and action:
+			abstract = get_object_or_404(Abstract, id=abstract_id)
+			# Verify the abstract belongs to HOD's department
+			abstract_dept = getattr(getattr(abstract.group.leader, "student_profile", None), "department", None)
+			if abstract_dept != dept:
+				messages.error(request, "You are not authorized to manage this project.")
+				return redirect("hod_dashboard")
+
+			if action == "verify_compliance":
+				abstract.hod_status = Abstract.STATUS_APPROVED
+				abstract.save()
+				# Notify HOD (self) – can also notify guide/coordinator
+				Notification.objects.create(
+					recipient=request.user,
+					notif_type=Notification.NOTIF_PRESENTATION_READY,
+					message=f"Academic compliance verified for '{abstract.title}'. Project is ready for presentation approval.",
+					related_abstract=abstract,
+				)
+				messages.success(request, f"Academic compliance verified for '{abstract.title}'.")
+
+			elif action == "approve_presentation":
+				if abstract.hod_status != Abstract.STATUS_APPROVED:
+					messages.error(request, "Academic compliance must be verified before approving presentation.")
+					return redirect("hod_dashboard")
+				abstract.presentation_approved = True
+				abstract.save()
+				Notification.objects.create(
+					recipient=request.user,
+					notif_type=Notification.NOTIF_FINAL_APPROVAL,
+					message=f"Presentation approved for '{abstract.title}'. Final project approval is now pending.",
+					related_abstract=abstract,
+				)
+				messages.success(request, f"Final presentation approved for '{abstract.title}'.")
+
+			elif action == "approve_final":
+				if not abstract.presentation_approved:
+					messages.error(request, "Presentation must be approved before final project approval.")
+					return redirect("hod_dashboard")
+				abstract.final_approved = True
+				abstract.save()
+				messages.success(request, f"Final project approved for '{abstract.title}'.")
+
+			elif action == "reject_hod":
+				abstract.hod_status = Abstract.STATUS_REJECTED
+				abstract.save()
+				messages.info(request, f"Project '{abstract.title}' rejected at HOD level.")
+
+			return redirect("hod_dashboard")
+
+	# HOD sees coordinator-approved abstracts in their department only
+	forwarded_abstracts = Abstract.objects.filter(
+		coordinator_status=Abstract.STATUS_APPROVED,
+		group__leader__student_profile__department=dept,
+	).select_related("group", "group__leader", "reviewed_by").order_by("-reviewed_at")
+
+	# Notifications for this HOD
+	notifications = Notification.objects.filter(recipient=request.user, is_read=False).order_by("-created_at")
+	unread_count = notifications.count()
+
+	# Mark notifications as read on visit
+	notifications.update(is_read=True)
+
+	all_notifications = Notification.objects.filter(recipient=request.user).order_by("-created_at")[:20]
+
+	context = {
+		"hod_profile": hod_profile,
+		"department": dept,
+		"forwarded_abstracts": forwarded_abstracts,
+		"notifications": all_notifications,
+		"unread_count": unread_count,
+		"compliance_count": forwarded_abstracts.filter(hod_status=Abstract.STATUS_APPROVED).count(),
+		"presentation_count": forwarded_abstracts.filter(presentation_approved=True).count(),
+		"final_count": forwarded_abstracts.filter(final_approved=True).count(),
+	}
+	return render(request, "hod_dashboard.html", context)

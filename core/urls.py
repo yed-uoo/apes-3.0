@@ -24,4 +24,6 @@ urlpatterns = [
     path("faculty-abstracts/", views.faculty_abstracts, name="faculty_abstracts"),
     path("review-abstract/<int:abstract_id>/", views.review_abstract, name="review_abstract"),
     path("download-abstract/<int:abstract_id>/", views.download_abstract, name="download_abstract"),
+    # HOD URLs
+    path("hod-dashboard/", views.hod_dashboard, name="hod_dashboard"),
 ]

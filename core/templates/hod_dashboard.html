@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ── HOD Dashboard ── */
+    .hod-hero {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.18) 0%, rgba(99, 102, 241, 0.12) 100%);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        border-radius: 20px;
+        padding: 2.5rem 2rem 2rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .hod-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6366f1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .hod-hero h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #e9d5ff;
+        margin: 0;
+    }
+
+    .hod-hero p {
+        color: #a78bfa;
+        margin: 0.25rem 0 0;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .stat-label {
+        font-size: .78rem;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e5e7eb;
+        line-height: 1;
+    }
+
+    /* Notification panel */
+    .notif-panel {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .notif-header {
+        padding: .9rem 1.25rem;
+        background: rgba(139, 92, 246, 0.12);
+        border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+        font-weight: 600;
+        font-size: .95rem;
+        color: #c4b5fd;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    .notif-item {
+        padding: .9rem 1.25rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        gap: .75rem;
+        align-items: flex-start;
+    }
+
+    .notif-item:last-child {
+        border-bottom: none;
+    }
+
+    .notif-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #a78bfa;
+        margin-top: 6px;
+        flex-shrink: 0;
+    }
+
+    .notif-msg {
+        font-size: .88rem;
+        color: #d1d5db;
+        line-height: 1.5;
+    }
+
+    .notif-time {
+        font-size: .75rem;
+        color: #6b7280;
+        margin-top: .25rem;
+    }
+
+    /* Project cards */
+    .project-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 18px;
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+        transition: border-color .25s, transform .2s;
+    }
+
+    .project-card:hover {
+        border-color: rgba(139, 92, 246, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .project-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #e9d5ff;
+        margin-bottom: .3rem;
+    }
+
+    .project-meta {
+        font-size: .82rem;
+        color: #9ca3af;
+        margin-bottom: .9rem;
+    }
+
+    .project-meta span {
+        margin-right: 1.2rem;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .28rem .8rem;
+        border-radius: 999px;
+        font-size: .75rem;
+        font-weight: 600;
+    }
+
+    .pill-compliance-done {
+        background: rgba(34, 197, 94, .14);
+        color: #86efac;
+        border: 1px solid rgba(34, 197, 94, .3);
+    }
+
+    .pill-compliance-pend {
+        background: rgba(251, 191, 36, .1);
+        color: #fde68a;
+        border: 1px solid rgba(251, 191, 36, .3);
+    }
+
+    .pill-compliance-rej {
+        background: rgba(239, 68, 68, .1);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, .3);
+    }
+
+    .pill-present-done {
+        background: rgba(99, 102, 241, .14);
+        color: #a5b4fc;
+        border: 1px solid rgba(99, 102, 241, .3);
+    }
+
+    .pill-final-done {
+        background: rgba(16, 185, 129, .14);
+        color: #6ee7b7;
+        border: 1px solid rgba(16, 185, 129, .3);
+    }
+
+    .hod-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .45rem 1rem;
+        border-radius: 10px;
+        font-size: .82rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: opacity .2s, transform .15s;
+    }
+
+    .hod-btn:hover {
+        opacity: .85;
+        transform: translateY(-1px);
+    }
+
+    .btn-verify {
+        background: rgba(251, 191, 36, .2);
+        color: #fde68a;
+    }
+
+    .btn-present {
+        background: rgba(99, 102, 241, .2);
+        color: #a5b4fc;
+    }
+
+    .btn-final {
+        background: rgba(16, 185, 129, .2);
+        color: #6ee7b7;
+    }
+
+    .btn-reject {
+        background: rgba(239, 68, 68, .12);
+        color: #fca5a5;
+    }
+
+    .stage-bar {
+        display: flex;
+        gap: .5rem;
+        flex-wrap: wrap;
+        margin-top: .75rem;
+    }
+
+    .section-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #e5e7eb;
+        margin: 2rem 0 1rem;
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+    }
+
+    .empty-state {
+        background: rgba(255, 255, 255, 0.025);
+        border: 1px dashed rgba(255, 255, 255, 0.12);
+        border-radius: 16px;
+        padding: 2.5rem;
+        text-align: center;
+        color: #6b7280;
+    }
+
+    .badge-unread {
+        background: #7c3aed;
+        color: #fff;
+        border-radius: 999px;
+        font-size: .7rem;
+        font-weight: 700;
+        padding: .15rem .55rem;
+        line-height: 1;
+    }
+</style>
+
+<!-- Hero -->
+<div class="hod-hero">
+    <div class="hod-avatar">🎓</div>
+    <div>
+        <h1>HOD Dashboard</h1>
+        <p>{{ request.user.get_full_name|default:request.user.username }} &nbsp;&middot;&nbsp; Department: <strong>{{ department|default:"Not Set" }}</strong></p>
+    </div>
+</div>
+
+<!-- Stats row -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(139,92,246,.15);">📋</div>
+            <div>
+                <div class="stat-label">Forwarded</div>
+                <div class="stat-value">{{ forwarded_abstracts.count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(251,191,36,.12);">✅</div>
+            <div>
+                <div class="stat-label">Compliance Done</div>
+                <div class="stat-value">{{ compliance_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(99,102,241,.15);">🎤</div>
+            <div>
+                <div class="stat-label">Presentations</div>
+                <div class="stat-value">{{ presentation_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(16,185,129,.12);">🏁</div>
+            <div>
+                <div class="stat-label">Final Approved</div>
+                <div class="stat-value">{{ final_count }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Notifications panel -->
+{% if notifications %}
+<div class="notif-panel">
+    <div class="notif-header">
+        🔔 Recent Notifications
+        {% if unread_count %}
+        <span class="badge-unread ms-1">{{ unread_count }} new</span>
+        {% endif %}
+    </div>
+    {% for notif in notifications %}
+    <div class="notif-item">
+        <div class="notif-dot"></div>
+        <div>
+            <div class="notif-msg">{{ notif.message }}</div>
+            <div class="notif-time">{{ notif.created_at|timesince }} ago</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Forwarded Projects -->
+<div class="section-title">📂 Projects Forwarded by Coordinator</div>
+
+{% if forwarded_abstracts %}
+{% for abstract in forwarded_abstracts %}
+<div class="project-card">
+    <div class="project-title">{{ abstract.title }}</div>
+    <div class="project-meta">
+        <span>👤 Group: {{ abstract.group.leader.get_full_name|default:abstract.group.leader.username }}</span>
+        <span>🗓 Forwarded: {{ abstract.reviewed_at|date:"d M Y, H:i" }}</span>
+        {% if abstract.reviewed_by %}
+        <span>🎗 Coordinator: {{ abstract.reviewed_by.get_full_name|default:abstract.reviewed_by.username }}</span>
+        {% endif %}
+    </div>
+
+    <!-- Stage pills -->
+    <div class="stage-bar">
+        <!-- Compliance status -->
+        {% if abstract.hod_status == "approved" %}
+        <span class="status-pill pill-compliance-done">✔ Compliance Verified</span>
+        {% elif abstract.hod_status == "rejected" %}
+        <span class="status-pill pill-compliance-rej">✖ Compliance Rejected</span>
+        {% else %}
+        <span class="status-pill pill-compliance-pend">⏳ Compliance Pending</span>
+        {% endif %}
+
+        {% if abstract.presentation_approved %}
+        <span class="status-pill pill-present-done">🎤 Presentation Approved</span>
+        {% endif %}
+
+        {% if abstract.final_approved %}
+        <span class="status-pill pill-final-done">🏁 Final Project Approved</span>
+        {% endif %}
+    </div>
+
+    <!-- Action buttons -->
+    <div class="d-flex flex-wrap gap-2 mt-3">
+
+        {% if abstract.hod_status != "approved" and abstract.hod_status != "rejected" %}
+        <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="abstract_id" value="{{ abstract.id }}">
+            <input type="hidden" name="action" value="verify_compliance">
+            <button type="submit" class="hod-btn btn-verify">✔ Verify Compliance</button>
+        </form>
+        {% endif %}
+
+        {% if abstract.hod_status == "approved" and not abstract.presentation_approved %}
+        <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="abstract_id" value="{{ abstract.id }}">
+            <input type="hidden" name="action" value="approve_presentation">
+            <button type="submit" class="hod-btn btn-present">🎤 Approve Presentation</button>
+        </form>
+        {% endif %}
+
+        {% if abstract.presentation_approved and not abstract.final_approved %}
+        <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="abstract_id" value="{{ abstract.id }}">
+            <input type="hidden" name="action" value="approve_final">
+            <button type="submit" class="hod-btn btn-final">🏁 Approve Final Project</button>
+        </form>
+        {% endif %}
+
+        {% if abstract.hod_status != "rejected" and not abstract.final_approved %}
+        <form method="post" style="display:inline" onsubmit="return confirm('Reject this project at HOD level?')">
+            {% csrf_token %}
+            <input type="hidden" name="abstract_id" value="{{ abstract.id }}">
+            <input type="hidden" name="action" value="reject_hod">
+            <button type="submit" class="hod-btn btn-reject">✖ Reject</button>
+        </form>
+        {% endif %}
+
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+    <div style="font-size:2.5rem;margin-bottom:.75rem;">📭</div>
+    <div style="font-weight:600;color:#9ca3af;margin-bottom:.3rem;">No Forwarded Projects</div>
+    <div style="font-size:.85rem;">Projects approved by the coordinator for your department will appear here.</div>
+</div>
+{% endif %}
+
+{% endblock %}
