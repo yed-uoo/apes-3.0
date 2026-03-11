@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, Notification, StudentProfile, FacultyProfile, SustainableDevelopmentGoal, GroupEvaluation, EvaluationFile, StudentEvaluation
+from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, Notification, StudentProfile, FacultyProfile, SustainableDevelopmentGoal, GroupEvaluation, EvaluationFile
 
 
 @admin.register(StudentProfile)
@@ -140,52 +140,3 @@ class EvaluationFileAdmin(admin.ModelAdmin):
 	list_filter = ("stage", "uploaded_at")
 	ordering = ("-uploaded_at",)
 	readonly_fields = ("uploaded_at",)
-
-
-@admin.register(StudentEvaluation)
-class StudentEvaluationAdmin(admin.ModelAdmin):
-	list_display = ("student", "group", "stage", "guide_submitted", "coordinator_submitted", "finalized", "guide_total", "coordinator_total")
-	search_fields = ("student__username", "group__leader__username")
-	list_filter = ("stage", "guide_submitted", "coordinator_submitted", "finalized", "created_at")
-	ordering = ("stage", "group", "student__username")
-	readonly_fields = ("created_at", "updated_at", "guide_total", "coordinator_total", "average_total")
-	fieldsets = (
-		("Student & Group", {
-			"fields": ("student", "group", "stage")
-		}),
-		("Guide Marks (Max: 5,5,2,5,5,3,5,5,5 = 40 total)", {
-			"fields": (
-				"guide_topic", "guide_planning", "guide_scalability", "guide_novelty",
-				"guide_task_distribution", "guide_schedule", "guide_interim",
-				"guide_presentation", "guide_viva", "guide_submitted"
-			)
-		}),
-		("Coordinator Marks (Max: 5,5,2,5,5,3,5,5,5 = 40 total)", {
-			"fields": (
-				"coordinator_topic", "coordinator_planning", "coordinator_scalability", "coordinator_novelty",
-				"coordinator_task_distribution", "coordinator_schedule", "coordinator_interim",
-				"coordinator_presentation", "coordinator_viva", "coordinator_submitted"
-			)
-		}),
-		("Status & Totals", {
-			"fields": ("finalized", "guide_total", "coordinator_total", "average_total")
-		}),
-		("Timestamps", {
-			"fields": ("created_at", "updated_at")
-		}),
-	)
-
-	def guide_total(self, obj):
-		"""Display guide total marks."""
-		return obj.guide_total
-	guide_total.short_description = "Guide Total"
-
-	def coordinator_total(self, obj):
-		"""Display coordinator total marks."""
-		return obj.coordinator_total
-	coordinator_total.short_description = "Coordinator Total"
-
-	def average_total(self, obj):
-		"""Display average total if finalized."""
-		return obj.average_total if obj.finalized else "N/A"
-	average_total.short_description = "Average Total"

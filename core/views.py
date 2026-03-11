@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, Notification, StudentProfile, FacultyProfile, SustainableDevelopmentGoal, GroupEvaluation, EvaluationFile, StudentEvaluation
+from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, Notification, StudentProfile, FacultyProfile, SustainableDevelopmentGoal, GroupEvaluation, EvaluationFile
 
 
 def _is_student(user):
@@ -271,29 +271,6 @@ def mini_project(request):
 			"final": GroupEvaluation.objects.filter(group=group, stage="final").first(),
 		}
 
-	# Get student evaluations (First and Second stages)
-	student_evaluations = {}
-	first_unlocked = False
-	second_unlocked = False
-	
-	if group:
-		# Check if Zeroth evaluation is completed (unlocks First)
-		zeroth_eval = evaluations.get("zeroth")
-		if zeroth_eval and zeroth_eval.is_completed:
-			first_unlocked = True
-		
-		# Get First evaluation data for current student
-		first_eval = StudentEvaluation.objects.filter(student=request.user, stage="first").first()
-		student_evaluations["first"] = first_eval
-		
-		# Check if First evaluation is finalized (unlocks Second)
-		if first_eval and first_eval.finalized:
-			second_unlocked = True
-		
-		# Get Second evaluation data for current student
-		second_eval = StudentEvaluation.objects.filter(student=request.user, stage="second").first()
-		student_evaluations["second"] = second_eval
-
 	# Official SDG names for display
 	sdg_names = {
 		'1': 'No Poverty', '2': 'Zero Hunger', '3': 'Good Health and Well-being',
@@ -351,9 +328,6 @@ def mini_project(request):
 		"selected_topic": selected_topic,
 		"evaluation_files": evaluation_files,
 		"evaluations": evaluations,
-		"student_evaluations": student_evaluations,
-		"first_unlocked": first_unlocked,
-		"second_unlocked": second_unlocked,
 	}
 	return render(request, "mini_project.html", context)
 
@@ -576,10 +550,6 @@ def guide_dashboard(request):
 	# Get evaluations for assigned groups
 	evaluations_by_group = {}
 	evaluation_files_by_group = {}
-	student_evaluations_by_group = {}
-	group_members_by_group = {}
-	evaluation_unlock_by_group = {}
-	
 	for group_id in group_ids:
 		evaluations_by_group[group_id] = {
 			"zeroth": GroupEvaluation.objects.filter(group_id=group_id, stage="zeroth").first(),
@@ -593,48 +563,6 @@ def guide_dashboard(request):
 			"second": EvaluationFile.objects.filter(group_id=group_id, stage="second").first(),
 			"final": EvaluationFile.objects.filter(group_id=group_id, stage="final").first(),
 		}
-		
-		# Get group members for student evaluations
-		group_members = GroupMember.objects.filter(group_id=group_id).select_related("user")
-		group_members_by_group[group_id] = group_members
-		
-		# Get student evaluations for this group
-		student_evals_first = {
-			se.student_id: se 
-			for se in StudentEvaluation.objects.filter(group_id=group_id, stage="first")
-		}
-		student_evals_second = {
-			se.student_id: se 
-			for se in StudentEvaluation.objects.filter(group_id=group_id, stage="second")
-		}
-		student_evaluations_by_group[group_id] = {
-			"first": student_evals_first,
-			"second": student_evals_second,
-		}
-		
-		# Determine unlock status for First and Second evaluations
-		first_unlocked = False
-		second_unlocked = False
-		
-		zeroth_eval = evaluations_by_group[group_id].get("zeroth")
-		if zeroth_eval and zeroth_eval.is_completed:
-			first_unlocked = True
-		
-		# Check if all students have finalized first evaluations
-		if first_unlocked:
-			all_first_finalized = True
-			for member in group_members:
-				first_eval = student_evals_first.get(member.user_id)
-				if not first_eval or not first_eval.finalized:
-					all_first_finalized = False
-					break
-			if all_first_finalized:
-				second_unlocked = True
-		
-		evaluation_unlock_by_group[group_id] = {
-			"first": first_unlocked,
-			"second": second_unlocked,
-		}
 
 	assigned_groups = [
 		{
@@ -642,9 +570,6 @@ def guide_dashboard(request):
 			"sdg": sdg_by_group_id.get(guide_request.group_id),
 			"evaluations": evaluations_by_group.get(guide_request.group_id, {}),
 			"evaluation_files": evaluation_files_by_group.get(guide_request.group_id, {}),
-			"group_members": group_members_by_group.get(guide_request.group_id, []),
-			"student_evaluations": student_evaluations_by_group.get(guide_request.group_id, {}),
-			"evaluation_unlock": evaluation_unlock_by_group.get(guide_request.group_id, {}),
 		}
 		for guide_request in accepted_requests
 	]
@@ -1129,44 +1054,6 @@ def coordinator_dashboard(request):
 			"final": EvaluationFile.objects.filter(group=group, stage="final").first(),
 		}
 
-		# Get student evaluations for First and Second stages
-		student_evals_first = {
-			se.student_id: se 
-			for se in StudentEvaluation.objects.filter(group=group, stage="first")
-		}
-		student_evals_second = {
-			se.student_id: se 
-			for se in StudentEvaluation.objects.filter(group=group, stage="second")
-		}
-		student_evaluations = {
-			"first": student_evals_first,
-			"second": student_evals_second,
-		}
-
-		# Determine unlock status for First and Second evaluations
-		first_unlocked = False
-		second_unlocked = False
-		
-		zeroth_eval = group_evaluations.get("zeroth")
-		if zeroth_eval and zeroth_eval.is_completed:
-			first_unlocked = True
-		
-		# Check if all students have finalized first evaluations
-		if first_unlocked:
-			all_first_finalized = True
-			for member in members:
-				first_eval = student_evals_first.get(member.user_id)
-				if not first_eval or not first_eval.finalized:
-					all_first_finalized = False
-					break
-			if all_first_finalized:
-				second_unlocked = True
-		
-		evaluation_unlock = {
-			"first": first_unlocked,
-			"second": second_unlocked,
-		}
-
 		group_details.append({
 			"group": group,
 			"class_name": getattr(getattr(group.leader, "student_profile", None), "class_name", None),
@@ -1181,8 +1068,6 @@ def coordinator_dashboard(request):
 			"sdg": sdg_entry,
 			"evaluations": group_evaluations,
 			"evaluation_files": evaluation_files,
-			"student_evaluations": student_evaluations,
-			"evaluation_unlock": evaluation_unlock,
 		})
 
 	pending_approvals = CoordinatorApproval.objects.filter(
@@ -1530,165 +1415,3 @@ def download_evaluation_file(request, file_id):
 	response = HttpResponse(eval_file.file_data, content_type=eval_file.file_type)
 	response['Content-Disposition'] = f'attachment; filename="{eval_file.file_name}"'
 	return response
-
-
-@login_required
-def submit_guide_student_evaluation(request, group_id, stage):
-	"""Handle guide submission of student evaluations (First/Second)."""
-	if not _is_guide(request.user):
-		messages.error(request, "Only guides can submit student evaluations.")
-		return redirect("dashboard")
-
-	group = get_object_or_404(Group, id=group_id)
-	
-	# Verify the guide is assigned to this group
-	if not GuideRequest.objects.filter(group=group, guide=request.user, status=GuideRequest.STATUS_ACCEPTED).exists():
-		messages.error(request, "You are not the guide for this group.")
-		return redirect("guide_dashboard")
-
-	# Check if stage is valid
-	if stage not in ["first", "second"]:
-		messages.error(request, "Invalid evaluation stage.")
-		return redirect("guide_dashboard")
-
-	# Check prerequisites: Zeroth must be completed for First
-	if stage == "first":
-		zeroth_eval = GroupEvaluation.objects.filter(group=group, stage="zeroth").first()
-		if not zeroth_eval or not zeroth_eval.is_completed:
-			messages.error(request, "Zeroth evaluation must be completed before submitting First evaluation.")
-			return redirect("guide_dashboard")
-
-	# Check prerequisites: First must be finalized for Second
-	if stage == "second":
-		# Check if all students have finalized first evaluations
-		group_members = GroupMember.objects.filter(group=group)
-		for member in group_members:
-			first_eval = StudentEvaluation.objects.filter(student=member.user, stage="first").first()
-			if not first_eval or not first_eval.finalized:
-				messages.error(request, "First evaluation must be finalized for all students before submitting Second evaluation.")
-				return redirect("guide_dashboard")
-
-	if request.method == "POST":
-		# Get all group members
-		group_members = GroupMember.objects.filter(group=group)
-		
-		# Process marks for each student
-		for member in group_members:
-			student_eval, created = StudentEvaluation.objects.get_or_create(
-				student=member.user,
-				group=group,
-				stage=stage
-			)
-
-			# Check if already submitted
-			if student_eval.guide_submitted:
-				continue
-
-			# Get marks from POST data (student_id is used as prefix)
-			student_eval.guide_topic = int(request.POST.get(f"guide_topic_{member.user.id}", 0) or 0)
-			student_eval.guide_planning = int(request.POST.get(f"guide_planning_{member.user.id}", 0) or 0)
-			student_eval.guide_scalability = int(request.POST.get(f"guide_scalability_{member.user.id}", 0) or 0)
-			student_eval.guide_novelty = int(request.POST.get(f"guide_novelty_{member.user.id}", 0) or 0)
-			student_eval.guide_task_distribution = int(request.POST.get(f"guide_task_distribution_{member.user.id}", 0) or 0)
-			student_eval.guide_schedule = int(request.POST.get(f"guide_schedule_{member.user.id}", 0) or 0)
-			student_eval.guide_interim = int(request.POST.get(f"guide_interim_{member.user.id}", 0) or 0)
-			student_eval.guide_presentation = int(request.POST.get(f"guide_presentation_{member.user.id}", 0) or 0)
-			student_eval.guide_viva = int(request.POST.get(f"guide_viva_{member.user.id}", 0) or 0)
-			student_eval.guide_submitted = True
-			student_eval.save()
-
-		messages.success(request, f"{stage.capitalize()} evaluation submitted successfully for all students!")
-		return redirect("guide_dashboard")
-
-	return redirect("guide_dashboard")
-
-
-@login_required
-def submit_coordinator_student_evaluation(request, group_id, stage):
-	"""Handle coordinator submission of student evaluations (First/Second)."""
-	if not _is_coordinator(request.user):
-		messages.error(request, "Only coordinators can submit student evaluations.")
-		return redirect("dashboard")
-
-	# Handle dual role
-	role_redirect = _ensure_active_role_for_dual_faculty(request, "coordinator")
-	if role_redirect:
-		return role_redirect
-
-	group = get_object_or_404(Group, id=group_id)
-	
-	# Verify the coordinator's department matches the group's department
-	coordinator_profile = request.user.faculty_profile
-	group_dept = getattr(getattr(group.leader, "student_profile", None), "department", None)
-	if coordinator_profile.department != group_dept:
-		messages.error(request, "You can only evaluate groups from your department.")
-		return redirect("coordinator_dashboard")
-
-	# Check if stage is valid
-	if stage not in ["first", "second"]:
-		messages.error(request, "Invalid evaluation stage.")
-		return redirect("coordinator_dashboard")
-
-	# Check prerequisites: Zeroth must be completed for First
-	if stage == "first":
-		zeroth_eval = GroupEvaluation.objects.filter(group=group, stage="zeroth").first()
-		if not zeroth_eval or not zeroth_eval.is_completed:
-			messages.error(request, "Zeroth evaluation must be completed before submitting First evaluation.")
-			return redirect("coordinator_dashboard")
-
-	# Check prerequisites: First must be finalized for Second
-	if stage == "second":
-		# Check if all students have finalized first evaluations
-		group_members = GroupMember.objects.filter(group=group)
-		for member in group_members:
-			first_eval = StudentEvaluation.objects.filter(student=member.user, stage="first").first()
-			if not first_eval or not first_eval.finalized:
-				messages.error(request, "First evaluation must be finalized for all students before submitting Second evaluation.")
-				return redirect("coordinator_dashboard")
-
-	if request.method == "POST":
-		# Get all group members
-		group_members = GroupMember.objects.filter(group=group)
-		
-		# Verify guide has submitted for all students first
-		all_guide_submitted = True
-		for member in group_members:
-			student_eval = StudentEvaluation.objects.filter(student=member.user, group=group, stage=stage).first()
-			if not student_eval or not student_eval.guide_submitted:
-				all_guide_submitted = False
-				break
-		
-		if not all_guide_submitted:
-			messages.error(request, "Guide must submit evaluations for all students before coordinator can submit.")
-			return redirect("coordinator_dashboard")
-
-		# Process marks for each student
-		for member in group_members:
-			student_eval = StudentEvaluation.objects.get(
-				student=member.user,
-				group=group,
-				stage=stage
-			)
-
-			# Check if already submitted
-			if student_eval.coordinator_submitted:
-				continue
-
-			# Get marks from POST data (student_id is used as prefix)
-			student_eval.coordinator_topic = int(request.POST.get(f"coordinator_topic_{member.user.id}", 0) or 0)
-			student_eval.coordinator_planning = int(request.POST.get(f"coordinator_planning_{member.user.id}", 0) or 0)
-			student_eval.coordinator_scalability = int(request.POST.get(f"coordinator_scalability_{member.user.id}", 0) or 0)
-			student_eval.coordinator_novelty = int(request.POST.get(f"coordinator_novelty_{member.user.id}", 0) or 0)
-			student_eval.coordinator_task_distribution = int(request.POST.get(f"coordinator_task_distribution_{member.user.id}", 0) or 0)
-			student_eval.coordinator_schedule = int(request.POST.get(f"coordinator_schedule_{member.user.id}", 0) or 0)
-			student_eval.coordinator_interim = int(request.POST.get(f"coordinator_interim_{member.user.id}", 0) or 0)
-			student_eval.coordinator_presentation = int(request.POST.get(f"coordinator_presentation_{member.user.id}", 0) or 0)
-			student_eval.coordinator_viva = int(request.POST.get(f"coordinator_viva_{member.user.id}", 0) or 0)
-			student_eval.coordinator_submitted = True
-			student_eval.finalized = True  # Final submission by coordinator
-			student_eval.save()
-
-		messages.success(request, f"{stage.capitalize()} evaluation finalized successfully for all students!")
-		return redirect("coordinator_dashboard")
-
-	return redirect("coordinator_dashboard")
