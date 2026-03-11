@@ -8,6 +8,7 @@ urlpatterns = [
     path("login/", auth_views.LoginView.as_view(template_name="registration/login.html"), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("role-selection/", views.role_selection, name="role_selection"),
+    path("switch-role/", views.switch_role, name="switch_role"),
     path("profile/", views.profile, name="profile"),
     path("mini-project/", views.mini_project, name="mini_project"),
     path("sdg-submission/", views.sdg_submission, name="sdg_submission"),
@@ -31,4 +32,7 @@ urlpatterns = [
     path("evaluation/coordinator/<int:group_id>/<str:stage>/", views.submit_coordinator_evaluation, name="submit_coordinator_evaluation"),
     path("evaluation/upload/<str:stage>/", views.upload_evaluation_file, name="upload_evaluation_file"),
     path("evaluation/download/<int:file_id>/", views.download_evaluation_file, name="download_evaluation_file"),
+    # Student Evaluation URLs (First/Second)
+    path("evaluation/guide/student/<int:group_id>/<str:stage>/", views.submit_guide_student_evaluation, name="submit_guide_student_evaluation"),
+    path("evaluation/coordinator/student/<int:group_id>/<str:stage>/", views.submit_coordinator_student_evaluation, name="submit_coordinator_student_evaluation"),
 ]

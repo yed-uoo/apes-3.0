@@ -101,6 +101,52 @@
         font-size: 18px;
     }
 
+    .sidebar-footer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(13, 15, 21, 0.95);
+    }
+
+    .sidebar-footer .btn {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-profile {
+        background: rgba(59, 130, 246, 0.15);
+        color: #93c5fd;
+    }
+
+    .btn-profile:hover {
+        background: rgba(59, 130, 246, 0.25);
+        color: #bfdbfe;
+        transform: translateY(-2px);
+    }
+
+    .btn-logout {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+    }
+
+    .btn-logout:hover {
+        background: rgba(239, 68, 68, 0.25);
+        color: #fecaca;
+        transform: translateY(-2px);
+    }
+
     .main-content {
         flex: 1;
         padding: 40px;
@@ -428,6 +474,18 @@
             <li><a href="#abstract" class="tab-link"><i class="bi bi-file-text"></i> Abstract</a></li>
             <li><a href="#evaluation" class="tab-link"><i class="bi bi-clipboard-check"></i> Evaluation</a></li>
         </ul>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'profile' %}" class="btn btn-profile">
+                <i class="bi bi-person-circle"></i> Profile
+            </a>
+            <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-logout">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -755,6 +813,167 @@
                 {% endif %}
                 {% endwith %}
             </div>
+
+            <!-- First Evaluation -->
+            {% with zeroth_eval=evaluations.zeroth first_eval=student_evaluations.first first_group_eval=evaluations.first %}
+            {% if zeroth_eval and zeroth_eval.guide_submitted and zeroth_eval.coordinator_submitted %}
+            <!-- Zeroth completed - show unlocked First Evaluation -->
+            <div class="info-card mt-4">
+                <h5 style="color: #60a5fa; margin-bottom: 1rem;"><i class="bi bi-clipboard-check"></i> First Evaluation</h5>
+                
+                {% if first_eval and first_eval.finalized %}
+                <div class="alert alert-success" style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3);">
+                    <strong>✅ First Evaluation Complete</strong>
+                </div>
+                
+                <!-- Presentation Reviews -->
+                {% if first_group_eval %}
+                    {% if first_group_eval.guide_review %}
+                    <div class="mt-3" style="padding: 1rem; background: rgba(96, 165, 250, 0.08); border-radius: 8px; border: 1px solid rgba(96, 165, 250, 0.2);">
+                        <h6 style="color: #93c5fd; margin-bottom: 0.5rem; font-weight: 600;">📝 Guide's Presentation Review</h6>
+                        <p style="color: #e5e7eb; margin: 0; white-space: pre-wrap;">{{ first_group_eval.guide_review }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if first_group_eval.coordinator_review %}
+                    <div class="mt-3" style="padding: 1rem; background: rgba(96, 165, 250, 0.08); border-radius: 8px; border: 1px solid rgba(96, 165, 250, 0.2);">
+                        <h6 style="color: #93c5fd; margin-bottom: 0.5rem; font-weight: 600;">📝 Coordinator's Presentation Review</h6>
+                        <p style="color: #e5e7eb; margin: 0; white-space: pre-wrap;">{{ first_group_eval.coordinator_review }}</p>
+                    </div>
+                    {% endif %}
+                {% endif %}
+                
+                {% elif first_eval %}
+                <div class="mt-3">
+                    <div style="padding: 1rem; background: rgba(96, 165, 250, 0.08); border-radius: 8px; border: 1px solid rgba(96, 165, 250, 0.2);">
+                        <p style="margin: 0.5rem 0; color: #e5e7eb;">
+                            {% if first_eval.guide_submitted %}
+                            ✓ <strong>Guide Evaluated</strong>
+                            {% else %}
+                            ⏸ Guide Evaluation Pending
+                            {% endif %}
+                        </p>
+                        <p style="margin: 0.5rem 0; color: #e5e7eb;">
+                            {% if first_eval.coordinator_submitted %}
+                            ✓ <strong>Coordinator Evaluated</strong>
+                            {% else %}
+                            ⏸ Coordinator Evaluation Pending
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Presentation Reviews (shown even when in progress) -->
+                {% if first_group_eval %}
+                    {% if first_group_eval.guide_review %}
+                    <div class="mt-3" style="padding: 1rem; background: rgba(96, 165, 250, 0.08); border-radius: 8px; border: 1px solid rgba(96, 165, 250, 0.2);">
+                        <h6 style="color: #93c5fd; margin-bottom: 0.5rem; font-weight: 600;">📝 Guide's Presentation Review</h6>
+                        <p style="color: #e5e7eb; margin: 0; white-space: pre-wrap;">{{ first_group_eval.guide_review }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if first_group_eval.coordinator_review %}
+                    <div class="mt-3" style="padding: 1rem; background: rgba(96, 165, 250, 0.08); border-radius: 8px; border: 1px solid rgba(96, 165, 250, 0.2);">
+                        <h6 style="color: #93c5fd; margin-bottom: 0.5rem; font-weight: 600;">📝 Coordinator's Presentation Review</h6>
+                        <p style="color: #e5e7eb; margin: 0; white-space: pre-wrap;">{{ first_group_eval.coordinator_review }}</p>
+                    </div>
+                    {% endif %}
+                {% endif %}
+                {% else %}
+                <p style="color: #9ca3af; margin-bottom: 1rem;">Waiting for evaluators to begin assessment.</p>
+                {% endif %}
+            </div>
+            {% else %}
+            <!-- Zeroth not completed - show locked First Evaluation -->
+            <div class="info-card mt-4" style="opacity:0.4; pointer-events:none;">
+                <h5 style="color: #60a5fa; margin-bottom: 1rem;"><i class="bi bi-clipboard-check"></i> First Evaluation</h5>
+                <div class="alert alert-warning" style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3);">
+                    <strong>🔒 Locked:</strong> Complete Zeroth Evaluation first to unlock First Evaluation.
+                </div>
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Second Evaluation -->
+            {% with first_eval=student_evaluations.first second_eval=student_evaluations.second second_group_eval=evaluations.second %}
+            {% if first_eval and first_eval.finalized %}
+            <!-- First finalized - show unlocked Second Evaluation -->
+            <div class="info-card mt-4">
+                <h5 style="color: #34d399; margin-bottom: 1rem;"><i class="bi bi-clipboard-check"></i> Second Evaluation</h5>
+                
+                {% if second_eval and second_eval.finalized %}
+                <div class="alert alert-success" style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3);">
+                    <strong>✅ Second Evaluation Complete</strong>
+                </div>
+                
+                <!-- Presentation Reviews -->
+                {% if second_group_eval %}
+                    {% if second_group_eval.guide_review %}
+                    <div class="mt-3" style="padding: 1rem; background: rgba(52, 211, 153, 0.08); border-radius: 8px; border: 1px solid rgba(52, 211, 153, 0.2);">
+                        <h6 style="color: #6ee7b7; margin-bottom: 0.5rem; font-weight: 600;">📝 Guide's Presentation Review</h6>
+                        <p style="color: #e5e7eb; margin: 0; white-space: pre-wrap;">{{ second_group_eval.guide_review }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if second_group_eval.coordinator_review %}
+                    <div class="mt-3" style="padding: 1rem; background: rgba(52, 211, 153, 0.08); border-radius: 8px; border: 1px solid rgba(52, 211, 153, 0.2);">
+                        <h6 style="color: #6ee7b7; margin-bottom: 0.5rem; font-weight: 600;">📝 Coordinator's Presentation Review</h6>
+                        <p style="color: #e5e7eb; margin: 0; white-space: pre-wrap;">{{ second_group_eval.coordinator_review }}</p>
+                    </div>
+                    {% endif %}
+                {% endif %}
+                
+                {% elif second_eval %}
+                <div class="mt-3">
+                    <div style="padding: 1rem; background: rgba(52, 211, 153, 0.08); border-radius: 8px; border: 1px solid rgba(52, 211, 153, 0.2);">
+                        <p style="margin: 0.5rem 0; color: #e5e7eb;">
+                            {% if second_eval.guide_submitted %}
+                            ✓ <strong>Guide Evaluated</strong>
+                            {% else %}
+                            ⏸ Guide Evaluation Pending
+                            {% endif %}
+                        </p>
+                        <p style="margin: 0.5rem 0; color: #e5e7eb;">
+                            {% if second_eval.coordinator_submitted %}
+                            ✓ <strong>Coordinator Evaluated</strong>
+                            {% else %}
+                            ⏸ Coordinator Evaluation Pending
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Presentation Reviews (shown even when in progress) -->
+                {% if second_group_eval %}
+                    {% if second_group_eval.guide_review %}
+                    <div class="mt-3" style="padding: 1rem; background: rgba(52, 211, 153, 0.08); border-radius: 8px; border: 1px solid rgba(52, 211, 153, 0.2);">
+                        <h6 style="color: #6ee7b7; margin-bottom: 0.5rem; font-weight: 600;">📝 Guide's Presentation Review</h6>
+                        <p style="color: #e5e7eb; margin: 0; white-space: pre-wrap;">{{ second_group_eval.guide_review }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if second_group_eval.coordinator_review %}
+                    <div class="mt-3" style="padding: 1rem; background: rgba(52, 211, 153, 0.08); border-radius: 8px; border: 1px solid rgba(52, 211, 153, 0.2);">
+                        <h6 style="color: #6ee7b7; margin-bottom: 0.5rem; font-weight: 600;">📝 Coordinator's Presentation Review</h6>
+                        <p style="color: #e5e7eb; margin: 0; white-space: pre-wrap;">{{ second_group_eval.coordinator_review }}</p>
+                    </div>
+                    {% endif %}
+                {% endif %}
+                {% else %}
+                <p style="color: #9ca3af; margin-bottom: 1rem;">Waiting for evaluators to begin assessment.</p>
+                {% endif %}
+            </div>
+            {% else %}
+            <!-- First not finalized - show locked Second Evaluation -->
+            <div class="info-card mt-4" style="opacity:0.4; pointer-events:none;">
+                <h5 style="color: #34d399; margin-bottom: 1rem;"><i class="bi bi-clipboard-check"></i> Second Evaluation</h5>
+                <div class="alert alert-warning" style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3);">
+                    <strong>🔒 Locked:</strong> Complete First Evaluation to unlock Second Evaluation.
+                </div>
+            </div>
+            {% endif %}
+            {% endwith %}
+
             {% else %}
             <div class="info-card">
                 <p style="color: #9ca3af;">You must be in a group to access evaluation features.</p>

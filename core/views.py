@@ -2,11 +2,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Prefetch, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 
-from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, Notification, StudentProfile, FacultyProfile, SustainableDevelopmentGoal, GroupEvaluation, EvaluationFile
+from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, Notification, StudentProfile, FacultyProfile, SustainableDevelopmentGoal, GroupEvaluation, EvaluationFile, StudentEvaluation
 
 
 def _is_student(user):
@@ -114,6 +115,19 @@ def dashboard(request):
 		'evaluations': evaluations,
 	}
 	return render(request, "dashboard.html", context)
+
+
+@login_required
+def switch_role(request):
+	if not _has_dual_faculty_roles(request.user):
+		return redirect("dashboard")
+	active_role = _get_active_faculty_role(request)
+	if active_role == "guide":
+		request.session["active_role"] = "coordinator"
+		return redirect("coordinator_dashboard")
+	else:
+		request.session["active_role"] = "guide"
+		return redirect("guide_dashboard")
 
 
 @login_required
@@ -257,6 +271,7 @@ def mini_project(request):
 	# Get evaluation files and evaluations for the group
 	evaluation_files = {}
 	evaluations = {}
+	student_evaluations = {}
 	if group:
 		evaluation_files = {
 			"zeroth": EvaluationFile.objects.filter(group=group, stage="zeroth").first(),
@@ -269,6 +284,12 @@ def mini_project(request):
 			"first": GroupEvaluation.objects.filter(group=group, stage="first").first(),
 			"second": GroupEvaluation.objects.filter(group=group, stage="second").first(),
 			"final": GroupEvaluation.objects.filter(group=group, stage="final").first(),
+		}
+		
+		# Get student evaluations for current user
+		student_evaluations = {
+			"first": StudentEvaluation.objects.filter(student=request.user, stage="first").first(),
+			"second": StudentEvaluation.objects.filter(student=request.user, stage="second").first(),
 		}
 
 	# Official SDG names for display
@@ -328,6 +349,7 @@ def mini_project(request):
 		"selected_topic": selected_topic,
 		"evaluation_files": evaluation_files,
 		"evaluations": evaluations,
+		"student_evaluations": student_evaluations,
 	}
 	return render(request, "mini_project.html", context)
 
@@ -550,6 +572,7 @@ def guide_dashboard(request):
 	# Get evaluations for assigned groups
 	evaluations_by_group = {}
 	evaluation_files_by_group = {}
+	student_evaluations_by_group = {}
 	for group_id in group_ids:
 		evaluations_by_group[group_id] = {
 			"zeroth": GroupEvaluation.objects.filter(group_id=group_id, stage="zeroth").first(),
@@ -563,6 +586,19 @@ def guide_dashboard(request):
 			"second": EvaluationFile.objects.filter(group_id=group_id, stage="second").first(),
 			"final": EvaluationFile.objects.filter(group_id=group_id, stage="final").first(),
 		}
+		
+		# Get student evaluations for this group
+		group_members = GroupMember.objects.filter(group_id=group_id).select_related("user")
+		student_evaluations_by_group[group_id] = {
+			"first": {
+				member.user.id: StudentEvaluation.objects.filter(student=member.user, stage="first").first()
+				for member in group_members
+			},
+			"second": {
+				member.user.id: StudentEvaluation.objects.filter(student=member.user, stage="second").first()
+				for member in group_members
+			}
+		}
 
 	assigned_groups = [
 		{
@@ -570,12 +606,40 @@ def guide_dashboard(request):
 			"sdg": sdg_by_group_id.get(guide_request.group_id),
 			"evaluations": evaluations_by_group.get(guide_request.group_id, {}),
 			"evaluation_files": evaluation_files_by_group.get(guide_request.group_id, {}),
+			"student_evaluations": student_evaluations_by_group.get(guide_request.group_id, {}),
+			"members": GroupMember.objects.filter(group=guide_request.group).select_related("user"),
+			# Add flags for evaluation completion status
+			"first_complete": all(
+				eval_obj and eval_obj.finalized
+				for eval_obj in student_evaluations_by_group.get(guide_request.group_id, {}).get("first", {}).values()
+			),
+			"second_complete": all(
+				eval_obj and eval_obj.finalized
+				for eval_obj in student_evaluations_by_group.get(guide_request.group_id, {}).get("second", {}).values()
+			),
 		}
 		for guide_request in accepted_requests
 	]
 
+	# Get pending guide requests for the requests tab
+	pending_requests = GuideRequest.objects.filter(
+		guide=request.user,
+		status=GuideRequest.STATUS_PENDING
+	).select_related("group", "group__leader", "group__leader__student_profile")
+
+	# Get abstracts for the review abstracts tab
+	all_abstracts = Abstract.objects.filter(group_id__in=group_ids).select_related("group", "group__leader").order_by("-submitted_at")
+	pending_abstracts = all_abstracts.filter(guide_status=Abstract.STATUS_PENDING)
+	approved_abstracts = all_abstracts.filter(guide_status=Abstract.STATUS_APPROVED)
+	rejected_abstracts = all_abstracts.filter(guide_status=Abstract.STATUS_REJECTED)
+
 	context = {
 		"assigned_groups": assigned_groups,
+		"pending_requests": pending_requests,
+		"pending_abstracts": pending_abstracts,
+		"approved_abstracts": approved_abstracts,
+		"rejected_abstracts": rejected_abstracts,
+		"is_dual_role": _has_dual_faculty_roles(request.user),
 	}
 	return render(request, "guide_dashboard.html", context)
 
@@ -603,7 +667,7 @@ def guide_requests(request):
 			guide_request_obj.status = GuideRequest.STATUS_REJECTED
 			guide_request_obj.save()
 			messages.info(request, "Request rejected.")
-		return redirect("guide_requests")
+		return HttpResponseRedirect(reverse("guide_dashboard") + "#requests")
 
 	pending_requests = GuideRequest.objects.filter(guide=request.user, status=GuideRequest.STATUS_PENDING).select_related("group", "group__leader", "group__leader__student_profile")
 	context = {"pending_requests": pending_requests}
@@ -929,11 +993,11 @@ def coordinator_dashboard(request):
 			abstract_class = getattr(getattr(abstract.group.leader, "student_profile", None), "class_name", None)
 			if abstract_class not in assigned_classes_for_post:
 				messages.error(request, "You are not authorized to review this abstract.")
-				return redirect("coordinator_dashboard")
+				return HttpResponseRedirect(reverse("coordinator_dashboard") + "#topics")
 
 			if abstract.guide_status != Abstract.STATUS_APPROVED or abstract.coordinator_status != Abstract.STATUS_PENDING:
 				messages.error(request, "This abstract is not available for coordinator review.")
-				return redirect("coordinator_dashboard")
+				return HttpResponseRedirect(reverse("coordinator_dashboard") + "#topics")
 
 			if abstract_action == "approve":
 				abstract.coordinator_status = Abstract.STATUS_APPROVED
@@ -964,13 +1028,13 @@ def coordinator_dashboard(request):
 				messages.info(request, "Abstract rejected by coordinator.")
 			else:
 				messages.error(request, "Invalid abstract review action.")
-			return redirect("coordinator_dashboard")
+			return HttpResponseRedirect(reverse("coordinator_dashboard") + "#topics")
 
 		approval_id = request.POST.get("approval_id")
 		action = request.POST.get("action")
 		if not approval_id:
 			messages.error(request, "Invalid coordinator action.")
-			return redirect("coordinator_dashboard")
+			return HttpResponseRedirect(reverse("coordinator_dashboard") + "#approvals")
 		approval = get_object_or_404(CoordinatorApproval, id=approval_id, coordinator=request.user)
 
 		if action == "approve":
@@ -981,7 +1045,7 @@ def coordinator_dashboard(request):
 			approval.status = CoordinatorApproval.STATUS_REJECTED
 			approval.save()
 			messages.info(request, "Group rejected.")
-		return redirect("coordinator_dashboard")
+		return HttpResponseRedirect(reverse("coordinator_dashboard") + "#approvals")
 
 	faculty_profile = request.user.faculty_profile
 	coordinator_dept = faculty_profile.department
@@ -1054,6 +1118,19 @@ def coordinator_dashboard(request):
 			"final": EvaluationFile.objects.filter(group=group, stage="final").first(),
 		}
 
+		# Get student evaluations for this group
+		group_members = GroupMember.objects.filter(group=group).select_related("user")
+		student_evaluations = {
+			"first": {
+				member.user.id: StudentEvaluation.objects.filter(student=member.user, stage="first").first()
+				for member in group_members
+			},
+			"second": {
+				member.user.id: StudentEvaluation.objects.filter(student=member.user, stage="second").first()
+				for member in group_members
+			}
+		}
+
 		group_details.append({
 			"group": group,
 			"class_name": getattr(getattr(group.leader, "student_profile", None), "class_name", None),
@@ -1068,6 +1145,16 @@ def coordinator_dashboard(request):
 			"sdg": sdg_entry,
 			"evaluations": group_evaluations,
 			"evaluation_files": evaluation_files,
+			"student_evaluations": student_evaluations,
+			# Add flags for evaluation completion status
+			"first_complete": all(
+				eval_obj and eval_obj.finalized
+				for eval_obj in student_evaluations.get("first", {}).values()
+			),
+			"second_complete": all(
+				eval_obj and eval_obj.finalized
+				for eval_obj in student_evaluations.get("second", {}).values()
+			),
 		})
 
 	pending_approvals = CoordinatorApproval.objects.filter(
@@ -1087,6 +1174,7 @@ def coordinator_dashboard(request):
 		"assigned_classes": assigned_classes,
 		"group_details": group_details,
 		"coordinator_pending_abstracts": coordinator_pending_abstracts,
+		"is_dual_role": _has_dual_faculty_roles(request.user),
 	}
 	return render(request, "coordinator_dashboard.html", context)
 
@@ -1415,3 +1503,143 @@ def download_evaluation_file(request, file_id):
 	response = HttpResponse(eval_file.file_data, content_type=eval_file.file_type)
 	response['Content-Disposition'] = f'attachment; filename="{eval_file.file_name}"'
 	return response
+
+
+def _update_finalized_status(group, stage):
+	"""Update finalized status for all students in a group for a given stage."""
+	evaluations = StudentEvaluation.objects.filter(group=group, stage=stage)
+	for evaluation in evaluations:
+		if evaluation.guide_submitted and evaluation.coordinator_submitted:
+			evaluation.finalized = True
+			evaluation.save(update_fields=['finalized'])
+
+
+@login_required
+def submit_guide_student_evaluation(request, group_id, stage):
+	"""Handle guide submission for student evaluations (First/Second)."""
+	if not _is_guide(request.user):
+		messages.error(request, "Only guides can submit evaluations.")
+		return redirect("dashboard")
+
+	group = get_object_or_404(Group, id=group_id)
+	
+	# Verify the guide is assigned to this group
+	if not GuideRequest.objects.filter(group=group, guide=request.user, status=GuideRequest.STATUS_ACCEPTED).exists():
+		messages.error(request, "You are not the guide for this group.")
+		return redirect("guide_dashboard")
+
+	if request.method == "POST":
+		# Get all group members
+		members = GroupMember.objects.filter(group=group).select_related("user")
+		
+		# Process marks for each student
+		for member in members:
+			student = member.user
+			evaluation, created = StudentEvaluation.objects.get_or_create(
+				student=student,
+				group=group,
+				stage=stage
+			)
+
+			# Get marks from POST data (prefixed with student_id) - allow editing
+			prefix = f"student_{student.id}_"
+			evaluation.guide_topic = int(request.POST.get(f"{prefix}topic", 0) or 0)
+			evaluation.guide_planning = int(request.POST.get(f"{prefix}planning", 0) or 0)
+			evaluation.guide_scalability = int(request.POST.get(f"{prefix}scalability", 0) or 0)
+			evaluation.guide_novelty = int(request.POST.get(f"{prefix}novelty", 0) or 0)
+			evaluation.guide_task_distribution = int(request.POST.get(f"{prefix}task_distribution", 0) or 0)
+			evaluation.guide_schedule = int(request.POST.get(f"{prefix}schedule", 0) or 0)
+			evaluation.guide_interim = int(request.POST.get(f"{prefix}interim", 0) or 0)
+			evaluation.guide_presentation = int(request.POST.get(f"{prefix}presentation", 0) or 0)
+			evaluation.guide_viva = int(request.POST.get(f"{prefix}viva", 0) or 0)
+			evaluation.guide_submitted = True
+			# Finalize only if both guide and coordinator have submitted
+			if evaluation.guide_submitted and evaluation.coordinator_submitted:
+				evaluation.finalized = True
+			evaluation.save()
+
+		# Save presentation review (group-level)
+		presentation_review = request.POST.get('presentation_review', '').strip()
+		group_eval, created = GroupEvaluation.objects.get_or_create(
+			group=group,
+			stage=stage
+		)
+		group_eval.guide_review = presentation_review
+		group_eval.save()
+
+		# Ensure all students have finalized status updated
+		_update_finalized_status(group, stage)
+
+		messages.success(request, f"{stage.capitalize()} Evaluation submitted successfully for all students!")
+		return redirect("guide_dashboard")
+
+	return redirect("guide_dashboard")
+
+
+@login_required
+def submit_coordinator_student_evaluation(request, group_id, stage):
+	"""Handle coordinator submission for student evaluations (First/Second)."""
+	if not _is_coordinator(request.user):
+		messages.error(request, "Only coordinators can submit evaluations.")
+		return redirect("dashboard")
+
+	# Handle dual role
+	role_redirect = _ensure_active_role_for_dual_faculty(request, "coordinator")
+	if role_redirect:
+		return role_redirect
+
+	group = get_object_or_404(Group, id=group_id)
+	
+	# Verify the coordinator's department matches the group's department
+	coordinator_profile = request.user.faculty_profile
+	group_dept = getattr(getattr(group.leader, "student_profile", None), "department", None)
+	if coordinator_profile.department != group_dept:
+		messages.error(request, "You can only evaluate groups from your department.")
+		return redirect("coordinator_dashboard")
+
+	if request.method == "POST":
+		# Get all group members
+		members = GroupMember.objects.filter(group=group).select_related("user")
+		
+		# Process marks for each student (coordinator can submit independently of guide)
+		for member in members:
+			student = member.user
+			evaluation, created = StudentEvaluation.objects.get_or_create(
+				student=student,
+				group=group,
+				stage=stage
+			)
+
+			# Get marks from POST data (prefixed with student_id) - allow editing
+			prefix = f"student_{student.id}_"
+			evaluation.coordinator_topic = int(request.POST.get(f"{prefix}topic", 0) or 0)
+			evaluation.coordinator_planning = int(request.POST.get(f"{prefix}planning", 0) or 0)
+			evaluation.coordinator_scalability = int(request.POST.get(f"{prefix}scalability", 0) or 0)
+			evaluation.coordinator_novelty = int(request.POST.get(f"{prefix}novelty", 0) or 0)
+			evaluation.coordinator_task_distribution = int(request.POST.get(f"{prefix}task_distribution", 0) or 0)
+			evaluation.coordinator_schedule = int(request.POST.get(f"{prefix}schedule", 0) or 0)
+			evaluation.coordinator_interim = int(request.POST.get(f"{prefix}interim", 0) or 0)
+			evaluation.coordinator_presentation = int(request.POST.get(f"{prefix}presentation", 0) or 0)
+			evaluation.coordinator_viva = int(request.POST.get(f"{prefix}viva", 0) or 0)
+			evaluation.coordinator_submitted = True
+			# Finalize only if both guide and coordinator have submitted
+			if evaluation.guide_submitted and evaluation.coordinator_submitted:
+				evaluation.finalized = True
+			evaluation.save()
+
+		# Save presentation review (group-level)
+		presentation_review = request.POST.get('presentation_review', '').strip()
+		group_eval, created = GroupEvaluation.objects.get_or_create(
+			group=group,
+			stage=stage
+		)
+		group_eval.coordinator_review = presentation_review
+		group_eval.save()
+
+		# Ensure all students have finalized status updated
+		_update_finalized_status(group, stage)
+
+		messages.success(request, f"{stage.capitalize()} Evaluation submitted successfully for all students!")
+		return redirect("coordinator_dashboard")
+
+	return redirect("coordinator_dashboard")
