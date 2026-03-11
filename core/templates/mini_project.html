@@ -470,8 +470,8 @@
             <li><a href="#group" class="tab-link active"><i class="bi bi-people-fill"></i> Group</a></li>
             <li><a href="#requests" class="tab-link"><i class="bi bi-inbox"></i> Requests</a></li>
             <li><a href="#guide" class="tab-link"><i class="bi bi-person-badge"></i> Guide</a></li>
-            <li><a href="#sdg" class="tab-link"><i class="bi bi-globe"></i> SDG</a></li>
             <li><a href="#abstract" class="tab-link"><i class="bi bi-file-text"></i> Abstract</a></li>
+            <li><a href="#sdg" class="tab-link"><i class="bi bi-globe"></i> SDG</a></li>
             <li><a href="#evaluation" class="tab-link"><i class="bi bi-clipboard-check"></i> Evaluation</a></li>
         </ul>
 
@@ -759,6 +759,7 @@
         <!-- Evaluation Tab -->
         <div id="evaluation" class="tab-content">
             {% if group %}
+            {% if selected_topic %}
             <div class="info-card">
                 <h5 style="color: #fbbf24; margin-bottom: 1rem;"><i class="bi bi-clipboard-check"></i> Zeroth Evaluation</h5>
                 
@@ -806,15 +807,15 @@
                     </div>
                     {% endif %}
                     
-                    {% if eval.coordinator_review %}
+                    {% if eval.coordinator1_review or eval.coordinator2_review or eval.coordinator_review %}
                     <div class="mb-3" style="background: rgba(99, 102, 241, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.3);">
                         <strong style="color: #a5b4fc; font-size: 0.9rem;">📝 Coordinator's Review:</strong>
-                        <p style="color: #e5e7eb; margin: 0.5rem 0 0; font-size: 0.9rem;">{{ eval.coordinator_review }}</p>
+                        <p style="color: #e5e7eb; margin: 0.5rem 0 0; font-size: 0.9rem;">{{ eval.coordinator1_review|default:eval.coordinator2_review|default:eval.coordinator_review }}</p>
                     </div>
                     {% endif %}
                     
-                    {% if not eval.guide_review and not eval.coordinator_review %}
-                    <p class="text-muted small" style="margin: 0;">Both evaluations completed. No written reviews provided.</p>
+                    {% if not eval.guide_review and not eval.coordinator1_review and not eval.coordinator2_review and not eval.coordinator_review %}
+                    <p class="text-muted small" style="margin: 0;">Evaluation completed. No written reviews provided.</p>
                     {% endif %}
                 </div>
                 {% elif eval %}
@@ -822,16 +823,24 @@
                     <p class="text-muted small" style="margin: 0;">
                         ⏳ Evaluation in progress
                         {% if eval.guide_submitted %}(Guide: ✓){% else %}(Guide: ⏸){% endif %}
-                        {% if eval.coordinator_submitted %}(Coordinator: ✓){% else %}(Coordinator: ⏸){% endif %}
+                        {% if eval.coordinator1_submitted or eval.coordinator2_submitted or eval.coordinator_submitted %}(Coordinator: ✓){% else %}(Coordinator: ⏸){% endif %}
                     </p>
                 </div>
                 {% endif %}
                 {% endwith %}
             </div>
+            {% else %}
+            <div class="info-card" style="opacity: 0.6;">
+                <h5 style="color: #fbbf24; margin-bottom: 1rem;"><i class="bi bi-clipboard-check"></i> Zeroth Evaluation</h5>
+                <div class="alert alert-warning mb-0" style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3);">
+                    <strong>🔒 Locked:</strong> Zeroth Evaluation unlocks only after abstract approval.
+                </div>
+            </div>
+            {% endif %}
 
             <!-- First Evaluation -->
             {% with zeroth_eval=evaluations.zeroth first_eval=student_evaluations.first first_group_eval=evaluations.first %}
-            {% if zeroth_eval and zeroth_eval.guide_submitted and zeroth_eval.coordinator_submitted %}
+            {% if zeroth_eval and zeroth_eval.is_completed %}
             <!-- Zeroth completed - show unlocked First Evaluation -->
             <div class="info-card mt-4">
                 <h5 style="color: #60a5fa; margin-bottom: 1rem;"><i class="bi bi-clipboard-check"></i> First Evaluation</h5>

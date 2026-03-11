@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Abstract, CoordinatorApproval, Group, GroupMember, GroupRequest, GuideRequest, Notification, StudentProfile, FacultyProfile, SustainableDevelopmentGoal, GroupEvaluation, EvaluationFile, StudentEvaluation
+from .models import Abstract, CoordinatorApproval, CoordinatorAssignment, Group, GroupMember, GroupRequest, GuideRequest, Notification, StudentProfile, FacultyProfile, SustainableDevelopmentGoal, GroupEvaluation, EvaluationFile, StudentEvaluation
 
 
 def _is_student(user):
@@ -257,11 +257,17 @@ def mini_project(request):
 	group_members = GroupMember.objects.filter(group=group).select_related("user") if group else []
 
 	coordinator_approval = None
+	coordinator_approvals = []
+	is_coordinator_approved = False
 	if group:
-		try:
-			coordinator_approval = CoordinatorApproval.objects.get(group=group)
-		except CoordinatorApproval.DoesNotExist:
-			pass
+		coordinator_approvals = list(CoordinatorApproval.objects.filter(group=group).select_related("coordinator", "coordinator__faculty_profile"))
+		# Check if ANY coordinator has approved
+		is_coordinator_approved = any(approval.status == CoordinatorApproval.STATUS_APPROVED for approval in coordinator_approvals)
+		# For backward compatibility, set coordinator_approval to first approved or first overall
+		if is_coordinator_approved:
+			coordinator_approval = next((a for a in coordinator_approvals if a.status == CoordinatorApproval.STATUS_APPROVED), None)
+		elif coordinator_approvals:
+			coordinator_approval = coordinator_approvals[0]
 
 	sdg_submission = SustainableDevelopmentGoal.objects.filter(group=group).first() if group else None
 	assigned_guide = _get_accepted_guide_for_group(group) if group else None
@@ -269,8 +275,7 @@ def mini_project(request):
 	can_submit_sdg = bool(
 		group
 		and is_leader
-		and coordinator_approval
-		and coordinator_approval.status == CoordinatorApproval.STATUS_APPROVED
+		and is_coordinator_approved
 		and (not sdg_submission or not sdg_submission.is_submitted)
 	)
 
@@ -346,6 +351,8 @@ def mini_project(request):
 		"group_members": group_members,
 		"query": query,
 		"coordinator_approval": coordinator_approval,
+		"coordinator_approvals": coordinator_approvals,
+		"is_coordinator_approved": is_coordinator_approved,
 		"sdg_submission": sdg_submission,
 		"selected_sdgs": selected_sdgs,
 		"selected_wps": selected_wps,
@@ -513,12 +520,15 @@ def guide_request(request):
 		messages.error(request, "Group must have at least 4 members to request a guide.")
 		return redirect("mini_project")
 
-	try:
-		coordinator_approval = CoordinatorApproval.objects.get(group=group)
-		if coordinator_approval.status != CoordinatorApproval.STATUS_APPROVED:
-			messages.error(request, "Your group must be approved by a coordinator before requesting a guide.")
-			return redirect("mini_project")
-	except CoordinatorApproval.DoesNotExist:
+	# Check if any coordinator has approved the group
+	coordinator_approvals = CoordinatorApproval.objects.filter(group=group)
+	is_coordinator_approved = any(approval.status == CoordinatorApproval.STATUS_APPROVED for approval in coordinator_approvals)
+	
+	if not coordinator_approvals.exists():
+		messages.error(request, "Your group must be approved by a coordinator before requesting a guide.")
+		return redirect("mini_project")
+	
+	if not is_coordinator_approved:
 		messages.error(request, "Your group must be approved by a coordinator before requesting a guide.")
 		return redirect("mini_project")
 
@@ -946,30 +956,46 @@ def request_coordinator_approval(request):
 		messages.error(request, "Group must have at least 4 members to request coordinator approval.")
 		return redirect("mini_project")
 
-	if hasattr(group, 'coordinator_approval'):
+	# Check if any coordinator approval already exists for this group
+	existing_approvals = CoordinatorApproval.objects.filter(group=group)
+	if existing_approvals.exists():
 		messages.info(request, "Coordinator approval request already exists.")
 		return redirect("mini_project")
 
-	if request.method == "POST":
-		coordinator_id = request.POST.get("coordinator_id")
-		if not coordinator_id:
-			messages.error(request, "Please select a coordinator.")
-			return redirect("request_coordinator_approval")
-
-		coordinator_user = get_object_or_404(User, id=coordinator_id)
-		if not _is_coordinator(coordinator_user):
-			messages.error(request, "Selected user is not a coordinator.")
-			return redirect("request_coordinator_approval")
-
-		CoordinatorApproval.objects.create(group=group, coordinator=coordinator_user)
-		messages.success(request, "Coordinator approval request sent.")
+	# Get student's class
+	student_profile = getattr(request.user, "student_profile", None)
+	student_class = student_profile.student_class if student_profile else None
+	
+	if not student_class:
+		messages.error(request, "You must be assigned to a class before requesting coordinator approval.")
 		return redirect("mini_project")
 
-	coordinators = User.objects.filter(faculty_profile__is_coordinator=True)
+	# Get coordinators assigned to the student's class
+	coordinator_assignments = CoordinatorAssignment.objects.filter(
+		student_class=student_class
+	).select_related("faculty", "faculty__faculty_profile")
+	
+	coordinators = [assignment.faculty for assignment in coordinator_assignments if _is_coordinator(assignment.faculty)]
+
+	if request.method == "POST":
+		if not coordinators:
+			messages.error(request, "No coordinators are assigned to your class. Please contact the administrator.")
+			return redirect("mini_project")
+
+		# Create approval requests for all assigned coordinators
+		created_count = 0
+		for coordinator in coordinators:
+			CoordinatorApproval.objects.create(group=group, coordinator=coordinator)
+			created_count += 1
+
+		messages.success(request, f"Coordinator approval request sent to {created_count} coordinator(s). Any one coordinator can approve your group.")
+		return redirect("mini_project")
+
 	context = {
 		"coordinators": coordinators,
 		"group": group,
 		"group_size": group_size,
+		"student_class": student_class,
 	}
 	return render(request, "request_coordinator_approval.html", context)
 
@@ -990,13 +1016,14 @@ def coordinator_dashboard(request):
 		if abstract_id and abstract_action:
 			assigned_classes_for_post = list(
 				CoordinatorApproval.objects.filter(coordinator=request.user)
-				.values_list("group__leader__student_profile__class_name", flat=True)
+				.values_list("group__leader__student_profile__student_class__name", flat=True)
 				.distinct()
 			)
 			assigned_classes_for_post = [class_name for class_name in assigned_classes_for_post if class_name]
 
 			abstract = get_object_or_404(Abstract, id=abstract_id)
-			abstract_class = getattr(getattr(abstract.group.leader, "student_profile", None), "class_name", None)
+			student_profile = getattr(abstract.group.leader, "student_profile", None)
+			abstract_class = student_profile.student_class.name if student_profile and student_profile.student_class else None
 			if abstract_class not in assigned_classes_for_post:
 				messages.error(request, "You are not authorized to review this abstract.")
 				return HttpResponseRedirect(reverse("coordinator_dashboard") + "#topics")
@@ -1058,7 +1085,7 @@ def coordinator_dashboard(request):
 
 	assigned_classes = list(
 		CoordinatorApproval.objects.filter(coordinator=request.user)
-		.values_list("group__leader__student_profile__class_name", flat=True)
+		.values_list("group__leader__student_profile__student_class__name", flat=True)
 		.distinct()
 	)
 	assigned_classes = [class_name for class_name in assigned_classes if class_name]
@@ -1071,8 +1098,6 @@ def coordinator_dashboard(request):
 	groups_queryset = groups_queryset.select_related(
 		"leader",
 		"leader__student_profile",
-		"coordinator_approval",
-		"coordinator_approval__coordinator",
 	).prefetch_related(
 		Prefetch(
 			"groupmember_set",
@@ -1085,6 +1110,10 @@ def coordinator_dashboard(request):
 		Prefetch(
 			"abstracts",
 			queryset=Abstract.objects.select_related("reviewed_by").order_by("-submitted_at"),
+		),
+		Prefetch(
+			"coordinator_approvals",
+			queryset=CoordinatorApproval.objects.select_related("coordinator", "coordinator__faculty_profile").order_by("id"),
 		),
 	)
 
@@ -1137,14 +1166,44 @@ def coordinator_dashboard(request):
 			}
 		}
 
+		student_profile = getattr(group.leader, "student_profile", None)
+		class_name = student_profile.student_class.name if student_profile and student_profile.student_class else None
+		coordinator_role = None
+		if student_profile and student_profile.student_class:
+			class_assignments = list(
+				CoordinatorAssignment.objects.filter(student_class=student_profile.student_class)
+				.select_related("faculty")
+				.order_by("id")
+			)
+			for idx, assignment in enumerate(class_assignments, 1):
+				if assignment.faculty_id == request.user.id:
+					coordinator_role = idx
+					break
+		
+		# Get all coordinator approvals for this group
+		coordinator_approvals = list(group.coordinator_approvals.all())
+		# Check if any coordinator has approved
+		is_coordinator_approved = any(approval.status == CoordinatorApproval.STATUS_APPROVED for approval in coordinator_approvals)
+		coordinator_approval = None
+		if is_coordinator_approved:
+			coordinator_approval = next(
+				(approval for approval in coordinator_approvals if approval.status == CoordinatorApproval.STATUS_APPROVED),
+				None,
+			)
+		elif coordinator_approvals:
+			coordinator_approval = coordinator_approvals[0]
+		
 		group_details.append({
 			"group": group,
-			"class_name": getattr(getattr(group.leader, "student_profile", None), "class_name", None),
-			"department": getattr(getattr(group.leader, "student_profile", None), "department", None),
+			"class_name": class_name,
+			"department": getattr(student_profile, "department", None),
 			"leader_profile": getattr(group.leader, "student_profile", None),
 			"members": members,
 			"group_size": len(members),
-			"coordinator_approval": getattr(group, "coordinator_approval", None),
+			"coordinator_role": coordinator_role,
+			"coordinator_approval": coordinator_approval,
+			"coordinator_approvals": coordinator_approvals,
+			"is_coordinator_approved": is_coordinator_approved,
 			"latest_guide_request": latest_guide_request,
 			"assigned_guide": assigned_guide,
 			"approved_abstract": approved_abstract,
@@ -1171,7 +1230,7 @@ def coordinator_dashboard(request):
 	coordinator_pending_abstracts = Abstract.objects.filter(
 		guide_status=Abstract.STATUS_APPROVED,
 		coordinator_status=Abstract.STATUS_PENDING,
-		group__leader__student_profile__class_name__in=assigned_classes,
+		group__leader__student_profile__student_class__name__in=assigned_classes,
 	).select_related("group", "group__leader").order_by("-submitted_at")
 
 	context = {
@@ -1556,7 +1615,7 @@ def _update_finalized_status(group, stage):
 	"""Update finalized status for all students in a group for a given stage."""
 	evaluations = StudentEvaluation.objects.filter(group=group, stage=stage)
 	for evaluation in evaluations:
-		if evaluation.guide_submitted and evaluation.coordinator_submitted:
+		if evaluation.guide_submitted and evaluation.coordinator1_submitted and evaluation.coordinator2_submitted:
 			evaluation.finalized = True
 			evaluation.save(update_fields=['finalized'])
 
@@ -1600,8 +1659,8 @@ def submit_guide_student_evaluation(request, group_id, stage):
 			evaluation.guide_presentation = int(request.POST.get(f"{prefix}presentation", 0) or 0)
 			evaluation.guide_viva = int(request.POST.get(f"{prefix}viva", 0) or 0)
 			evaluation.guide_submitted = True
-			# Finalize only if both guide and coordinator have submitted
-			if evaluation.guide_submitted and evaluation.coordinator_submitted:
+			# Finalize only if guide and both coordinators have submitted
+			if evaluation.guide_submitted and evaluation.coordinator1_submitted and evaluation.coordinator2_submitted:
 				evaluation.finalized = True
 			evaluation.save()
 

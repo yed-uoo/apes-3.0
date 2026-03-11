@@ -326,8 +326,10 @@
         text-align: center;
         font-weight: 600;
         border-radius: 6px;
+        padding-right: 28px;
         -webkit-appearance: none;
-        appearance: none;
+        appearance: textfield;
+        -moz-appearance: textfield;
     }
 
     input[type="number"].form-control:focus,
@@ -344,8 +346,62 @@
 
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button {
-        opacity: 0.6;
-        filter: invert(1);
+        -webkit-appearance: none;
+        margin: 0;
+        opacity: 0;
+    }
+
+    .number-stepper-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .number-stepper-wrapper input[type="number"] {
+        width: 100%;
+    }
+
+    .number-stepper-controls {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        bottom: 2px;
+        width: 22px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-radius: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(148, 163, 184, 0.12);
+    }
+
+    .number-stepper-btn {
+        flex: 1;
+        border: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.08);
+        color: #f8fafc;
+        font-size: 10px;
+        line-height: 1;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .number-stepper-btn + .number-stepper-btn {
+        border-top: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .number-stepper-btn:hover {
+        background: rgba(249, 115, 22, 0.22);
+        color: #ffffff;
+    }
+
+    .number-stepper-btn:focus {
+        outline: none;
+        background: rgba(249, 115, 22, 0.28);
     }
 
     .eval-table {
@@ -378,6 +434,28 @@
         border-color: rgba(255, 255, 255, 0.15) !important;
         background: #111827 !important;
         background-color: #111827 !important;
+    }
+
+    /* Keep abstract review tables readable on dark theme */
+    #abstracts .table {
+        color: #e5e7eb;
+    }
+
+    #abstracts .table thead th {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: #e5e7eb !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    #abstracts .table tbody td {
+        background: rgba(15, 23, 42, 0.75) !important;
+        color: #e5e7eb !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    #abstracts .table-hover > tbody > tr:hover > * {
+        background: rgba(30, 41, 59, 0.9) !important;
+        color: #f8fafc !important;
     }
 </style>
 
@@ -534,10 +612,10 @@
                                     {% endif %}
                                     {% if eval.is_completed %}
                                     <div class="mt-2"><strong>✓ Coordinator also submitted - Evaluation Complete!</strong></div>
-                                    {% if eval.coordinator_review %}
+                                    {% if eval.coordinator1_review or eval.coordinator2_review or eval.coordinator_review %}
                                     <div class="mt-2" style="background: rgba(255, 255, 255, 0.05); padding: 0.75rem; border-radius: 6px;">
                                         <strong style="color: #a78bfa;">Coordinator's Review:</strong>
-                                        <p style="color: #e5e7eb; margin: 0.5rem 0 0;">{{ eval.coordinator_review }}</p>
+                                        <p style="color: #e5e7eb; margin: 0.5rem 0 0;">{{ eval.coordinator1_review|default:eval.coordinator2_review|default:eval.coordinator_review }}</p>
                                     </div>
                                     {% endif %}
                                     {% else %}
@@ -782,7 +860,7 @@
                             <h6 style="color: #e5e7eb; margin-bottom: 8px;">Group Leader: {{ request.group.leader.username }}</h6>
                             {% if request.group.leader.student_profile %}
                                 <p style="color: #9ca3af; margin: 4px 0;">
-                                    <strong>Class:</strong> {{ request.group.leader.student_profile.class_name|default:"N/A" }}
+                                    <strong>Class:</strong> {{ request.group.leader.student_profile.student_class.name|default:"N/A" }}
                                 </p>
                                 <p style="color: #9ca3af; margin: 4px 0;">
                                     <strong>Department:</strong> {{ request.group.leader.student_profile.department|default:"N/A" }}
@@ -960,6 +1038,52 @@
 </div>
 
 <script>
+    function enhanceEvaluationNumberInputs() {
+        document.querySelectorAll('.eval-table input[type="number"]').forEach(input => {
+            if (input.parentElement && input.parentElement.classList.contains('number-stepper-wrapper')) {
+                return;
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'number-stepper-wrapper';
+
+            const controls = document.createElement('div');
+            controls.className = 'number-stepper-controls';
+
+            const increaseBtn = document.createElement('button');
+            increaseBtn.type = 'button';
+            increaseBtn.className = 'number-stepper-btn';
+            increaseBtn.setAttribute('aria-label', 'Increase value');
+            increaseBtn.innerHTML = '&#9650;';
+
+            const decreaseBtn = document.createElement('button');
+            decreaseBtn.type = 'button';
+            decreaseBtn.className = 'number-stepper-btn';
+            decreaseBtn.setAttribute('aria-label', 'Decrease value');
+            decreaseBtn.innerHTML = '&#9660;';
+
+            increaseBtn.addEventListener('click', () => {
+                input.stepUp();
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+                input.focus();
+            });
+
+            decreaseBtn.addEventListener('click', () => {
+                input.stepDown();
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+                input.focus();
+            });
+
+            input.parentNode.insertBefore(wrapper, input);
+            wrapper.appendChild(input);
+            controls.appendChild(increaseBtn);
+            controls.appendChild(decreaseBtn);
+            wrapper.appendChild(controls);
+        });
+    }
+
     // Tab switching functionality
     document.querySelectorAll('.tab-link').forEach(link => {
         link.addEventListener('click', function(e) {
@@ -985,6 +1109,8 @@
 
     // Handle URL fragment on page load
     window.addEventListener('DOMContentLoaded', function() {
+        enhanceEvaluationNumberInputs();
+
         const hash = window.location.hash.substring(1); // Remove the # symbol
         if (hash) {
             // Remove active class from all tabs and links

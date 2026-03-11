@@ -52,7 +52,7 @@
                         {% if req.group.leader.student_profile %}
                         <div>
                             <strong style="color: #e5e7eb;">Class:</strong>
-                            <span style="color: #9ca3af;">{{ req.group.leader.student_profile.class_name|default:"N/A" }}</span>
+                            <span style="color: #9ca3af;">{{ req.group.leader.student_profile.student_class.name|default:"N/A" }}</span>
                         </div>
                         <div>
                             <strong style="color: #e5e7eb;">Roll Number:</strong>

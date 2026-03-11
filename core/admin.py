@@ -25,16 +25,16 @@ class CoordinatorAssignmentAdmin(admin.ModelAdmin):
 
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
-	list_display = ("user", "student_class", "class_name", "roll_number", "register_number", "department", "cgp")
+	list_display = ("user", "student_class", "roll_number", "register_number", "department", "cgp")
 	search_fields = ("user__username", "user__email", "user__first_name", "user__last_name", "roll_number", "register_number")
-	list_filter = ("department", "class_name", "student_class")
+	list_filter = ("department", "student_class")
 	ordering = ("user__username",)
 	fieldsets = (
 		("User Information", {
 			"fields": ("user",)
 		}),
 		("Academic Details", {
-			"fields": ("student_class", "class_name", "roll_number", "register_number", "department", "cgp")
+			"fields": ("student_class", "roll_number", "register_number", "department", "cgp")
 		}),
 	)
 

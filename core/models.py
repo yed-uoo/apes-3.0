@@ -30,7 +30,6 @@ class CoordinatorAssignment(models.Model):
 
 class StudentProfile(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="student_profile")
-	class_name = models.CharField(max_length=100, blank=True, null=True)  # Keep for backward compatibility
 	student_class = models.ForeignKey(Class, on_delete=models.SET_NULL, null=True, blank=True, related_name="students")
 	roll_number = models.CharField(max_length=50, blank=True, null=True)
 	register_number = models.CharField(max_length=50, blank=True, null=True)
@@ -303,8 +302,17 @@ class GroupEvaluation(models.Model):
 		return f"{self.group.leader.username} - {self.get_stage_display()}"
 
 	@property
+	def zeroth_completed(self):
+		"""Zeroth stage is complete when guide and any one coordinator have submitted."""
+		return self.guide_submitted and (
+			self.coordinator1_submitted or self.coordinator2_submitted or self.coordinator_submitted
+		)
+
+	@property
 	def is_completed(self):
-		"""Returns True if guide and both coordinators have submitted."""
+		"""Stage-aware completion: zeroth allows any one coordinator; later stages require both."""
+		if self.stage == "zeroth":
+			return self.zeroth_completed
 		return self.guide_submitted and self.coordinator1_submitted and self.coordinator2_submitted
 
 

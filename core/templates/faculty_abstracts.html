@@ -33,6 +33,33 @@
     .nav-link:hover {
         color: #fbbf24 !important;
     }
+
+    /* Keep abstract review tables readable on dark background */
+    #abstractTabsContent .table {
+        --bs-table-bg: rgba(15, 23, 42, 0.86);
+        --bs-table-color: #e5e7eb;
+        --bs-table-border-color: rgba(255, 255, 255, 0.1);
+        --bs-table-hover-bg: rgba(30, 41, 59, 0.95);
+        --bs-table-hover-color: #f8fafc;
+        color: #e5e7eb !important;
+    }
+
+    #abstractTabsContent .table thead th {
+        background: rgba(30, 41, 59, 0.9) !important;
+        color: #cbd5e1 !important;
+        border-color: rgba(255, 255, 255, 0.14) !important;
+    }
+
+    #abstractTabsContent .table tbody td {
+        background: rgba(15, 23, 42, 0.86) !important;
+        color: #e5e7eb !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    #abstractTabsContent .table-hover > tbody > tr:hover > * {
+        background: rgba(30, 41, 59, 0.95) !important;
+        color: #f8fafc !important;
+    }
 </style>
 
 <div class="tab-content" id="abstractTabsContent">

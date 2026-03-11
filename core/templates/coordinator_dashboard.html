@@ -395,8 +395,10 @@
         text-align: center;
         font-weight: 600;
         border-radius: 6px;
+        padding-right: 28px;
         -webkit-appearance: none;
-        appearance: none;
+        appearance: textfield;
+        -moz-appearance: textfield;
     }
 
     input[type="number"].form-control:focus,
@@ -411,11 +413,65 @@
         outline: none;
     }
 
-    /* Spinner arrow buttons inside number inputs */
+    /* Hide native spinner buttons in favor of custom light steppers */
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button {
-        opacity: 0.6;
-        filter: invert(1);
+        -webkit-appearance: none;
+        margin: 0;
+        opacity: 0;
+    }
+
+    .number-stepper-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .number-stepper-wrapper input[type="number"] {
+        width: 100%;
+    }
+
+    .number-stepper-controls {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        bottom: 2px;
+        width: 22px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-radius: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(148, 163, 184, 0.12);
+    }
+
+    .number-stepper-btn {
+        flex: 1;
+        border: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.08);
+        color: #f8fafc;
+        font-size: 10px;
+        line-height: 1;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .number-stepper-btn + .number-stepper-btn {
+        border-top: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .number-stepper-btn:hover {
+        background: rgba(249, 115, 22, 0.22);
+        color: #ffffff;
+    }
+
+    .number-stepper-btn:focus {
+        outline: none;
+        background: rgba(249, 115, 22, 0.28);
     }
 
     /* Evaluation table rows and cells */
@@ -741,13 +797,13 @@
                                             </div>
                                         </div>
                                         
-                                        {% if eval and eval.coordinator_submitted %}
+                                        {% if eval and item.coordinator_role == 1 and eval.coordinator1_submitted or eval and item.coordinator_role == 2 and eval.coordinator2_submitted %}
                                             <div class="alert alert-success">
                                                 ✅ Your evaluation submitted
-                                                {% if eval.coordinator_review %}
+                                                {% if item.coordinator_role == 1 and eval.coordinator1_review or item.coordinator_role == 2 and eval.coordinator2_review %}
                                                 <div class="mt-2" style="background: rgba(255, 255, 255, 0.05); padding: 0.75rem; border-radius: 6px;">
                                                     <strong style="color: #fbbf24;">Your Review:</strong>
-                                                    <p style="color: #e5e7eb; margin: 0.5rem 0 0;">{{ eval.coordinator_review }}</p>
+                                                    <p style="color: #e5e7eb; margin: 0.5rem 0 0;">{% if item.coordinator_role == 1 %}{{ eval.coordinator1_review }}{% else %}{{ eval.coordinator2_review }}{% endif %}</p>
                                                 </div>
                                                 {% endif %}
                                                 {% if eval.is_completed %}
@@ -811,7 +867,7 @@
                                         {% with student_evals=item.student_evaluations.first %}
                                             <form method="post" action="{% url 'submit_coordinator_student_evaluation' item.group.id 'first' %}" style="background: rgba(96, 165, 250, 0.08); padding: 1rem; border-radius: 8px; border: 1px solid rgba(96, 165, 250, 0.2);">
                                                 {% csrf_token %}
-                                                {% if student_evals.values.0 and student_evals.values.0.coordinator_submitted %}
+                                                {% if student_evals.values.0 and item.coordinator_role == 1 and student_evals.values.0.coordinator1_submitted or student_evals.values.0 and item.coordinator_role == 2 and student_evals.values.0.coordinator2_submitted %}
                                                 <div class="alert alert-success mb-3">
                                                     ✅ Evaluation submitted
                                                     {% if student_evals.values.0.finalized %}
@@ -843,15 +899,15 @@
                                                             {% with eval=student_evals|get_item:member.user.id %}
                                                             <tr>
                                                                 <td style="font-weight: 600;">{{ member.user.username }}</td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{{ eval.coordinator_topic|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{{ eval.coordinator_planning|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{{ eval.coordinator_scalability|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{{ eval.coordinator_novelty|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{{ eval.coordinator_task_distribution|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{{ eval.coordinator_schedule|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{{ eval.coordinator_interim|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{{ eval.coordinator_presentation|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{{ eval.coordinator_viva|default:'' }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_topic|default:'' }}{% else %}{{ eval.coordinator2_topic|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_planning|default:'' }}{% else %}{{ eval.coordinator2_planning|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_scalability|default:'' }}{% else %}{{ eval.coordinator2_scalability|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_novelty|default:'' }}{% else %}{{ eval.coordinator2_novelty|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_task_distribution|default:'' }}{% else %}{{ eval.coordinator2_task_distribution|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_schedule|default:'' }}{% else %}{{ eval.coordinator2_schedule|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_interim|default:'' }}{% else %}{{ eval.coordinator2_interim|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_presentation|default:'' }}{% else %}{{ eval.coordinator2_presentation|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_viva|default:'' }}{% else %}{{ eval.coordinator2_viva|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
                                                             </tr>
                                                             {% endwith %}
                                                             {% endfor %}
@@ -865,12 +921,12 @@
                                                         📝 Presentation Review (Group)
                                                     </label>
                                                     <textarea name="presentation_review" id="presentation_review_{{ item.group.id }}" rows="4" class="form-control" 
-                                                        placeholder="Enter your review of the group's first presentation...">{{ first_eval.coordinator_review|default:'' }}</textarea>
+                                                        placeholder="Enter your review of the group's first presentation...">{% if item.coordinator_role == 1 %}{{ first_eval.coordinator1_review|default:'' }}{% else %}{{ first_eval.coordinator2_review|default:'' }}{% endif %}</textarea>
                                                 </div>
                                                 {% endwith %}
                                                 
                                                 <button type="submit" class="btn btn-info btn-sm mt-3">
-                                                    {% if student_evals.values.0 and student_evals.values.0.coordinator_submitted %}Update{% else %}Submit{% endif %} First Evaluation
+                                                    {% if student_evals.values.0 and item.coordinator_role == 1 and student_evals.values.0.coordinator1_submitted or student_evals.values.0 and item.coordinator_role == 2 and student_evals.values.0.coordinator2_submitted %}Update{% else %}Submit{% endif %} First Evaluation
                                                 </button>
                                             </form>
                                         {% endwith %}
@@ -891,7 +947,7 @@
                                         {% with student_evals=item.student_evaluations.second %}
                                             <form method="post" action="{% url 'submit_coordinator_student_evaluation' item.group.id 'second' %}" style="background: rgba(52, 211, 153, 0.08); padding: 1rem; border-radius: 8px; border: 1px solid rgba(52, 211, 153, 0.2);">
                                                 {% csrf_token %}
-                                                {% if student_evals.values.0 and student_evals.values.0.coordinator_submitted %}
+                                                {% if student_evals.values.0 and item.coordinator_role == 1 and student_evals.values.0.coordinator1_submitted or student_evals.values.0 and item.coordinator_role == 2 and student_evals.values.0.coordinator2_submitted %}
                                                 <div class="alert alert-success mb-3">
                                                     ✅ Evaluation submitted
                                                     {% if student_evals.values.0.finalized %}
@@ -923,15 +979,15 @@
                                                             {% with eval=student_evals|get_item:member.user.id %}
                                                             <tr>
                                                                 <td style="font-weight: 600;">{{ member.user.username }}</td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{{ eval.coordinator_topic|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{{ eval.coordinator_planning|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{{ eval.coordinator_scalability|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{{ eval.coordinator_novelty|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{{ eval.coordinator_task_distribution|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{{ eval.coordinator_schedule|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{{ eval.coordinator_interim|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{{ eval.coordinator_presentation|default:'' }}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{{ eval.coordinator_viva|default:'' }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_topic|default:'' }}{% else %}{{ eval.coordinator2_topic|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_planning|default:'' }}{% else %}{{ eval.coordinator2_planning|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_scalability|default:'' }}{% else %}{{ eval.coordinator2_scalability|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_novelty|default:'' }}{% else %}{{ eval.coordinator2_novelty|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_task_distribution|default:'' }}{% else %}{{ eval.coordinator2_task_distribution|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_schedule|default:'' }}{% else %}{{ eval.coordinator2_schedule|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_interim|default:'' }}{% else %}{{ eval.coordinator2_interim|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_presentation|default:'' }}{% else %}{{ eval.coordinator2_presentation|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_viva|default:'' }}{% else %}{{ eval.coordinator2_viva|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
                                                             </tr>
                                                             {% endwith %}
                                                             {% endfor %}
@@ -945,12 +1001,12 @@
                                                         📝 Presentation Review (Group)
                                                     </label>
                                                     <textarea name="presentation_review" id="presentation_review_second_{{ item.group.id }}" rows="4" class="form-control" 
-                                                        placeholder="Enter your review of the group's second presentation...">{{ second_eval.coordinator_review|default:'' }}</textarea>
+                                                        placeholder="Enter your review of the group's second presentation...">{% if item.coordinator_role == 1 %}{{ second_eval.coordinator1_review|default:'' }}{% else %}{{ second_eval.coordinator2_review|default:'' }}{% endif %}</textarea>
                                                 </div>
                                                 {% endwith %}
                                                 
                                                 <button type="submit" class="btn btn-success btn-sm mt-3">
-                                                    {% if student_evals.values.0 and student_evals.values.0.coordinator_submitted %}Update{% else %}Submit{% endif %} Second Evaluation
+                                                    {% if student_evals.values.0 and item.coordinator_role == 1 and student_evals.values.0.coordinator1_submitted or student_evals.values.0 and item.coordinator_role == 2 and student_evals.values.0.coordinator2_submitted %}Update{% else %}Submit{% endif %} Second Evaluation
                                                 </button>
                                             </form>
                                         {% endwith %}
@@ -991,7 +1047,7 @@
                                 {% if approval.group.leader.student_profile %}
                                 <div>
                                     <strong style="color: #e5e7eb;">Class:</strong>
-                                    <p style="color: #9ca3af; margin: 0;">{{ approval.group.leader.student_profile.class_name|default:"N/A" }}</p>
+                                    <p style="color: #9ca3af; margin: 0;">{{ approval.group.leader.student_profile.student_class.name|default:"N/A" }}</p>
                                 </div>
                                 <div>
                                     <strong style="color: #e5e7eb;">CGP:</strong>
@@ -1105,6 +1161,52 @@
 </div>
 
 <script>
+    function enhanceEvaluationNumberInputs() {
+        document.querySelectorAll('.eval-table input[type="number"]').forEach(input => {
+            if (input.parentElement && input.parentElement.classList.contains('number-stepper-wrapper')) {
+                return;
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'number-stepper-wrapper';
+
+            const controls = document.createElement('div');
+            controls.className = 'number-stepper-controls';
+
+            const increaseBtn = document.createElement('button');
+            increaseBtn.type = 'button';
+            increaseBtn.className = 'number-stepper-btn';
+            increaseBtn.setAttribute('aria-label', 'Increase value');
+            increaseBtn.innerHTML = '&#9650;';
+
+            const decreaseBtn = document.createElement('button');
+            decreaseBtn.type = 'button';
+            decreaseBtn.className = 'number-stepper-btn';
+            decreaseBtn.setAttribute('aria-label', 'Decrease value');
+            decreaseBtn.innerHTML = '&#9660;';
+
+            increaseBtn.addEventListener('click', () => {
+                input.stepUp();
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+                input.focus();
+            });
+
+            decreaseBtn.addEventListener('click', () => {
+                input.stepDown();
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+                input.focus();
+            });
+
+            input.parentNode.insertBefore(wrapper, input);
+            wrapper.appendChild(input);
+            controls.appendChild(increaseBtn);
+            controls.appendChild(decreaseBtn);
+            wrapper.appendChild(controls);
+        });
+    }
+
     // Tab switching functionality
     document.querySelectorAll('.tab-link').forEach(link => {
         link.addEventListener('click', function(e) {
@@ -1130,6 +1232,8 @@
 
     // Handle URL fragment on page load
     window.addEventListener('DOMContentLoaded', function() {
+        enhanceEvaluationNumberInputs();
+
         const hash = window.location.hash.substring(1); // Remove the # symbol
         if (hash) {
             // Remove active class from all tabs and links
