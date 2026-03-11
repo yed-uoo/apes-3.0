@@ -99,6 +99,50 @@
             box-shadow: 0 8px 32px rgba(249, 115, 22, 0.2) !important;
         }
 
+        /* Profile and Logout button styles */
+        .btn-profile {
+            background: rgba(59, 130, 246, 0.15) !important;
+            border: 1px solid rgba(59, 130, 246, 0.4) !important;
+            color: #93c5fd !important;
+            font-weight: 500 !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .btn-profile:hover {
+            background: rgba(59, 130, 246, 0.25) !important;
+            border: 1px solid rgba(59, 130, 246, 0.6) !important;
+            color: #bfdbfe !important;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3) !important;
+            transform: translateY(-1px);
+        }
+
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.15) !important;
+            border: 1px solid rgba(239, 68, 68, 0.4) !important;
+            color: #fca5a5 !important;
+            font-weight: 500 !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.25) !important;
+            border: 1px solid rgba(239, 68, 68, 0.6) !important;
+            color: #fecaca !important;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3) !important;
+            transform: translateY(-1px);
+        }
+
+        .navbar-username {
+            color: #d1d5db !important;
+            font-weight: 500 !important;
+            padding: 0 0.5rem;
+            font-size: 0.95rem;
+        }
+
         /* Alerts - Glassmorphic */
         .alert {
             background: rgba(255, 255, 255, 0.06) !important;
@@ -144,11 +188,23 @@
             <a class="navbar-brand fw-semibold" href="/">Project Hub</a>
             <div class="d-flex align-items-center gap-3">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'profile' %}" class="btn btn-light btn-sm">Profile</a>
-                    <span class="navbar-text">{{ user.username }}</span>
-                    <form method="post" action="/logout/" class="mb-0">
+                    <span class="navbar-username">👤 {{ user.username }}</span>
+                    <a href="{% url 'profile' %}" class="btn btn-profile btn-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16" style="margin-right: 0.3rem; vertical-align: text-bottom;">
+                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                        </svg>
+                        Profile
+                    </a>
+                    <form method="post" action="{% url 'logout' %}" class="mb-0">
                         {% csrf_token %}
-                        <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>
+                        <button class="btn btn-logout btn-sm" type="submit">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16" style="margin-right: 0.3rem; vertical-align: text-bottom;">
+                                <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+                                <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+                            </svg>
+                            Logout
+                        </button>
                     </form>
                 {% endif %}
             </div>

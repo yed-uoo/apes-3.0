@@ -306,33 +306,28 @@
                                 </div>
 
                                 {% if item.sdg.sdg1 %}
-                                <div class="mb-3">
-                                    <p class="mb-1"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg1 }}</p>
-                                    <p class="mb-0"><strong style="color: #9ca3af;">Justification:</strong><br>{{ item.sdg.sdg1_justification|default:"-" }}</p>
+                                <div class="mb-2">
+                                    <p class="mb-0"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg1|sdg_title }}</p>
                                 </div>
                                 {% endif %}
                                 {% if item.sdg.sdg2 %}
-                                <div class="mb-3">
-                                    <p class="mb-1"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg2 }}</p>
-                                    <p class="mb-0"><strong style="color: #9ca3af;">Justification:</strong><br>{{ item.sdg.sdg2_justification|default:"-" }}</p>
+                                <div class="mb-2">
+                                    <p class="mb-0"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg2|sdg_title }}</p>
                                 </div>
                                 {% endif %}
                                 {% if item.sdg.sdg3 %}
-                                <div class="mb-3">
-                                    <p class="mb-1"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg3 }}</p>
-                                    <p class="mb-0"><strong style="color: #9ca3af;">Justification:</strong><br>{{ item.sdg.sdg3_justification|default:"-" }}</p>
+                                <div class="mb-2">
+                                    <p class="mb-0"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg3|sdg_title }}</p>
                                 </div>
                                 {% endif %}
                                 {% if item.sdg.sdg4 %}
-                                <div class="mb-3">
-                                    <p class="mb-1"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg4 }}</p>
-                                    <p class="mb-0"><strong style="color: #9ca3af;">Justification:</strong><br>{{ item.sdg.sdg4_justification|default:"-" }}</p>
+                                <div class="mb-2">
+                                    <p class="mb-0"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg4|sdg_title }}</p>
                                 </div>
                                 {% endif %}
                                 {% if item.sdg.sdg5 %}
                                 <div class="mb-0">
-                                    <p class="mb-1"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg5 }}</p>
-                                    <p class="mb-0"><strong style="color: #9ca3af;">Justification:</strong><br>{{ item.sdg.sdg5_justification|default:"-" }}</p>
+                                    <p class="mb-0"><strong style="color: #e5e7eb;">SDG:</strong> {{ item.sdg.sdg5|sdg_title }}</p>
                                 </div>
                                 {% endif %}
                             </div>
