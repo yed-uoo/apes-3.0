@@ -3,7 +3,7 @@
 
 {% block content %}
 <style>
-    /* Hide base template navbar */
+    /* Hide base template navbar for guide dashboard */
     .navbar {
         display: none !important;
     }
@@ -68,6 +68,18 @@
         color: #e5e7eb;
     }
 
+    .sidebar-brand .user-info {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sidebar-brand .user-info p {
+        margin: 0;
+        font-size: 14px;
+        color: #9ca3af;
+    }
+
     .sidebar-menu {
         list-style: none;
         padding: 0;
@@ -102,91 +114,10 @@
         font-size: 18px;
     }
 
-    .sidebar-footer {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
+    .sidebar-actions {
         padding: 20px;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(13, 15, 21, 0.95);
-    }
-
-    .sidebar-footer .btn {
-        width: 100%;
-        margin-bottom: 10px;
-        padding: 12px;
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-
-    .btn-profile {
-        background: rgba(59, 130, 246, 0.15);
-        color: #93c5fd;
-    }
-
-    .btn-profile:hover {
-        background: rgba(59, 130, 246, 0.25);
-        color: #bfdbfe;
-        transform: translateY(-2px);
-    }
-
-    .btn-logout {
-        background: rgba(239, 68, 68, 0.15);
-        color: #fca5a5;
-    }
-
-    .btn-logout:hover {
-        background: rgba(239, 68, 68, 0.25);
-        color: #fecaca;
-        transform: translateY(-2px);
-    }
-
-    .role-indicator {
-        margin-bottom: 12px;
-        padding: 10px 14px;
-        background: rgba(251, 146, 60, 0.08);
-        border: 1px solid rgba(251, 146, 60, 0.25);
-        border-radius: 10px;
-        text-align: center;
-    }
-
-    .role-label {
-        display: block;
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: #fdba74;
-        margin-bottom: 8px;
-    }
-
-    .btn-switch-role {
-        display: block;
-        width: 100%;
-        padding: 9px 12px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 13px;
-        text-align: center;
-        text-decoration: none;
-        background: rgba(251, 146, 60, 0.15);
-        color: #fdba74;
-        border: 1px solid rgba(251, 146, 60, 0.35);
-        transition: all 0.2s ease;
-    }
-
-    .btn-switch-role:hover {
-        background: rgba(251, 146, 60, 0.28);
-        color: #fff7ed;
-        transform: translateY(-2px);
-        text-decoration: none;
+        margin-top: auto;
     }
 
     .main-content {
@@ -197,7 +128,7 @@
 
     .page-header {
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
         align-items: center;
         margin-bottom: 40px;
         padding-bottom: 20px;
@@ -209,7 +140,6 @@
         font-weight: 700;
         color: #e5e7eb;
         margin: 0;
-        text-align: center;
     }
 
     .tab-content {
@@ -313,107 +243,36 @@
     .request-card:hover {
         border-color: rgba(249, 115, 22, 0.4);
     }
-
-    /* Evaluation table styles */
-    input[type="number"].form-control,
-    input[type="number"].form-control-sm,
-    .eval-table input[type="number"] {
-        background: #0d1117 !important;
-        background-color: #0d1117 !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        text-align: center;
-        font-weight: 600;
-        border-radius: 6px;
-        -webkit-appearance: none;
-        appearance: none;
-    }
-
-    input[type="number"].form-control:focus,
-    input[type="number"].form-control-sm:focus,
-    .eval-table input[type="number"]:focus {
-        background: #0d1117 !important;
-        background-color: #0d1117 !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        border-color: rgba(249, 115, 22, 0.9) !important;
-        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2) !important;
-        outline: none;
-    }
-
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-        opacity: 0.6;
-        filter: invert(1);
-    }
-
-    .eval-table {
-        background: #0d1117 !important;
-    }
-
-    .eval-table tbody tr {
-        background: #0d1117 !important;
-        background-color: #0d1117 !important;
-    }
-
-    .eval-table tbody tr:hover {
-        background: #111827 !important;
-        background-color: #111827 !important;
-    }
-
-    .eval-table tbody td {
-        color: #ffffff !important;
-        background: #0d1117 !important;
-        background-color: #0d1117 !important;
-        vertical-align: middle;
-        border-color: rgba(255, 255, 255, 0.1) !important;
-    }
-
-    .eval-table thead {
-        background: #111827 !important;
-    }
-
-    .eval-table thead th {
-        border-color: rgba(255, 255, 255, 0.15) !important;
-        background: #111827 !important;
-        background-color: #111827 !important;
-    }
 </style>
 
 <div class="sidebar">
     <div class="sidebar-brand">
-        <h5><i class="bi bi-compass"></i> Guide Panel</h5>
+        <h5>🧭 Guide Panel</h5>
+        <div class="user-info">
+            <p>👤 {{ user.username }}</p>
+        </div>
     </div>
     
     <ul class="sidebar-menu">
         <li><a href="#" class="tab-link active" data-tab="groups">
-            <i class="bi bi-people-fill"></i> My Groups
+            <span>👥</span> My Groups
         </a></li>
         <li><a href="#" class="tab-link" data-tab="requests">
-            <i class="bi bi-inbox"></i> Guide Requests
+            <span>📨</span> Guide Requests
         </a></li>
-        <li><a href="#" class="tab-link" data-tab="abstracts">
-            <i class="bi bi-file-text"></i> Review Abstracts
+        <li><a href="{% url 'faculty_abstracts' %}">
+            <span>📄</span> Review Abstracts
         </a></li>
     </ul>
 
-    <div class="sidebar-footer">
-        {% if is_dual_role %}
-        <div class="role-indicator">
-            <span class="role-label">Role: Guide</span>
-            <a href="{% url 'switch_role' %}" class="btn-switch-role">
-                <i class="bi bi-arrow-left-right"></i> Switch Role
-            </a>
-        </div>
-        {% endif %}
-        <a href="{% url 'profile' %}" class="btn btn-profile">
-            <i class="bi bi-person-circle"></i> Profile
+    <div class="sidebar-actions">
+        <a href="{% url 'profile' %}" class="btn btn-profile btn-sm w-100 mb-2" style="background: rgba(59, 130, 246, 0.15) !important; border: 1px solid rgba(59, 130, 246, 0.4) !important; color: #93c5fd !important;">
+            Profile
         </a>
-        <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+        <form method="post" action="{% url 'logout' %}" class="mb-0">
             {% csrf_token %}
-            <button type="submit" class="btn btn-logout">
-                <i class="bi bi-box-arrow-right"></i> Logout
+            <button class="btn btn-logout btn-sm w-100" type="submit" style="background: rgba(239, 68, 68, 0.15) !important; border: 1px solid rgba(239, 68, 68, 0.4) !important; color: #fca5a5 !important;">
+                Logout
             </button>
         </form>
     </div>
@@ -617,9 +476,9 @@
                                     </div>
                                     {% endif %}
                                     <div class="table-responsive">
-                                        <table class="table table-bordered eval-table" style="background: #0d1117; color: #ffffff;">
+                                        <table class="table table-bordered" style="background: rgba(17, 24, 39, 0.8); color: #e5e7eb;">
                                             <thead>
-                                                <tr style="background: rgba(96, 165, 250, 0.15);">
+                                                <tr style="background: rgba(96, 165, 250, 0.1);">
                                                     <th style="color: #93c5fd;">Student Name</th>
                                                     <th style="color: #93c5fd; text-align: center;">Topic<br><small>(5)</small></th>
                                                     <th style="color: #93c5fd; text-align: center;">Planning<br><small>(5)</small></th>
@@ -636,16 +495,16 @@
                                                 {% for member in item.members %}
                                                 {% with eval=student_evals|get_item:member.user.id %}
                                                 <tr>
-                                                    <td style="font-weight: 600;">{{ member.user.username }}</td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{{ eval.guide_topic|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{{ eval.guide_planning|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{{ eval.guide_scalability|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{{ eval.guide_novelty|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{{ eval.guide_task_distribution|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{{ eval.guide_schedule|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{{ eval.guide_interim|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{{ eval.guide_presentation|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{{ eval.guide_viva|default:'' }}" class="form-control form-control-sm" required></td>
+                                                    <td style="font-weight: 600; background: rgba(17, 24, 39, 0.8); color: #e5e7eb;">{{ member.user.username }}</td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{{ eval.guide_topic|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{{ eval.guide_planning|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{{ eval.guide_scalability|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{{ eval.guide_novelty|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{{ eval.guide_task_distribution|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{{ eval.guide_schedule|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{{ eval.guide_interim|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{{ eval.guide_presentation|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{{ eval.guide_viva|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
                                                 </tr>
                                                 {% endwith %}
                                                 {% endfor %}
@@ -663,7 +522,8 @@
                                             id="presentation_review" 
                                             rows="4" 
                                             class="form-control" 
-                                            placeholder="Enter your review of the group's first presentation...">{{ first_eval.guide_review|default:'' }}</textarea>
+                                            placeholder="Enter your review of the group's first presentation..."
+                                            style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb; resize: vertical;">{{ first_eval.guide_review|default:'' }}</textarea>
                                     </div>
                                     {% endwith %}
                                     
@@ -701,9 +561,9 @@
                                     </div>
                                     {% endif %}
                                     <div class="table-responsive">
-                                        <table class="table table-bordered eval-table" style="background: #0d1117; color: #ffffff;">
+                                        <table class="table table-bordered" style="background: rgba(17, 24, 39, 0.8); color: #e5e7eb;">
                                             <thead>
-                                                <tr style="background: rgba(52, 211, 153, 0.15);">
+                                                <tr style="background: rgba(52, 211, 153, 0.1);">
                                                     <th style="color: #6ee7b7;">Student Name</th>
                                                     <th style="color: #6ee7b7; text-align: center;">Topic<br><small>(5)</small></th>
                                                     <th style="color: #6ee7b7; text-align: center;">Planning<br><small>(5)</small></th>
@@ -720,16 +580,16 @@
                                                 {% for member in item.members %}
                                                 {% with eval=student_evals|get_item:member.user.id %}
                                                 <tr>
-                                                    <td style="font-weight: 600;">{{ member.user.username }}</td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{{ eval.guide_topic|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{{ eval.guide_planning|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{{ eval.guide_scalability|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{{ eval.guide_novelty|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{{ eval.guide_task_distribution|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{{ eval.guide_schedule|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{{ eval.guide_interim|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{{ eval.guide_presentation|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{{ eval.guide_viva|default:'' }}" class="form-control form-control-sm" required></td>
+                                                    <td style="font-weight: 600; background: rgba(17, 24, 39, 0.8); color: #e5e7eb;">{{ member.user.username }}</td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{{ eval.guide_topic|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{{ eval.guide_planning|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{{ eval.guide_scalability|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{{ eval.guide_novelty|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{{ eval.guide_task_distribution|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{{ eval.guide_schedule|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{{ eval.guide_interim|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{{ eval.guide_presentation|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{{ eval.guide_viva|default:'' }}" class="form-control form-control-sm" required style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(96, 165, 250, 0.4); color: #e5e7eb;"></td>
                                                 </tr>
                                                 {% endwith %}
                                                 {% endfor %}
@@ -747,7 +607,8 @@
                                             id="presentation_review_second" 
                                             rows="4" 
                                             class="form-control" 
-                                            placeholder="Enter your review of the group's second presentation...">{{ second_eval.guide_review|default:'' }}</textarea>
+                                            placeholder="Enter your review of the group's second presentation..."
+                                            style="background: rgba(17, 24, 39, 0.95) !important; border: 1px solid rgba(52, 211, 153, 0.4); color: #e5e7eb; resize: vertical;">{{ second_eval.guide_review|default:'' }}</textarea>
                                     </div>
                                     {% endwith %}
                                     
@@ -811,150 +672,6 @@
                     <p style="color: #6b7280; margin-top: 12px;">You have no pending guide requests at the moment.</p>
                 </div>
             {% endif %}
-        </div>
-
-        <!-- Abstracts Tab -->
-        <div id="abstracts" class="tab-content">
-            <h4 style="color: #fdba74; margin-bottom: 24px;">📄 Review Abstracts</h4>
-
-            <ul class="nav nav-tabs mb-4" id="abstractTabs" role="tablist" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#abs-pending" type="button"
-                        role="tab" style="color: #9ca3af; border-color: rgba(255, 255, 255, 0.2);">
-                        Pending <span class="badge" style="background-color: rgba(234, 179, 8, 0.2); color: #fbbf24; border: 1px solid rgba(251, 146, 60, 0.3);">{{ pending_abstracts.count }}</span>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#abs-approved" type="button"
-                        role="tab" style="color: #9ca3af; border-color: rgba(255, 255, 255, 0.2);">
-                        Guide Approved <span class="badge" style="background-color: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3);">{{ approved_abstracts.count }}</span>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#abs-rejected" type="button"
-                        role="tab" style="color: #9ca3af; border-color: rgba(255, 255, 255, 0.2);">
-                        Guide Rejected <span class="badge" style="background-color: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3);">{{ rejected_abstracts.count }}</span>
-                    </button>
-                </li>
-            </ul>
-
-            <style>
-                #abstractTabs .nav-link.active {
-                    color: #fdba74 !important;
-                    border-bottom-color: #fb923c !important;
-                    background-color: rgba(249, 115, 22, 0.1) !important;
-                }
-                #abstractTabs .nav-link:hover {
-                    color: #fbbf24 !important;
-                }
-            </style>
-
-            <div class="tab-content" id="abstractTabsContent" style="display: block !important; visibility: visible !important;">
-                <!-- Pending Tab -->
-                <div class="tab-pane fade show active" id="abs-pending" role="tabpanel">
-                    {% if pending_abstracts %}
-                    <div class="table-responsive">
-                        <table class="table table-hover" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden;">
-                            <thead>
-                                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03);">
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Group Leader</th>
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Title</th>
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Submitted Date</th>
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">PDF Size</th>
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for abstract in pending_abstracts %}
-                                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-                                    <td style="color: #e5e7eb; padding: 12px;">{{ abstract.group.leader.username }}</td>
-                                    <td style="color: #e5e7eb; padding: 12px; font-weight: 600;">{{ abstract.title }}</td>
-                                    <td style="color: #9ca3af; padding: 12px;">{{ abstract.submitted_at|date:"M d, Y H:i" }}</td>
-                                    <td style="color: #9ca3af; padding: 12px;">{{ abstract.pdf_size|filesizeformat }}</td>
-                                    <td style="padding: 12px;">
-                                        <a href="{% url 'review_abstract' abstract.id %}" class="btn btn-sm" style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.9) 0%, rgba(217, 119, 6, 0.9) 100%); border: 1px solid rgba(249, 115, 22, 0.3); color: #fff; font-weight: 500; padding: 6px 12px; border-radius: 8px; text-decoration: none; display: inline-block;">Review</a>
-                                        <a href="{% url 'download_abstract' abstract.id %}" class="btn btn-sm" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: #e5e7eb; font-weight: 500; padding: 6px 12px; border-radius: 8px; text-decoration: none; display: inline-block;">Download PDF</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div style="background: rgba(3, 102, 214, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #bfdbfe; padding: 12px 16px; border-radius: 12px;">No pending abstracts to review.</div>
-                    {% endif %}
-                </div>
-
-                <!-- Approved Tab -->
-                <div class="tab-pane fade" id="abs-approved" role="tabpanel">
-                    {% if approved_abstracts %}
-                    <div class="table-responsive">
-                        <table class="table table-hover" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden;">
-                            <thead>
-                                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03);">
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Group Leader</th>
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Title</th>
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Submitted Date</th>
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Approved Date</th>
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for abstract in approved_abstracts %}
-                                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-                                    <td style="color: #e5e7eb; padding: 12px;">{{ abstract.group.leader.username }}</td>
-                                    <td style="color: #e5e7eb; padding: 12px; font-weight: 600;">{{ abstract.title }}</td>
-                                    <td style="color: #9ca3af; padding: 12px;">{{ abstract.submitted_at|date:"M d, Y" }}</td>
-                                    <td style="color: #9ca3af; padding: 12px;">{{ abstract.reviewed_at|date:"M d, Y" }}</td>
-                                    <td style="padding: 12px;">
-                                        <a href="{% url 'review_abstract' abstract.id %}" class="btn btn-sm" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(249, 115, 22, 0.3); color: #fdba74; font-weight: 500; padding: 6px 12px; border-radius: 8px; text-decoration: none; display: inline-block;">View</a>
-                                        <a href="{% url 'download_abstract' abstract.id %}" class="btn btn-sm" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: #e5e7eb; font-weight: 500; padding: 6px 12px; border-radius: 8px; text-decoration: none; display: inline-block;">Download PDF</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div style="background: rgba(3, 102, 214, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #bfdbfe; padding: 12px 16px; border-radius: 12px;">No guide-approved abstracts yet.</div>
-                    {% endif %}
-                </div>
-
-                <!-- Rejected Tab -->
-                <div class="tab-pane fade" id="abs-rejected" role="tabpanel">
-                    {% if rejected_abstracts %}
-                    <div class="table-responsive">
-                        <table class="table table-hover" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden;">
-                            <thead>
-                                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03);">
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Group Leader</th>
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Title</th>
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Submitted Date</th>
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Rejected Date</th>
-                                    <th style="color: #9ca3af; font-weight: 600; padding: 12px;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for abstract in rejected_abstracts %}
-                                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-                                    <td style="color: #e5e7eb; padding: 12px;">{{ abstract.group.leader.username }}</td>
-                                    <td style="color: #e5e7eb; padding: 12px; font-weight: 600;">{{ abstract.title }}</td>
-                                    <td style="color: #9ca3af; padding: 12px;">{{ abstract.submitted_at|date:"M d, Y" }}</td>
-                                    <td style="color: #9ca3af; padding: 12px;">{{ abstract.reviewed_at|date:"M d, Y" }}</td>
-                                    <td style="padding: 12px;">
-                                        <a href="{% url 'review_abstract' abstract.id %}" class="btn btn-sm" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; font-weight: 500; padding: 6px 12px; border-radius: 8px; text-decoration: none; display: inline-block;">View</a>
-                                        <a href="{% url 'download_abstract' abstract.id %}" class="btn btn-sm" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: #e5e7eb; font-weight: 500; padding: 6px 12px; border-radius: 8px; text-decoration: none; display: inline-block;">Download PDF</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div style="background: rgba(3, 102, 214, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #bfdbfe; padding: 12px 16px; border-radius: 12px;">No guide-rejected abstracts.</div>
-                    {% endif %}
-                </div>
-            </div>
         </div>
     </div>
 </div>
