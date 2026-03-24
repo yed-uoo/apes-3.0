@@ -359,12 +359,21 @@ def mini_project(request):
 			messages.error(request, "User is already in a group.")
 			return redirect("mini_project")
 
-		if GroupRequest.objects.filter(sender=request.user, recipient=to_user, status=GroupRequest.STATUS_PENDING).exists():
-			messages.info(request, "Request already sent.")
-			return redirect("mini_project")
-
-		GroupRequest.objects.create(sender=request.user, recipient=to_user)
-		messages.success(request, "Group request sent.")
+		group_request, created = GroupRequest.objects.get_or_create(
+			sender=request.user,
+			recipient=to_user,
+			defaults={"status": GroupRequest.STATUS_PENDING},
+		)
+		if not created:
+			if group_request.status == GroupRequest.STATUS_PENDING:
+				messages.info(request, "Request already sent and awaiting response.")
+				return redirect("mini_project")
+			group_request.status = GroupRequest.STATUS_PENDING
+			group_request.created_at = timezone.now()
+			group_request.save(update_fields=["status", "created_at"])
+			messages.success(request, "Group request re-sent.")
+		else:
+			messages.success(request, "Group request sent.")
 		return redirect("mini_project")
 
 	query = request.GET.get("q", "").strip()
@@ -1008,6 +1017,7 @@ def guide_dashboard(request):
 			eval_second = second_eval_map.get(member.user.id)
 			allowed, reason = _get_ese_availability(eval_second)
 			esestatus[member.user.id] = {"allowed": allowed, "message": reason}
+		blocked_reasons = [status["message"] for status in esestatus.values() if not status["allowed"] and status["message"]]
 		assigned_groups.append({
 			"group": guide_request.group,
 			"sdg": sdg_by_group_id.get(guide_request.group_id),
@@ -1019,6 +1029,8 @@ def guide_dashboard(request):
 			"first_complete": all(eval_obj and eval_obj.finalized for eval_obj in first_eval_map.values()),
 			"second_complete": all(eval_obj and eval_obj.finalized for eval_obj in second_eval_map.values()),
 			"ese_status": esestatus,
+			"ese_ready": not blocked_reasons,
+			"ese_block_reason": blocked_reasons[0] if blocked_reasons else "",
 		})
 
 	# Get pending guide requests for the requests tab
@@ -1597,6 +1609,7 @@ def coordinator_dashboard(request):
 		for member in group_members:
 			allowed, message = _get_ese_availability(second_eval_map.get(member.user.id))
 			esestatus[member.user.id] = {"allowed": allowed, "message": message}
+		blocked_reasons = [status["message"] for status in esestatus.values() if not status["allowed"] and status["message"]]
 
 		student_profile = getattr(group.leader, "student_profile", None)
 		class_name = student_profile.student_class.name if student_profile and student_profile.student_class else None
@@ -1654,6 +1667,8 @@ def coordinator_dashboard(request):
 				for eval_obj in student_evaluations.get("second", {}).values()
 			),
 			"ese_status": esestatus,
+			"ese_ready": not blocked_reasons,
+			"ese_block_reason": blocked_reasons[0] if blocked_reasons else "",
 			"ese_data": ese_rows,
 		})
 
