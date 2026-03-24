@@ -1,4 +1,6 @@
 import os
+import subprocess
+import tempfile
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -706,6 +708,148 @@ def download_project_report(request, report_id):
 
 	file_name = os.path.basename(report.report_file.name)
 	return FileResponse(report.report_file.open("rb"), as_attachment=True, filename=file_name)
+
+
+def _escape_latex(value):
+	"""Escape special LaTeX characters in a string (single-pass to avoid cascading)."""
+	if value is None:
+		return ""
+	import re
+	_LATEX_SPECIAL = re.compile(r'([\\&%$#_{}~^])')
+	_REPLACEMENTS = {
+		"\\": r"\textbackslash{}",
+		"&": r"\&",
+		"%": r"\%",
+		"$": r"\$",
+		"#": r"\#",
+		"_": r"\_",
+		"{": r"\{",
+		"}": r"\}",
+		"~": r"\textasciitilde{}",
+		"^": r"\textasciicircum{}",
+	}
+	return _LATEX_SPECIAL.sub(lambda m: _REPLACEMENTS[m.group(0)], str(value))
+
+
+def _build_latex_content(group):
+	"""Build the LaTeX source for the CIE mark sheet of a group."""
+	from datetime import datetime
+
+	student_profile = getattr(group.leader, "student_profile", None)
+	department = _escape_latex(getattr(student_profile, "department", "") or "")
+	class_obj = getattr(student_profile, "student_class", None)
+	class_name = _escape_latex(class_obj.name if class_obj else "")
+
+	abstract = group.abstracts.filter(is_final_approved=True).first()
+	project_title = _escape_latex(abstract.title if abstract else "")
+
+	guide_request = group.guiderequest_set.filter(status="accepted").first()
+	guide_name = _escape_latex(
+		guide_request.guide.get_full_name() or guide_request.guide.username
+		if guide_request else ""
+	)
+
+	coordinators = []
+	if class_obj:
+		for assignment in CoordinatorAssignment.objects.filter(student_class=class_obj).order_by("id"):
+			coordinators.append(
+				_escape_latex(assignment.faculty.get_full_name() or assignment.faculty.username)
+			)
+	coordinator1_name = coordinators[0] if len(coordinators) > 0 else ""
+	coordinator2_name = coordinators[1] if len(coordinators) > 1 else ""
+
+	all_students = [group.leader] + [m.user for m in GroupMember.objects.filter(group=group).select_related("user")]
+	unique_students = list({u.id: u for u in all_students}.values())
+
+	student_rows_list = []
+	for idx, student in enumerate(unique_students, 1):
+		sp = getattr(student, "student_profile", None)
+		name = _escape_latex(student.get_full_name() or student.username)
+		roll = _escape_latex(getattr(sp, "roll_number", "") or "")
+		reg = _escape_latex(getattr(sp, "register_number", "") or "")
+		student_rows_list.append(f"    {idx} & {name} & {roll} & {reg} \\\\\n    \\hline\n")
+	student_rows = "".join(student_rows_list)
+
+	marks_rows_list = []
+	for student in unique_students:
+		second_eval = StudentEvaluation.objects.filter(student=student, group=group, stage="second").first()
+		name = _escape_latex(student.get_full_name() or student.username)
+		committee = str(getattr(second_eval, "committee_mark", None) or "--")
+		final_guide = str(getattr(second_eval, "final_guide_mark", None) or "--")
+		attendance = str(getattr(second_eval, "attendance_marks", None) or "--")
+		try:
+			report_mark = str(group.project_report.final_mark or "--")
+		except (AttributeError, ProjectReport.DoesNotExist):
+			report_mark = "--"
+		cie = str(getattr(second_eval, "cie_total", None) or "--")
+		status = "Pass" if (second_eval and second_eval.cie_total is not None and second_eval.cie_total >= 38) else "--"
+		marks_rows_list.append(f"    {name} & {committee} & {final_guide} & {attendance} & {report_mark} & {cie} & {status} \\\\\n    \\hline\n")
+	marks_rows = "".join(marks_rows_list)
+
+	generated_on = _escape_latex(datetime.now().strftime("%d %B %Y, %H:%M"))
+
+	template_path = os.path.join(os.path.dirname(__file__), "templates", "cie_marksheet.tex")
+	with open(template_path, "r", encoding="utf-8") as f:
+		template = f.read()
+
+	latex_src = (
+		template
+		.replace(r"\VAR{department}", department)
+		.replace(r"\VAR{class_name}", class_name)
+		.replace(r"\VAR{project_title}", project_title)
+		.replace(r"\VAR{guide_name}", guide_name)
+		.replace(r"\VAR{group_id}", str(group.id))
+		.replace(r"\VAR{student_rows}", student_rows)
+		.replace(r"\VAR{marks_rows}", marks_rows)
+		.replace(r"\VAR{coordinator1_name}", coordinator1_name)
+		.replace(r"\VAR{coordinator2_name}", coordinator2_name)
+		.replace(r"\VAR{generated_on}", generated_on)
+	)
+	return latex_src
+
+
+@login_required
+def generate_cie_report(request, group_id):
+	"""Generate and download a CIE mark sheet PDF for a group using LaTeX."""
+	if not (_is_coordinator(request.user) or _is_guide(request.user) or request.user.is_superuser):
+		return HttpResponseForbidden("Not authorised to generate CIE reports.")
+
+	group = get_object_or_404(
+		Group.objects.select_related("leader", "leader__student_profile"),
+		id=group_id,
+	)
+
+	latex_src = _build_latex_content(group)
+
+	with tempfile.TemporaryDirectory() as tmpdir:
+		tex_path = os.path.join(tmpdir, "cie_marksheet.tex")
+		pdf_path = os.path.join(tmpdir, "cie_marksheet.pdf")
+
+		with open(tex_path, "w", encoding="utf-8") as f:
+			f.write(latex_src)
+
+		try:
+			result = subprocess.run(
+				["pdflatex", "-interaction=nonstopmode", "-output-directory", tmpdir, tex_path],
+				capture_output=True,
+				timeout=60,
+			)
+			if result.returncode != 0 or not os.path.exists(pdf_path):
+				raise RuntimeError(result.stdout.decode(errors="replace"))
+
+			with open(pdf_path, "rb") as f:
+				pdf_bytes = f.read()
+
+		except (FileNotFoundError, RuntimeError, subprocess.TimeoutExpired):
+			# pdflatex is not installed or compilation failed — fall back to serving
+			# the .tex source so the user can compile it locally.
+			response = HttpResponse(latex_src, content_type="text/plain; charset=utf-8")
+			response["Content-Disposition"] = f'attachment; filename="cie_marksheet_group{group_id}.tex"'
+			return response
+
+	response = HttpResponse(pdf_bytes, content_type="application/pdf")
+	response["Content-Disposition"] = f'attachment; filename="cie_marksheet_group{group_id}.pdf"'
+	return response
 
 
 @login_required

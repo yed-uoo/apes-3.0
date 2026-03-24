@@ -1,0 +1,90 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[C]{\textbf{MINI PROJECT -- CIE MARK SHEET}}
+\fancyfoot[C]{\thepage}
+
+\definecolor{headerblue}{RGB}{30,80,150}
+
+\begin{document}
+
+\begin{center}
+    {\Large \textbf{\textcolor{headerblue}{MINI PROJECT}}}\\[4pt]
+    {\large \textbf{Continuous Internal Evaluation (CIE) Mark Sheet}}\\[2pt]
+    \rule{\linewidth}{1.5pt}
+\end{center}
+
+\vspace{0.5cm}
+
+%% GROUP DETAILS
+\noindent\begin{tabularx}{\linewidth}{lX lX}
+    \textbf{Department:}   & \VAR{department}   & \textbf{Class:}    & \VAR{class_name} \\[4pt]
+    \textbf{Project Title:}& \multicolumn{3}{l}{\VAR{project_title}} \\[4pt]
+    \textbf{Guide:}        & \VAR{guide_name}   & \textbf{Group ID:} & \VAR{group_id} \\
+\end{tabularx}
+
+\vspace{0.6cm}
+\noindent\rule{\linewidth}{0.4pt}
+\vspace{0.3cm}
+
+%% STUDENT DETAILS TABLE
+\noindent{\textbf{Student Details}}\\[4pt]
+\noindent\begin{tabularx}{\linewidth}{|c|X|c|c|}
+    \hline
+    \textbf{S.No} & \textbf{Student Name} & \textbf{Roll No.} & \textbf{Register No.} \\
+    \hline
+    \VAR{student_rows}
+\end{tabularx}
+
+\vspace{0.6cm}
+
+%% EVALUATION MARKS TABLE
+\noindent{\textbf{Evaluation Marks Summary}}\\[4pt]
+\noindent\begin{tabularx}{\linewidth}{|X|c|c|c|c|c|c|}
+    \hline
+    \textbf{Student Name} & \textbf{Committee} & \textbf{Final} & \textbf{Attendance} & \textbf{Report} & \textbf{CIE} & \textbf{Status} \\
+                          & \textbf{(40)}      & \textbf{Guide} & \textbf{(10)}       & \textbf{(10)}   & \textbf{Total}& \\
+                          &                    & \textbf{(15)}  &                     &                 & \textbf{(75)} & \\
+    \hline
+    \VAR{marks_rows}
+\end{tabularx}
+
+\vspace{1cm}
+
+%% SIGNATURE SECTION
+\noindent\begin{tabularx}{\linewidth}{XXX}
+    \centering
+    \rule{3cm}{0.4pt}\\
+    \textbf{Guide} & 
+    \centering
+    \rule{3cm}{0.4pt}\\
+    \textbf{Coordinator 1} & 
+    \centering
+    \rule{3cm}{0.4pt}\\
+    \textbf{Coordinator 2}
+\end{tabularx}
+
+\vspace{0.4cm}
+\noindent\begin{tabularx}{\linewidth}{XXX}
+    \centering \VAR{guide_name} &
+    \centering \VAR{coordinator1_name} &
+    \centering \VAR{coordinator2_name}
+\end{tabularx}
+
+\vspace{0.6cm}
+\noindent\rule{\linewidth}{0.4pt}
+\noindent{\small Generated on: \VAR{generated_on}}
+
+\end{document}
