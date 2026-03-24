@@ -854,10 +854,10 @@
                                     {% endwith %}
                                 </div>
 
-                                <!-- First Evaluation (Student-level) -->
+                                <!-- First Evaluation (Student-level) - 3 Separate Sheets -->
                                 {% with zeroth_eval=item.evaluations.zeroth %}
                                 <div class="mb-4 pb-4" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                                    <h6 style="color: #60a5fa; margin-bottom: 1rem;">📊 First Evaluation (Per Student)</h6>
+                                    <h6 style="color: #60a5fa; margin-bottom: 1.5rem;">📊 First Evaluation - 3 Evaluation Sheets</h6>
                                     
                                     {% if not zeroth_eval or not zeroth_eval.is_completed %}
                                         <div class="alert alert-warning">
@@ -865,33 +865,81 @@
                                         </div>
                                     {% else %}
                                         {% with student_evals=item.student_evaluations.first %}
-                                            <form method="post" action="{% url 'submit_coordinator_student_evaluation' item.group.id 'first' %}" style="background: rgba(96, 165, 250, 0.08); padding: 1rem; border-radius: 8px; border: 1px solid rgba(96, 165, 250, 0.2);">
+                                        
+                                        <!-- GUIDE EVALUATION SHEET (Read-only) -->
+                                        <div style="background: rgba(96, 165, 250, 0.08); padding: 1.5rem; border-radius: 8px; border: 2px solid rgba(96, 165, 250, 0.3); margin-bottom: 1.5rem;">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                                <span style="font-size: 1.3rem;">📘</span>
+                                                <h6 style="color: #60a5fa; margin: 0; font-weight: 700;">Guide Evaluation Sheet</h6>
+                                                <span style="color: #93c5fd; font-size: 0.85rem; margin-left: auto;">Read-only</span>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered eval-table" style="background: #0d1117; color: #ffffff; margin-bottom: 0;">
+                                                    <thead>
+                                                        <tr style="background: rgba(96, 165, 250, 0.15);">
+                                                            <th style="color: #93c5fd;">Student</th>
+                                                            <th style="color: #93c5fd; text-align: center;">Topic (5)</th>
+                                                            <th style="color: #93c5fd; text-align: center;">Planning (5)</th>
+                                                            <th style="color: #93c5fd; text-align: center;">Scale (2)</th>
+                                                            <th style="color: #93c5fd; text-align: center;">Novelty (5)</th>
+                                                            <th style="color: #93c5fd; text-align: center;">Task (5)</th>
+                                                            <th style="color: #93c5fd; text-align: center;">Sched (3)</th>
+                                                            <th style="color: #93c5fd; text-align: center;">Interim (5)</th>
+                                                            <th style="color: #93c5fd; text-align: center;">Pres (5)</th>
+                                                            <th style="color: #93c5fd; text-align: center;">Viva (5)</th>
+                                                            <th style="color: #93c5fd; text-align: center;">Total (/40)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for member in item.members %}
+                                                        {% with eval=student_evals|get_item:member.user.id %}
+                                                        <tr>
+                                                            <td style="font-weight: 600;">{{ member.user.username }}</td>
+                                                            <td style="text-align: center; color: #93c5fd;">{{ eval.guide_topic|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #93c5fd;">{{ eval.guide_planning|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #93c5fd;">{{ eval.guide_scalability|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #93c5fd;">{{ eval.guide_novelty|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #93c5fd;">{{ eval.guide_task_distribution|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #93c5fd;">{{ eval.guide_schedule|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #93c5fd;">{{ eval.guide_interim|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #93c5fd;">{{ eval.guide_presentation|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #93c5fd;">{{ eval.guide_viva|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; font-weight: 600; color: #93c5fd;">{% if eval.guide_submitted %}{{ eval.guide_total }}{% else %}—{% endif %}</td>
+                                                        </tr>
+                                                        {% endwith %}
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <!-- COORDINATOR 1 EVALUATION SHEET -->
+                                        <div style="background: rgba(34, 197, 94, 0.08); padding: 1.5rem; border-radius: 8px; border: 2px solid rgba(34, 197, 94, 0.3); margin-bottom: 1.5rem;">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                                <span style="font-size: 1.3rem;">{% if item.coordinator_role == 1 %}✏️{% else %}👁️{% endif %}</span>
+                                                <h6 style="color: #22c55e; margin: 0; font-weight: 700;">Coordinator 1 Evaluation Sheet</h6>
+                                                <span style="color: {% if item.coordinator_role == 1 %}#22c55e{% else %}#9ca3af{% endif %}; font-size: 0.85rem; margin-left: auto;">{% if item.coordinator_role == 1 %}Editable{% else %}Read-only{% endif %}</span>
+                                            </div>
+                                            <form method="post" action="{% url 'submit_coordinator_student_evaluation' item.group.id 'first' %}" style="margin-bottom: 0;">
                                                 {% csrf_token %}
-                                                {% if student_evals.values.0 and item.coordinator_role == 1 and student_evals.values.0.coordinator1_submitted or student_evals.values.0 and item.coordinator_role == 2 and student_evals.values.0.coordinator2_submitted %}
-                                                <div class="alert alert-success mb-3">
-                                                    ✅ Evaluation submitted
-                                                    {% if student_evals.values.0.finalized %}
-                                                    <span class="ms-2"><strong>✓ Finalized</strong> (Both evaluations complete)</span>
-                                                    {% else %}
-                                                    <span class="ms-2">⏳ Waiting for guide evaluation...</span>
-                                                    {% endif %}
-                                                    <div class="mt-2"><small>You can edit the marks below if needed.</small></div>
-                                                </div>
+                                                {% if item.coordinator_role == 1 %}
+                                                <input type="hidden" name="coordinator_id" value="1">
                                                 {% endif %}
                                                 <div class="table-responsive">
-                                                    <table class="table table-bordered eval-table" style="background: #0d1117; color: #ffffff;">
+                                                    <table class="table table-bordered eval-table" style="background: #0d1117; color: #ffffff; margin-bottom: 0;">
                                                         <thead>
-                                                            <tr style="background: rgba(96, 165, 250, 0.15);">
-                                                                <th style="color: #93c5fd;">Student Name</th>
-                                                                <th style="color: #93c5fd; text-align: center;">Topic<br><small>(5)</small></th>
-                                                                <th style="color: #93c5fd; text-align: center;">Planning<br><small>(5)</small></th>
-                                                                <th style="color: #93c5fd; text-align: center;">Scale<br><small>(2)</small></th>
-                                                                <th style="color: #93c5fd; text-align: center;">Novelty<br><small>(5)</small></th>
-                                                                <th style="color: #93c5fd; text-align: center;">Task<br><small>(5)</small></th>
-                                                                <th style="color: #93c5fd; text-align: center;">Sched<br><small>(3)</small></th>
-                                                                <th style="color: #93c5fd; text-align: center;">Interim<br><small>(5)</small></th>
-                                                                <th style="color: #93c5fd; text-align: center;">Pres<br><small>(5)</small></th>
-                                                                <th style="color: #93c5fd; text-align: center;">Viva<br><small>(5)</small></th>
+                                                            <tr style="background: rgba(34, 197, 94, 0.15);">
+                                                                <th style="color: #6ee7b7;">Student</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Topic (5)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Planning (5)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Scale (2)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Novelty (5)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Task (5)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Sched (3)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Interim (5)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Pres (5)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Viva (5)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Total (/40)</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -899,45 +947,137 @@
                                                             {% with eval=student_evals|get_item:member.user.id %}
                                                             <tr>
                                                                 <td style="font-weight: 600;">{{ member.user.username }}</td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_topic|default:'' }}{% else %}{{ eval.coordinator2_topic|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_planning|default:'' }}{% else %}{{ eval.coordinator2_planning|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_scalability|default:'' }}{% else %}{{ eval.coordinator2_scalability|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_novelty|default:'' }}{% else %}{{ eval.coordinator2_novelty|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_task_distribution|default:'' }}{% else %}{{ eval.coordinator2_task_distribution|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_schedule|default:'' }}{% else %}{{ eval.coordinator2_schedule|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_interim|default:'' }}{% else %}{{ eval.coordinator2_interim|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_presentation|default:'' }}{% else %}{{ eval.coordinator2_presentation|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_viva|default:'' }}{% else %}{{ eval.coordinator2_viva|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                {% if item.coordinator_role == 1 %}
+                                                                <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{{ eval.coordinator1_topic|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{{ eval.coordinator1_planning|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{{ eval.coordinator1_scalability|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{{ eval.coordinator1_novelty|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{{ eval.coordinator1_task_distribution|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{{ eval.coordinator1_schedule|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{{ eval.coordinator1_interim|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{{ eval.coordinator1_presentation|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{{ eval.coordinator1_viva|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                {% else %}
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_topic|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_planning|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_scalability|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_novelty|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_task_distribution|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_schedule|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_interim|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_presentation|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_viva|default_if_none:'—' }}</td>
+                                                                {% endif %}
+                                                                <td style="text-align: center; font-weight: 600; {% if item.coordinator_role == 1 %}color: #22c55e;{% else %}color: #9ca3af;{% endif %}">{% if eval.coordinator1_submitted %}{{ eval.coordinator1_total }}{% else %}—{% endif %}</td>
                                                             </tr>
                                                             {% endwith %}
                                                             {% endfor %}
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                
+                                                {% if item.coordinator_role == 1 %}
                                                 {% with first_eval=item.evaluations.first %}
-                                                <div class="mt-3" style="border-top: 1px solid rgba(96, 165, 250, 0.2); padding-top: 1rem;">
-                                                    <label for="presentation_review_{{ item.group.id }}" style="color: #93c5fd; font-weight: 600; display: block; margin-bottom: 0.5rem;">
+                                                <div class="mt-3" style="border-top: 1px solid rgba(34, 197, 94, 0.2); padding-top: 1rem;">
+                                                    <label for="presentation_review_coord1_{{ item.group.id }}" style="color: #6ee7b7; font-weight: 600; display: block; margin-bottom: 0.5rem;">
                                                         📝 Presentation Review (Group)
                                                     </label>
-                                                    <textarea name="presentation_review" id="presentation_review_{{ item.group.id }}" rows="4" class="form-control" 
-                                                        placeholder="Enter your review of the group's first presentation...">{% if item.coordinator_role == 1 %}{{ first_eval.coordinator1_review|default:'' }}{% else %}{{ first_eval.coordinator2_review|default:'' }}{% endif %}</textarea>
+                                                    <textarea name="presentation_review" id="presentation_review_coord1_{{ item.group.id }}" rows="3" class="form-control" placeholder="Enter your review of the group's first presentation...">{{ first_eval.coordinator1_review|default:'' }}</textarea>
                                                 </div>
                                                 {% endwith %}
-                                                
-                                                <button type="submit" class="btn btn-info btn-sm mt-3">
-                                                    {% if student_evals.values.0 and item.coordinator_role == 1 and student_evals.values.0.coordinator1_submitted or student_evals.values.0 and item.coordinator_role == 2 and student_evals.values.0.coordinator2_submitted %}Update{% else %}Submit{% endif %} First Evaluation
+                                                <button type="submit" class="btn btn-success btn-sm mt-3">
+                                                    {% if student_evals.values.0 and student_evals.values.0.coordinator1_submitted %}Update{% else %}Submit{% endif %} Coordinator 1 Evaluation
                                                 </button>
+                                                {% endif %}
                                             </form>
+                                        </div>
+
+                                        <!-- COORDINATOR 2 EVALUATION SHEET -->
+                                        <div style="background: rgba(249, 115, 22, 0.08); padding: 1.5rem; border-radius: 8px; border: 2px solid rgba(249, 115, 22, 0.3); margin-bottom: 1.5rem;">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                                <span style="font-size: 1.3rem;">{% if item.coordinator_role == 2 %}✏️{% else %}👁️{% endif %}</span>
+                                                <h6 style="color: #f97316; margin: 0; font-weight: 700;">Coordinator 2 Evaluation Sheet</h6>
+                                                <span style="color: {% if item.coordinator_role == 2 %}#f97316{% else %}#9ca3af{% endif %}; font-size: 0.85rem; margin-left: auto;">{% if item.coordinator_role == 2 %}Editable{% else %}Read-only{% endif %}</span>
+                                            </div>
+                                            <form method="post" action="{% url 'submit_coordinator_student_evaluation' item.group.id 'first' %}" style="margin-bottom: 0;">
+                                                {% csrf_token %}
+                                                {% if item.coordinator_role == 2 %}
+                                                <input type="hidden" name="coordinator_id" value="2">
+                                                {% endif %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered eval-table" style="background: #0d1117; color: #ffffff; margin-bottom: 0;">
+                                                        <thead>
+                                                            <tr style="background: rgba(249, 115, 22, 0.15);">
+                                                                <th style="color: #fed7aa;">Student</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Topic (5)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Planning (5)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Scale (2)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Novelty (5)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Task (5)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Sched (3)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Interim (5)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Pres (5)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Viva (5)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Total (/40)</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for member in item.members %}
+                                                            {% with eval=student_evals|get_item:member.user.id %}
+                                                            <tr>
+                                                                <td style="font-weight: 600;">{{ member.user.username }}</td>
+                                                                {% if item.coordinator_role == 2 %}
+                                                                <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{{ eval.coordinator2_topic|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{{ eval.coordinator2_planning|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{{ eval.coordinator2_scalability|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{{ eval.coordinator2_novelty|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{{ eval.coordinator2_task_distribution|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{{ eval.coordinator2_schedule|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{{ eval.coordinator2_interim|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{{ eval.coordinator2_presentation|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{{ eval.coordinator2_viva|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                {% else %}
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_topic|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_planning|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_scalability|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_novelty|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_task_distribution|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_schedule|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_interim|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_presentation|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_viva|default_if_none:'—' }}</td>
+                                                                {% endif %}
+                                                                <td style="text-align: center; font-weight: 600; {% if item.coordinator_role == 2 %}color: #f97316;{% else %}color: #9ca3af;{% endif %}">{% if eval.coordinator2_submitted %}{{ eval.coordinator2_total }}{% else %}—{% endif %}</td>
+                                                            </tr>
+                                                            {% endwith %}
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {% if item.coordinator_role == 2 %}
+                                                {% with first_eval=item.evaluations.first %}
+                                                <div class="mt-3" style="border-top: 1px solid rgba(249, 115, 22, 0.2); padding-top: 1rem;">
+                                                    <label for="presentation_review_coord2_{{ item.group.id }}" style="color: #fed7aa; font-weight: 600; display: block; margin-bottom: 0.5rem;">
+                                                        📝 Presentation Review (Group)
+                                                    </label>
+                                                    <textarea name="presentation_review" id="presentation_review_coord2_{{ item.group.id }}" rows="3" class="form-control" placeholder="Enter your review of the group's first presentation...">{{ first_eval.coordinator2_review|default:'' }}</textarea>
+                                                </div>
+                                                {% endwith %}
+                                                <button type="submit" class="btn btn-warning btn-sm mt-3">
+                                                    {% if student_evals.values.0 and student_evals.values.0.coordinator2_submitted %}Update{% else %}Submit{% endif %} Coordinator 2 Evaluation
+                                                </button>
+                                                {% endif %}
+                                            </form>
+                                        </div>
+
                                         {% endwith %}
                                     {% endif %}
                                 </div>
                                 {% endwith %}
 
-                                <!-- Second Evaluation (Student-level) -->
+                                <!-- Second Evaluation (Student-level) - 3 Separate Sheets -->
                                 {% with first_evals=item.student_evaluations.first %}
                                 <div class="mb-4">
-                                    <h6 style="color: #34d399; margin-bottom: 1rem;">📊 Second Evaluation (Per Student)</h6>
+                                    <h6 style="color: #34d399; margin-bottom: 1.5rem;">📊 Second Evaluation - 3 Evaluation Sheets</h6>
                                     
                                     {% if not item.first_complete %}
                                         <div class="alert alert-warning">
@@ -945,33 +1085,81 @@
                                         </div>
                                     {% else %}
                                         {% with student_evals=item.student_evaluations.second %}
-                                            <form method="post" action="{% url 'submit_coordinator_student_evaluation' item.group.id 'second' %}" style="background: rgba(52, 211, 153, 0.08); padding: 1rem; border-radius: 8px; border: 1px solid rgba(52, 211, 153, 0.2);">
+                                        
+                                        <!-- GUIDE EVALUATION SHEET (Read-only) -->
+                                        <div style="background: rgba(52, 211, 153, 0.08); padding: 1.5rem; border-radius: 8px; border: 2px solid rgba(52, 211, 153, 0.3); margin-bottom: 1.5rem;">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                                <span style="font-size: 1.3rem;">📚</span>
+                                                <h6 style="color: #6ee7b7; margin: 0; font-weight: 700;">Guide Evaluation Sheet</h6>
+                                                <span style="color: #6ee7b7; font-size: 0.85rem; margin-left: auto;">Read-only</span>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered eval-table" style="background: #0d1117; color: #ffffff; margin-bottom: 0;">
+                                                    <thead>
+                                                        <tr style="background: rgba(52, 211, 153, 0.15);">
+                                                            <th style="color: #6ee7b7;">Student</th>
+                                                            <th style="color: #6ee7b7; text-align: center;">Topic (5)</th>
+                                                            <th style="color: #6ee7b7; text-align: center;">Planning (5)</th>
+                                                            <th style="color: #6ee7b7; text-align: center;">Scale (2)</th>
+                                                            <th style="color: #6ee7b7; text-align: center;">Novelty (5)</th>
+                                                            <th style="color: #6ee7b7; text-align: center;">Task (5)</th>
+                                                            <th style="color: #6ee7b7; text-align: center;">Sched (3)</th>
+                                                            <th style="color: #6ee7b7; text-align: center;">Interim (5)</th>
+                                                            <th style="color: #6ee7b7; text-align: center;">Pres (5)</th>
+                                                            <th style="color: #6ee7b7; text-align: center;">Viva (5)</th>
+                                                            <th style="color: #6ee7b7; text-align: center;">Total (/40)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for member in item.members %}
+                                                        {% with eval=student_evals|get_item:member.user.id %}
+                                                        <tr>
+                                                            <td style="font-weight: 600;">{{ member.user.username }}</td>
+                                                            <td style="text-align: center; color: #6ee7b7;">{{ eval.guide_topic|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #6ee7b7;">{{ eval.guide_planning|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #6ee7b7;">{{ eval.guide_scalability|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #6ee7b7;">{{ eval.guide_novelty|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #6ee7b7;">{{ eval.guide_task_distribution|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #6ee7b7;">{{ eval.guide_schedule|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #6ee7b7;">{{ eval.guide_interim|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #6ee7b7;">{{ eval.guide_presentation|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; color: #6ee7b7;">{{ eval.guide_viva|default_if_none:'—' }}</td>
+                                                            <td style="text-align: center; font-weight: 600; color: #6ee7b7;">{% if eval.guide_submitted %}{{ eval.guide_total }}{% else %}—{% endif %}</td>
+                                                        </tr>
+                                                        {% endwith %}
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <!-- COORDINATOR 1 EVALUATION SHEET -->
+                                        <div style="background: rgba(34, 197, 94, 0.08); padding: 1.5rem; border-radius: 8px; border: 2px solid rgba(34, 197, 94, 0.3); margin-bottom: 1.5rem;">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                                <span style="font-size: 1.3rem;">{% if item.coordinator_role == 1 %}✏️{% else %}👁️{% endif %}</span>
+                                                <h6 style="color: #22c55e; margin: 0; font-weight: 700;">Coordinator 1 Evaluation Sheet</h6>
+                                                <span style="color: {% if item.coordinator_role == 1 %}#22c55e{% else %}#9ca3af{% endif %}; font-size: 0.85rem; margin-left: auto;">{% if item.coordinator_role == 1 %}Editable{% else %}Read-only{% endif %}</span>
+                                            </div>
+                                            <form method="post" action="{% url 'submit_coordinator_student_evaluation' item.group.id 'second' %}" style="margin-bottom: 0;">
                                                 {% csrf_token %}
-                                                {% if student_evals.values.0 and item.coordinator_role == 1 and student_evals.values.0.coordinator1_submitted or student_evals.values.0 and item.coordinator_role == 2 and student_evals.values.0.coordinator2_submitted %}
-                                                <div class="alert alert-success mb-3">
-                                                    ✅ Evaluation submitted
-                                                    {% if student_evals.values.0.finalized %}
-                                                    <span class="ms-2"><strong>✓ Finalized</strong> (Both evaluations complete)</span>
-                                                    {% else %}
-                                                    <span class="ms-2">⏳ Waiting for guide evaluation...</span>
-                                                    {% endif %}
-                                                    <div class="mt-2"><small>You can edit the marks below if needed.</small></div>
-                                                </div>
+                                                {% if item.coordinator_role == 1 %}
+                                                <input type="hidden" name="coordinator_id" value="1">
                                                 {% endif %}
                                                 <div class="table-responsive">
-                                                    <table class="table table-bordered eval-table" style="background: #0d1117; color: #ffffff;">
+                                                    <table class="table table-bordered eval-table" style="background: #0d1117; color: #ffffff; margin-bottom: 0;">
                                                         <thead>
-                                                            <tr style="background: rgba(52, 211, 153, 0.15);">
-                                                                <th style="color: #6ee7b7;">Student Name</th>
-                                                                <th style="color: #6ee7b7; text-align: center;">Topic<br><small>(5)</small></th>
-                                                                <th style="color: #6ee7b7; text-align: center;">Planning<br><small>(5)</small></th>
-                                                                <th style="color: #6ee7b7; text-align: center;">Scale<br><small>(2)</small></th>
-                                                                <th style="color: #6ee7b7; text-align: center;">Novelty<br><small>(5)</small></th>
-                                                                <th style="color: #6ee7b7; text-align: center;">Task<br><small>(5)</small></th>
-                                                                <th style="color: #6ee7b7; text-align: center;">Sched<br><small>(3)</small></th>
-                                                                <th style="color: #6ee7b7; text-align: center;">Interim<br><small>(5)</small></th>
-                                                                <th style="color: #6ee7b7; text-align: center;">Pres<br><small>(5)</small></th>
-                                                                <th style="color: #6ee7b7; text-align: center;">Viva<br><small>(5)</small></th>
+                                                            <tr style="background: rgba(34, 197, 94, 0.15);">
+                                                                <th style="color: #6ee7b7;">Student</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Topic (5)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Planning (5)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Scale (2)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Novelty (5)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Task (5)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Sched (3)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Interim (5)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Pres (5)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Viva (5)</th>
+                                                                <th style="color: #6ee7b7; text-align: center;">Total (/40)</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -979,38 +1167,211 @@
                                                             {% with eval=student_evals|get_item:member.user.id %}
                                                             <tr>
                                                                 <td style="font-weight: 600;">{{ member.user.username }}</td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_topic|default:'' }}{% else %}{{ eval.coordinator2_topic|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_planning|default:'' }}{% else %}{{ eval.coordinator2_planning|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_scalability|default:'' }}{% else %}{{ eval.coordinator2_scalability|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_novelty|default:'' }}{% else %}{{ eval.coordinator2_novelty|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_task_distribution|default:'' }}{% else %}{{ eval.coordinator2_task_distribution|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_schedule|default:'' }}{% else %}{{ eval.coordinator2_schedule|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_interim|default:'' }}{% else %}{{ eval.coordinator2_interim|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_presentation|default:'' }}{% else %}{{ eval.coordinator2_presentation|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
-                                                                <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{% if item.coordinator_role == 1 %}{{ eval.coordinator1_viva|default:'' }}{% else %}{{ eval.coordinator2_viva|default:'' }}{% endif %}" class="form-control form-control-sm" required></td>
+                                                                {% if item.coordinator_role == 1 %}
+                                                                <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{{ eval.coordinator1_topic|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{{ eval.coordinator1_planning|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{{ eval.coordinator1_scalability|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{{ eval.coordinator1_novelty|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{{ eval.coordinator1_task_distribution|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{{ eval.coordinator1_schedule|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{{ eval.coordinator1_interim|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{{ eval.coordinator1_presentation|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{{ eval.coordinator1_viva|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                {% else %}
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_topic|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_planning|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_scalability|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_novelty|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_task_distribution|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_schedule|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_interim|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_presentation|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator1_viva|default_if_none:'—' }}</td>
+                                                                {% endif %}
+                                                                <td style="text-align: center; font-weight: 600; {% if item.coordinator_role == 1 %}color: #22c55e;{% else %}color: #9ca3af;{% endif %}">{% if eval.coordinator1_submitted %}{{ eval.coordinator1_total }}{% else %}—{% endif %}</td>
                                                             </tr>
                                                             {% endwith %}
                                                             {% endfor %}
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                
+                                                {% if item.coordinator_role == 1 %}
                                                 {% with second_eval=item.evaluations.second %}
-                                                <div class="mt-3" style="border-top: 1px solid rgba(52, 211, 153, 0.2); padding-top: 1rem;">
-                                                    <label for="presentation_review_second_{{ item.group.id }}" style="color: #6ee7b7; font-weight: 600; display: block; margin-bottom: 0.5rem;">
+                                                <div class="mt-3" style="border-top: 1px solid rgba(34, 197, 94, 0.2); padding-top: 1rem;">
+                                                    <label for="presentation_review_coord1_second_{{ item.group.id }}" style="color: #6ee7b7; font-weight: 600; display: block; margin-bottom: 0.5rem;">
                                                         📝 Presentation Review (Group)
                                                     </label>
-                                                    <textarea name="presentation_review" id="presentation_review_second_{{ item.group.id }}" rows="4" class="form-control" 
-                                                        placeholder="Enter your review of the group's second presentation...">{% if item.coordinator_role == 1 %}{{ second_eval.coordinator1_review|default:'' }}{% else %}{{ second_eval.coordinator2_review|default:'' }}{% endif %}</textarea>
+                                                    <textarea name="presentation_review" id="presentation_review_coord1_second_{{ item.group.id }}" rows="3" class="form-control" placeholder="Enter your review of the group's second presentation...">{{ second_eval.coordinator1_review|default:'' }}</textarea>
                                                 </div>
                                                 {% endwith %}
-                                                
                                                 <button type="submit" class="btn btn-success btn-sm mt-3">
-                                                    {% if student_evals.values.0 and item.coordinator_role == 1 and student_evals.values.0.coordinator1_submitted or student_evals.values.0 and item.coordinator_role == 2 and student_evals.values.0.coordinator2_submitted %}Update{% else %}Submit{% endif %} Second Evaluation
+                                                    {% if student_evals.values.0 and student_evals.values.0.coordinator1_submitted %}Update{% else %}Submit{% endif %} Coordinator 1 Evaluation
                                                 </button>
+                                                {% endif %}
                                             </form>
+                                        </div>
 
-                                            {% if item.second_complete %}
+                                        <!-- COORDINATOR 2 EVALUATION SHEET -->
+                                        <div style="background: rgba(249, 115, 22, 0.08); padding: 1.5rem; border-radius: 8px; border: 2px solid rgba(249, 115, 22, 0.3); margin-bottom: 1.5rem;">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                                <span style="font-size: 1.3rem;">{% if item.coordinator_role == 2 %}✏️{% else %}👁️{% endif %}</span>
+                                                <h6 style="color: #f97316; margin: 0; font-weight: 700;">Coordinator 2 Evaluation Sheet</h6>
+                                                <span style="color: {% if item.coordinator_role == 2 %}#f97316{% else %}#9ca3af{% endif %}; font-size: 0.85rem; margin-left: auto;">{% if item.coordinator_role == 2 %}Editable{% else %}Read-only{% endif %}</span>
+                                            </div>
+                                            <form method="post" action="{% url 'submit_coordinator_student_evaluation' item.group.id 'second' %}" style="margin-bottom: 0;">
+                                                {% csrf_token %}
+                                                {% if item.coordinator_role == 2 %}
+                                                <input type="hidden" name="coordinator_id" value="2">
+                                                {% endif %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered eval-table" style="background: #0d1117; color: #ffffff; margin-bottom: 0;">
+                                                        <thead>
+                                                            <tr style="background: rgba(249, 115, 22, 0.15);">
+                                                                <th style="color: #fed7aa;">Student</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Topic (5)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Planning (5)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Scale (2)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Novelty (5)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Task (5)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Sched (3)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Interim (5)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Pres (5)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Viva (5)</th>
+                                                                <th style="color: #fed7aa; text-align: center;">Total (/40)</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for member in item.members %}
+                                                            {% with eval=student_evals|get_item:member.user.id %}
+                                                            <tr>
+                                                                <td style="font-weight: 600;">{{ member.user.username }}</td>
+                                                                {% if item.coordinator_role == 2 %}
+                                                                <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{{ eval.coordinator2_topic|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{{ eval.coordinator2_planning|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{{ eval.coordinator2_scalability|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{{ eval.coordinator2_novelty|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{{ eval.coordinator2_task_distribution|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{{ eval.coordinator2_schedule|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{{ eval.coordinator2_interim|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{{ eval.coordinator2_presentation|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{{ eval.coordinator2_viva|default:0 }}" class="form-control form-control-sm" required></td>
+                                                                {% else %}
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_topic|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_planning|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_scalability|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_novelty|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_task_distribution|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_schedule|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_interim|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_presentation|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #9ca3af;">{{ eval.coordinator2_viva|default_if_none:'—' }}</td>
+                                                                {% endif %}
+                                                                <td style="text-align: center; font-weight: 600; {% if item.coordinator_role == 2 %}color: #f97316;{% else %}color: #9ca3af;{% endif %}">{% if eval.coordinator2_submitted %}{{ eval.coordinator2_total }}{% else %}—{% endif %}</td>
+                                                            </tr>
+                                                            {% endwith %}
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {% if item.coordinator_role == 2 %}
+                                                {% with second_eval=item.evaluations.second %}
+                                                <div class="mt-3" style="border-top: 1px solid rgba(249, 115, 22, 0.2); padding-top: 1rem;">
+                                                    <label for="presentation_review_coord2_second_{{ item.group.id }}" style="color: #fed7aa; font-weight: 600; display: block; margin-bottom: 0.5rem;">
+                                                        📝 Presentation Review (Group)
+                                                    </label>
+                                                    <textarea name="presentation_review" id="presentation_review_coord2_second_{{ item.group.id }}" rows="3" class="form-control" placeholder="Enter your review of the group's second presentation...">{{ second_eval.coordinator2_review|default:'' }}</textarea>
+                                                </div>
+                                                {% endwith %}
+                                                <button type="submit" class="btn btn-warning btn-sm mt-3">
+                                                    {% if student_evals.values.0 and student_evals.values.0.coordinator2_submitted %}Update{% else %}Submit{% endif %} Coordinator 2 Evaluation
+                                                </button>
+                                                {% endif %}
+                                            </form>
+                                        </div>
+
+                                        {% endwith %}
+                                        
+                                        <!-- FINAL GUIDE EVALUATION SHEET (Read-only) -->
+                                        <div class="mb-4">
+                                            <h6 style="color: #93c5fd; margin-bottom: 1.5rem;">📘 Final Guide Evaluation</h6>
+                                            
+                                            {% with student_evals=item.student_evaluations.second %}
+                                                {% if student_evals %}
+                                                    {% for member in item.members %}
+                                                    {% with eval=student_evals|get_item:member.user.id %}
+                                                        {% if eval and eval.final_guide_submitted %}
+                                                            {% if forloop.first %}
+                                                            <div style="background: rgba(96, 165, 250, 0.08); padding: 1.5rem; border-radius: 8px; border: 2px solid rgba(96, 165, 250, 0.3); margin-bottom: 1.5rem;">
+                                                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                                                    <span style="font-size: 1.3rem;">📘</span>
+                                                                    <h6 style="color: #60a5fa; margin: 0; font-weight: 700;">Final Guide Evaluation Sheet</h6>
+                                                                    <span style="color: #93c5fd; font-size: 0.85rem; margin-left: auto;">Read-only (Submitted by Guide)</span>
+                                                                </div>
+                                                                <div class="table-responsive">
+                                                                    <table class="table table-bordered eval-table" style="background: #0d1117; color: #ffffff; margin-bottom: 0;">
+                                                                        <thead>
+                                                                            <tr style="background: rgba(96, 165, 250, 0.15);">
+                                                                                <th style="color: #93c5fd;">Student</th>
+                                                                                <th style="color: #93c5fd; text-align: center;">Topic (5)</th>
+                                                                                <th style="color: #93c5fd; text-align: center;">Planning (5)</th>
+                                                                                <th style="color: #93c5fd; text-align: center;">Scale (2)</th>
+                                                                                <th style="color: #93c5fd; text-align: center;">Novelty (5)</th>
+                                                                                <th style="color: #93c5fd; text-align: center;">Task (5)</th>
+                                                                                <th style="color: #93c5fd; text-align: center;">Sched (3)</th>
+                                                                                <th style="color: #93c5fd; text-align: center;">Interim (5)</th>
+                                                                                <th style="color: #93c5fd; text-align: center;">Pres (5)</th>
+                                                                                <th style="color: #93c5fd; text-align: center;">Viva (5)</th>
+                                                                                <th style="color: #93c5fd; text-align: center;">Total (/40)</th>
+                                                                                <th style="color: #93c5fd; text-align: center;">Final Mark (/15)</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                            {% endif %}
+                                                            <tr>
+                                                                <td style="font-weight: 600;">{{ member.user.username }}</td>
+                                                                <td style="text-align: center; color: #93c5fd;">{{ eval.final_guide_topic|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #93c5fd;">{{ eval.final_guide_planning|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #93c5fd;">{{ eval.final_guide_scale|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #93c5fd;">{{ eval.final_guide_novelty|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #93c5fd;">{{ eval.final_guide_task|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #93c5fd;">{{ eval.final_guide_schedule|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #93c5fd;">{{ eval.final_guide_interim|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #93c5fd;">{{ eval.final_guide_presentation|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; color: #93c5fd;">{{ eval.final_guide_viva|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; font-weight: 600; color: #93c5fd;">{{ eval.final_guide_total|default_if_none:'—' }}</td>
+                                                                <td style="text-align: center; font-weight: 600; color: #86efac;">{{ eval.final_guide_mark|default_if_none:'—' }}</td>
+                                                            </tr>
+                                                            {% if forloop.last %}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                    {% endfor %}
+                                                {% endif %}
+                                            {% endwith %}
+                                            
+                                            {% with student_evals=item.student_evaluations.second %}
+                                                {% if student_evals %}
+                                                    {% for member in item.members %}
+                                                    {% with eval=student_evals|get_item:member.user.id %}
+                                                        {% if eval and not eval.final_guide_submitted %}
+                                                            {% if forloop.first %}
+                                                            <div class="alert alert-info" style="background: rgba(96, 165, 250, 0.1); border: 1px solid rgba(96, 165, 250, 0.3); color: #93c5fd;">
+                                                                ⏳ Final Guide Evaluation Pending
+                                                            </div>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                    {% endfor %}
+                                                {% endif %}
+                                            {% endwith %}
+                                        </div>
+                                        
+                                        {% if item.second_complete %}
+                                        {% with student_evals=item.student_evaluations.second %}
                                             <div class="mt-3" style="background: rgba(52, 211, 153, 0.08); padding: 1rem; border-radius: 8px; border: 1px solid rgba(52, 211, 153, 0.2);">
                                                 <h6 style="color: #6ee7b7; margin-bottom: 1rem;">Attendance Marks (Out of 10)</h6>
                                                 <form method="post" action="{% url 'submit_attendance_marks' item.group.id %}">
@@ -1040,7 +1401,7 @@
                                                                 </td>
                                                                 <td>
                                                                     {% if eval %}
-                                                                    <input type="number" name="attendance_{{ member.user.id }}" min="0" max="10" value="{{ eval.attendance_marks|default:'' }}" class="form-control form-control-sm" style="max-width: 120px;" required>
+                                                                    <input type="number" name="attendance_{{ member.user.id }}" min="0" max="10" value="{{ eval.attendance_marks|default:0 }}" class="form-control form-control-sm" style="max-width: 120px;" required>
                                                                     {% else %}
                                                                     <span style="color: #9ca3af;">Second evaluation record not available.</span>
                                                                     {% endif %}
@@ -1075,6 +1436,92 @@
                                                         {% if student_evals.values.0 and student_evals.values.0.attendance_submitted %}Update Attendance{% else %}Submit Attendance{% endif %}
                                                     </button>
                                                 </div>
+                                                </form>
+                                            </div>
+
+                                            <!-- External Evaluation (ESE) - Multi-Evaluator Section -->
+                                            <div class="mt-3" style="background: rgba(168, 85, 247, 0.08); padding: 1rem; border-radius: 8px; border: 1px solid rgba(168, 85, 247, 0.2);">
+                                                <h6 style="color: #d8b4fe; margin-bottom: 1rem;">🎯 External Evaluation (ESE)</h6>
+                                                
+                                                <form method="post" action="{% url 'submit_coordinator_ese' item.group.id %}">
+                                                    {% csrf_token %}
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered eval-table" style="background: #0d1117; color: #ffffff; margin-bottom: 0;">
+                                                            <thead>
+                                                                <tr style="background: rgba(168, 85, 247, 0.15);">
+                                                                    <th style="color: #d8b4fe;">Student Name</th>
+                                                                    <th colspan="3" style="color: #60a5fa; text-align: center;">Guide (max 75)</th>
+                                                                    <th colspan="3" style="color: #22c55e; text-align: center;">Coordinator 1 (max 75)</th>
+                                                                    <th colspan="3" style="color: #f97316; text-align: center;">Coordinator 2 (max 75)</th>
+                                                                    <th style="color: #d8b4fe; text-align: center;">Final<br><small>(max 75)</small></th>
+                                                                </tr>
+                                                                <tr style="background: rgba(168, 85, 247, 0.1);">
+                                                                    <th style="color: #d8b4fe;"></th>
+                                                                    <th style="color: #60a5fa; text-align: center; font-size: 0.9rem;"><small>Pres(30)</small></th>
+                                                                    <th style="color: #60a5fa; text-align: center; font-size: 0.9rem;"><small>Demo(20)</small></th>
+                                                                    <th style="color: #60a5fa; text-align: center; font-size: 0.9rem;"><small>Viva(25)</small></th>
+                                                                    <th style="color: #22c55e; text-align: center; font-size: 0.9rem;"><small>Pres(30)</small></th>
+                                                                    <th style="color: #22c55e; text-align: center; font-size: 0.9rem;"><small>Demo(20)</small></th>
+                                                                    <th style="color: #22c55e; text-align: center; font-size: 0.9rem;"><small>Viva(25)</small></th>
+                                                                    <th style="color: #f97316; text-align: center; font-size: 0.9rem;"><small>Pres(30)</small></th>
+                                                                    <th style="color: #f97316; text-align: center; font-size: 0.9rem;"><small>Demo(20)</small></th>
+                                                                    <th style="color: #f97316; text-align: center; font-size: 0.9rem;"><small>Viva(25)</small></th>
+                                                                    <th style="color: #d8b4fe; text-align: center;">Avg<br><small>(/75)</small></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for row in item.ese_data %}
+                                                                <tr>
+                                                                    <td style="font-weight: 600;">{{ row.student.username }}</td>
+                                                                    <!-- Guide (READ-ONLY) -->
+                                                                    <td style="background: rgba(96, 165, 250, 0.05); text-align: center; color: #60a5fa;">{{ row.student_eval.ese_guide_presentation|default:'—' }}</td>
+                                                                    <td style="background: rgba(96, 165, 250, 0.05); text-align: center; color: #60a5fa;">{{ row.student_eval.ese_guide_demo|default:'—' }}</td>
+                                                                    <td style="background: rgba(96, 165, 250, 0.05); text-align: center; color: #60a5fa;">{{ row.student_eval.ese_guide_viva|default:'—' }}</td>
+                                                                    
+                                                                    <!-- Coordinator 1 - Editable if current user is Coord1, else read-only -->
+                                                                    {% if item.coordinator_role == 1 %}
+                                                                    <td style="background: rgba(34, 197, 94, 0.1);"><input type="number" name="student_{{ row.student.id }}_ese_presentation" min="0" max="30" value="{{ row.student_eval.ese_coord1_presentation|default:0 }}" class="form-control form-control-sm" style="background: rgba(34, 197, 94, 0.1); border-color: #22c55e;"></td>
+                                                                    <td style="background: rgba(34, 197, 94, 0.1);"><input type="number" name="student_{{ row.student.id }}_ese_demo" min="0" max="20" value="{{ row.student_eval.ese_coord1_demo|default:0 }}" class="form-control form-control-sm" style="background: rgba(34, 197, 94, 0.1); border-color: #22c55e;"></td>
+                                                                    <td style="background: rgba(34, 197, 94, 0.1);"><input type="number" name="student_{{ row.student.id }}_ese_viva" min="0" max="25" value="{{ row.student_eval.ese_coord1_viva|default:0 }}" class="form-control form-control-sm" style="background: rgba(34, 197, 94, 0.1); border-color: #22c55e;"></td>
+                                                                    {% else %}
+                                                                    <td style="background: rgba(34, 197, 94, 0.05); text-align: center; color: #22c55e;">{{ row.student_eval.ese_coord1_presentation|default:'—' }}</td>
+                                                                    <td style="background: rgba(34, 197, 94, 0.05); text-align: center; color: #22c55e;">{{ row.student_eval.ese_coord1_demo|default:'—' }}</td>
+                                                                    <td style="background: rgba(34, 197, 94, 0.05); text-align: center; color: #22c55e;">{{ row.student_eval.ese_coord1_viva|default:'—' }}</td>
+                                                                    {% endif %}
+                                                                    
+                                                                    <!-- Coordinator 2 - Editable if current user is Coord2, else read-only -->
+                                                                    {% if item.coordinator_role == 2 %}
+                                                                    <td style="background: rgba(249, 115, 22, 0.1);"><input type="number" name="student_{{ row.student.id }}_ese_presentation" min="0" max="30" value="{{ row.student_eval.ese_coord2_presentation|default:0 }}" class="form-control form-control-sm" style="background: rgba(249, 115, 22, 0.1); border-color: #f97316;"></td>
+                                                                    <td style="background: rgba(249, 115, 22, 0.1);"><input type="number" name="student_{{ row.student.id }}_ese_demo" min="0" max="20" value="{{ row.student_eval.ese_coord2_demo|default:0 }}" class="form-control form-control-sm" style="background: rgba(249, 115, 22, 0.1); border-color: #f97316;"></td>
+                                                                    <td style="background: rgba(249, 115, 22, 0.1);"><input type="number" name="student_{{ row.student.id }}_ese_viva" min="0" max="25" value="{{ row.student_eval.ese_coord2_viva|default:0 }}" class="form-control form-control-sm" style="background: rgba(249, 115, 22, 0.1); border-color: #f97316;"></td>
+                                                                    {% else %}
+                                                                    <td style="background: rgba(249, 115, 22, 0.05); text-align: center; color: #f97316;">{{ row.student_eval.ese_coord2_presentation|default:'—' }}</td>
+                                                                    <td style="background: rgba(249, 115, 22, 0.05); text-align: center; color: #f97316;">{{ row.student_eval.ese_coord2_demo|default:'—' }}</td>
+                                                                    <td style="background: rgba(249, 115, 22, 0.05); text-align: center; color: #f97316;">{{ row.student_eval.ese_coord2_viva|default:'—' }}</td>
+                                                                    {% endif %}
+                                                                    
+                                                                    <!-- Final ESE (AUTO-CALCULATED) -->
+                                                                    <td style="background: rgba(168, 85, 247, 0.15); text-align: center; font-weight: 600; color: #d8b4fe;">
+                                                                        {% with eval=row.student_eval %}
+                                                                            {% if eval and eval.ese_final != None %}
+                                                                                {{ eval.ese_final }}
+                                                                            {% else %}
+                                                                                —
+                                                                            {% endif %}
+                                                                        {% endwith %}
+                                                                    </td>
+                                                                </tr>
+                                                                {% empty %}
+                                                                <tr>
+                                                                    <td colspan="11" style="text-align: center; color: #9ca3af;">No ESE data available yet.</td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary btn-sm mt-3">
+                                                        Submit ESE - Coordinator {{ item.coordinator_role }}
+                                                    </button>
                                                 </form>
                                             </div>
 
@@ -1115,13 +1562,13 @@
                                                 {% elif item.coordinator_role == 1 %}
                                                 <form method="post" action="{% url 'submit_report_mark' item.project_report.id %}" class="d-flex flex-wrap align-items-center gap-2 mb-3">
                                                     {% csrf_token %}
-                                                    <input type="number" name="report_mark" min="0" max="10" value="{{ item.project_report.coordinator1_mark|default:'' }}" class="form-control form-control-sm" style="max-width: 140px;" required>
+                                                    <input type="number" name="report_mark" min="0" max="10" value="{{ item.project_report.coordinator1_mark|default:0 }}" class="form-control form-control-sm" style="max-width: 140px;" required>
                                                     <button type="submit" class="btn btn-success btn-sm">{% if item.project_report.coordinator1_submitted %}Update{% else %}Submit{% endif %} Your Report Mark</button>
                                                 </form>
                                                 {% elif item.coordinator_role == 2 %}
                                                 <form method="post" action="{% url 'submit_report_mark' item.project_report.id %}" class="d-flex flex-wrap align-items-center gap-2 mb-3">
                                                     {% csrf_token %}
-                                                    <input type="number" name="report_mark" min="0" max="10" value="{{ item.project_report.coordinator2_mark|default:'' }}" class="form-control form-control-sm" style="max-width: 140px;" required>
+                                                    <input type="number" name="report_mark" min="0" max="10" value="{{ item.project_report.coordinator2_mark|default:0 }}" class="form-control form-control-sm" style="max-width: 140px;" required>
                                                     <button type="submit" class="btn btn-success btn-sm">{% if item.project_report.coordinator2_submitted %}Update{% else %}Submit{% endif %} Your Report Mark</button>
                                                 </form>
                                                 {% endif %}
@@ -1184,12 +1631,45 @@
                                                 </div>
                                             </div>
 
+                                            <!-- Final Result Summary -->
+                                            <div class="mt-3" style="background: rgba(59, 130, 246, 0.08); padding: 1rem; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3);">
+                                                <h6 style="color: #93c5fd; margin-bottom: 1rem;">🏁 Final Result (150)</h6>
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered eval-table mb-0" style="background: #0d1117; color: #ffffff;">
+                                                        <thead>
+                                                            <tr style="background: rgba(59, 130, 246, 0.15);">
+                                                                <th style="color: #93c5fd;">Student Name</th>
+                                                                <th style="color: #93c5fd; text-align: center;">CIE<br><small>(/75)</small></th>
+                                                                <th style="color: #93c5fd; text-align: center;">ESE<br><small>(/75)</small></th>
+                                                                <th style="color: #93c5fd; text-align: center;">Total<br><small>(/150)</small></th>
+                                                                <th style="color: #93c5fd; text-align: center;">Percentage</th>
+                                                                <th style="color: #93c5fd; text-align: center;">Grade</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for member in item.members %}
+                                                            {% with eval=student_evals|get_item:member.user.id %}
+                                                            <tr>
+                                                                <td style="font-weight: 600;">{{ member.user.username }}</td>
+                                                                <td style="text-align: center; color: #fbbf24; font-weight: 600;">{% if eval and eval.cie_total != None %}{{ eval.cie_total }}{% else %}—{% endif %}</td>
+                                                                <td style="text-align: center; color: #d8b4fe; font-weight: 600;">{% if eval and eval.ese_final != None %}{{ eval.ese_final }}{% else %}—{% endif %}</td>
+                                                                <td style="text-align: center; color: #86efac; font-weight: 700;">{% if eval and eval.final_total != None %}{{ eval.final_total }}{% else %}—{% endif %}</td>
+                                                                <td style="text-align: center; color: #93c5fd; font-weight: 600;">{% if eval and eval.final_percentage != None %}{{ eval.final_percentage|floatformat:2 }}%{% else %}—{% endif %}</td>
+                                                                <td style="text-align: center; color: #fde68a; font-weight: 700; letter-spacing: 0.05em;">{% if eval and eval.final_grade %}{{ eval.final_grade }}{% else %}—{% endif %}</td>
+                                                            </tr>
+                                                            {% endwith %}
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+
+                                        {% endwith %}
                                             {% else %}
                                             <div class="alert alert-warning mt-3">
                                                 Attendance marks can be entered only after Second Evaluation is completed.
                                             </div>
                                             {% endif %}
-                                        {% endwith %}
                                     {% endif %}
                                 </div>
                                 {% endwith %}

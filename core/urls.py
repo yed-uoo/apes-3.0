@@ -40,6 +40,8 @@ urlpatterns = [
     # Student Evaluation URLs (First/Second)
     path("evaluation/guide/student/<int:group_id>/<str:stage>/", views.submit_guide_student_evaluation, name="submit_guide_student_evaluation"),
     path("evaluation/guide/final/<int:group_id>/", views.submit_final_guide_evaluation, name="submit_final_guide_evaluation"),
+    path("evaluation/guide/ese/<int:group_id>/", views.submit_guide_ese, name="submit_guide_ese"),
+    path("evaluation/coordinator/ese/<int:group_id>/", views.submit_coordinator_ese, name="submit_coordinator_ese"),
     path("evaluation/coordinator/student/<int:group_id>/<str:stage>/", views.submit_coordinator_student_evaluation, name="submit_coordinator_student_evaluation"),
     path("evaluation/attendance/<int:group_id>/", views.submit_attendance_marks, name="submit_attendance_marks"),
 ]

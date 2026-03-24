@@ -238,6 +238,12 @@
         color: #fca5a5;
     }
 
+    .btn-outline {
+        background: transparent;
+        color: #cbd5f5;
+        border: 1px solid rgba(148, 163, 184, .35);
+    }
+
     .stage-bar {
         display: flex;
         gap: .5rem;
@@ -383,6 +389,12 @@
 
     <!-- Action buttons -->
     <div class="d-flex flex-wrap gap-2 mt-3">
+
+        {% if abstract.pdf_file %}
+        <a href="{% url 'download_abstract' abstract.id %}" class="hod-btn btn-outline" target="_blank" rel="noopener">
+            📄 View Abstract
+        </a>
+        {% endif %}
 
         {% if abstract.hod_status != "approved" and abstract.hod_status != "rejected" %}
         <form method="post" style="display:inline">

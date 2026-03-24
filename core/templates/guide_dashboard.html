@@ -715,15 +715,15 @@
                                                 {% with eval=student_evals|get_item:member.user.id %}
                                                 <tr>
                                                     <td style="font-weight: 600;">{{ member.user.username }}</td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{{ eval.guide_topic|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{{ eval.guide_planning|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{{ eval.guide_scalability|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{{ eval.guide_novelty|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{{ eval.guide_task_distribution|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{{ eval.guide_schedule|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{{ eval.guide_interim|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{{ eval.guide_presentation|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{{ eval.guide_viva|default:'' }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{{ eval.guide_topic|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{{ eval.guide_planning|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{{ eval.guide_scalability|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{{ eval.guide_novelty|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{{ eval.guide_task_distribution|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{{ eval.guide_schedule|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{{ eval.guide_interim|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{{ eval.guide_presentation|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{{ eval.guide_viva|default:0 }}" class="form-control form-control-sm" required></td>
                                                 </tr>
                                                 {% endwith %}
                                                 {% endfor %}
@@ -799,15 +799,15 @@
                                                 {% with eval=student_evals|get_item:member.user.id %}
                                                 <tr>
                                                     <td style="font-weight: 600;">{{ member.user.username }}</td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{{ eval.guide_topic|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{{ eval.guide_planning|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{{ eval.guide_scalability|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{{ eval.guide_novelty|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{{ eval.guide_task_distribution|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{{ eval.guide_schedule|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{{ eval.guide_interim|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{{ eval.guide_presentation|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{{ eval.guide_viva|default:'' }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_topic" min="0" max="5" value="{{ eval.guide_topic|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_planning" min="0" max="5" value="{{ eval.guide_planning|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_scalability" min="0" max="2" value="{{ eval.guide_scalability|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_novelty" min="0" max="5" value="{{ eval.guide_novelty|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_task_distribution" min="0" max="5" value="{{ eval.guide_task_distribution|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_schedule" min="0" max="3" value="{{ eval.guide_schedule|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_interim" min="0" max="5" value="{{ eval.guide_interim|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_presentation" min="0" max="5" value="{{ eval.guide_presentation|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_viva" min="0" max="5" value="{{ eval.guide_viva|default:0 }}" class="form-control form-control-sm" required></td>
                                                 </tr>
                                                 {% endwith %}
                                                 {% endfor %}
@@ -834,7 +834,90 @@
                                     </button>
                                 </form>
 
-                            {% if item.second_complete %}
+                            <!-- External Evaluation (ESE) - Single Section with All Evaluators -->
+{% if item.second_complete %}
+<div class="mt-4 pt-3" style="border-top: 1px solid rgba(255, 255, 255, 0.1);">
+    <h6 style="color: #d8b4fe; margin-bottom: 1rem;">🎯 External Evaluation (ESE)</h6>
+    
+    {% with second_evals=item.student_evaluations.second %}
+    {% if second_evals.values.0 and second_evals.values.0.ese_guide_submitted %}
+    <div class="alert alert-info mb-3" style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); color: #d8b4fe;">
+        ✅ Guide ESE submitted. Waiting for coordinator inputs...
+    </div>
+    {% endif %}
+    
+    <form method="post" action="{% url 'submit_guide_ese' item.group.id %}" style="background: rgba(168, 85, 247, 0.08); padding: 1rem; border-radius: 8px; border: 1px solid rgba(168, 85, 247, 0.2);">
+        {% csrf_token %}
+        <div class="table-responsive">
+            <table class="table table-bordered eval-table" style="background: #0d1117; color: #ffffff;">
+                <thead>
+                    <tr style="background: rgba(168, 85, 247, 0.15);">
+                        <th style="color: #d8b4fe;">Student Name</th>
+                        <th colspan="3" style="color: #60a5fa; text-align: center;">Guide (max 75)</th>
+                        <th colspan="3" style="color: #22c55e; text-align: center;">Coordinator 1 (max 75)</th>
+                        <th colspan="3" style="color: #f97316; text-align: center;">Coordinator 2 (max 75)</th>
+                        <th style="color: #d8b4fe; text-align: center;">Final<br><small>(max 75)</small></th>
+                    </tr>
+                    <tr style="background: rgba(168, 85, 247, 0.1);">
+                        <th style="color: #d8b4fe;"></th>
+                        <th style="color: #60a5fa; text-align: center; font-size: 0.9rem;"><small>Pres<br>(30)</small></th>
+                        <th style="color: #60a5fa; text-align: center; font-size: 0.9rem;"><small>Demo<br>(20)</small></th>
+                        <th style="color: #60a5fa; text-align: center; font-size: 0.9rem;"><small>Viva<br>(25)</small></th>
+                        <th style="color: #22c55e; text-align: center; font-size: 0.9rem;"><small>Pres<br>(30)</small></th>
+                        <th style="color: #22c55e; text-align: center; font-size: 0.9rem;"><small>Demo<br>(20)</small></th>
+                        <th style="color: #22c55e; text-align: center; font-size: 0.9rem;"><small>Viva<br>(25)</small></th>
+                        <th style="color: #f97316; text-align: center; font-size: 0.9rem;"><small>Pres<br>(30)</small></th>
+                        <th style="color: #f97316; text-align: center; font-size: 0.9rem;"><small>Demo<br>(20)</small></th>
+                        <th style="color: #f97316; text-align: center; font-size: 0.9rem;"><small>Viva<br>(25)</small></th>
+                        <th style="color: #d8b4fe; text-align: center;">Average<br><small>(/75)</small></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in item.members %}
+                    {% with eval=second_evals|get_item:member.user.id %}
+                    <tr>
+                        <td style="font-weight: 600;">{{ member.user.username }}</td>
+                        <!-- Guide Scores (EDITABLE - Currently submitting) -->
+                        <td><input type="number" name="student_{{ member.user.id }}_ese_presentation" min="0" max="30" value="{{ eval.ese_guide_presentation|default:0 }}" class="form-control form-control-sm" style="background: rgba(96, 165, 250, 0.1); border-color: #60a5fa;"></td>
+                        <td><input type="number" name="student_{{ member.user.id }}_ese_demo" min="0" max="20" value="{{ eval.ese_guide_demo|default:0 }}" class="form-control form-control-sm" style="background: rgba(96, 165, 250, 0.1); border-color: #60a5fa;"></td>
+                        <td><input type="number" name="student_{{ member.user.id }}_ese_viva" min="0" max="25" value="{{ eval.ese_guide_viva|default:0 }}" class="form-control form-control-sm" style="background: rgba(96, 165, 250, 0.1); border-color: #60a5fa;"></td>
+                        <!-- Coordinator 1 Scores (READ-ONLY - Not editable by guide) -->
+                        <td style="background: rgba(34, 197, 94, 0.05);">{{ eval.ese_coord1_presentation|default:'—' }}</td>
+                        <td style="background: rgba(34, 197, 94, 0.05);">{{ eval.ese_coord1_demo|default:'—' }}</td>
+                        <td style="background: rgba(34, 197, 94, 0.05);">{{ eval.ese_coord1_viva|default:'—' }}</td>
+                        <!-- Coordinator 2 Scores (READ-ONLY - Not editable by guide) -->
+                        <td style="background: rgba(249, 115, 22, 0.05);">{{ eval.ese_coord2_presentation|default:'—' }}</td>
+                        <td style="background: rgba(249, 115, 22, 0.05);">{{ eval.ese_coord2_demo|default:'—' }}</td>
+                        <td style="background: rgba(249, 115, 22, 0.05);">{{ eval.ese_coord2_viva|default:'—' }}</td>
+                        <!-- Final ESE Mark (auto-calculated average) -->
+                        <td style="background: rgba(168, 85, 247, 0.15); font-weight: 600; color: #d8b4fe; text-align: center;">
+                            {% if eval and eval.ese_final != None %}
+                                {{ eval.ese_final }}
+                            {% else %}
+                                --
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm mt-3">
+            {% if second_evals.values.0 and second_evals.values.0.ese_guide_submitted %}Update{% else %}Submit{% endif %} ESE (Guide)
+        </button>
+    </form>
+    {% endwith %}
+</div>
+{% else %}
+<div class="mt-4 pt-3" style="border-top: 1px solid rgba(255, 255, 255, 0.1);">
+    <h6 style="color: #d8b4fe; margin-bottom: 1rem;">🎯 External Evaluation (ESE)</h6>
+    <div class="alert alert-warning" style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); color: #fbbf24;">
+        🔒 <strong>Locked:</strong> ESE is available only after Second Evaluation is completed.
+    </div>
+</div>
+{% endif %}
+
                             <div class="mt-3" style="background: rgba(52, 211, 153, 0.08); padding: 1rem; border-radius: 8px; border: 1px solid rgba(52, 211, 153, 0.2);">
                                 <h6 style="color: #6ee7b7; margin-bottom: 1rem;">Final Guide Evaluation (Per Student)</h6>
                                 {% if student_evals.values.0 and student_evals.values.0.final_guide_submitted %}
@@ -867,15 +950,15 @@
                                                 <tr>
                                                     <td style="font-weight: 600;">{{ member.user.username }}</td>
                                                     {% if eval %}
-                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_topic" min="0" max="5" value="{{ eval.final_guide_topic|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_planning" min="0" max="5" value="{{ eval.final_guide_planning|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_scale" min="0" max="2" value="{{ eval.final_guide_scale|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_novelty" min="0" max="5" value="{{ eval.final_guide_novelty|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_task" min="0" max="5" value="{{ eval.final_guide_task|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_schedule" min="0" max="3" value="{{ eval.final_guide_schedule|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_interim" min="0" max="5" value="{{ eval.final_guide_interim|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_presentation" min="0" max="5" value="{{ eval.final_guide_presentation|default:'' }}" class="form-control form-control-sm" required></td>
-                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_viva" min="0" max="5" value="{{ eval.final_guide_viva|default:'' }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_topic" min="0" max="5" value="{{ eval.final_guide_topic|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_planning" min="0" max="5" value="{{ eval.final_guide_planning|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_scale" min="0" max="2" value="{{ eval.final_guide_scale|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_novelty" min="0" max="5" value="{{ eval.final_guide_novelty|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_task" min="0" max="5" value="{{ eval.final_guide_task|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_schedule" min="0" max="3" value="{{ eval.final_guide_schedule|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_interim" min="0" max="5" value="{{ eval.final_guide_interim|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_presentation" min="0" max="5" value="{{ eval.final_guide_presentation|default:0 }}" class="form-control form-control-sm" required></td>
+                                                    <td><input type="number" name="student_{{ member.user.id }}_final_guide_viva" min="0" max="5" value="{{ eval.final_guide_viva|default:0 }}" class="form-control form-control-sm" required></td>
                                                     <td style="text-align: center; color: {% if eval.final_guide_submitted %}#86efac{% else %}#9ca3af{% endif %};">
                                                         {% if eval.final_guide_submitted %}{{ eval.final_guide_mark }}{% else %}—{% endif %}
                                                     </td>
@@ -996,14 +1079,40 @@
                                 </div>
                             </div>
 
-                            {% else %}
-                            <div class="alert alert-warning mt-3" style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); color: #fbbf24;">
-                                Final Guide Evaluation will be available after completion of Second Evaluation.
+                            {% with second_evals=item.student_evaluations.second %}
+                            <div class="mt-3" style="background: rgba(59, 130, 246, 0.08); padding: 1rem; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3);">
+                                <h6 style="color: #93c5fd; margin-bottom: 1rem;">🏁 Final Result (150)</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered eval-table mb-0" style="background: #0d1117; color: #ffffff;">
+                                        <thead>
+                                            <tr style="background: rgba(59, 130, 246, 0.15);">
+                                                <th style="color: #93c5fd;">Student Name</th>
+                                                <th style="color: #93c5fd; text-align: center;">CIE<br><small>(/75)</small></th>
+                                                <th style="color: #93c5fd; text-align: center;">ESE<br><small>(/75)</small></th>
+                                                <th style="color: #93c5fd; text-align: center;">Total<br><small>(/150)</small></th>
+                                                <th style="color: #93c5fd; text-align: center;">Percentage</th>
+                                                <th style="color: #93c5fd; text-align: center;">Grade</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for member in item.members %}
+                                            {% with eval=second_evals|get_item:member.user.id %}
+                                            <tr>
+                                                <td style="font-weight: 600;">{{ member.user.username }}</td>
+                                                <td style="text-align: center; color: #fbbf24; font-weight: 600;">{% if eval and eval.cie_total != None %}{{ eval.cie_total }}{% else %}—{% endif %}</td>
+                                                <td style="text-align: center; color: #d8b4fe; font-weight: 600;">{% if eval and eval.ese_final != None %}{{ eval.ese_final }}{% else %}—{% endif %}</td>
+                                                <td style="text-align: center; color: #86efac; font-weight: 700;">{% if eval and eval.final_total != None %}{{ eval.final_total }}{% else %}—{% endif %}</td>
+                                                <td style="text-align: center; color: #93c5fd; font-weight: 600;">{% if eval and eval.final_percentage != None %}{{ eval.final_percentage|floatformat:2 }}%{% else %}—{% endif %}</td>
+                                                <td style="text-align: center; color: #fde68a; font-weight: 700; letter-spacing: 0.05em;">{% if eval and eval.final_grade %}{{ eval.final_grade }}{% else %}—{% endif %}</td>
+                                            </tr>
+                                            {% endwith %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div class="alert alert-warning mt-3" style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); color: #fbbf24;">
-                                Attendance marks can be entered only after Second Evaluation is completed.
-                            </div>
-                            {% endif %}
+                            {% endwith %}
+
                             {% endwith %}
                         {% endif %}
                     </div>

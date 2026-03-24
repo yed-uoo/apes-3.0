@@ -999,7 +999,7 @@
             {% endif %}
             {% endwith %}
 
-            <!-- CIE Marks Section -->
+            <!-- CIE & ESE Summary -->
             {% with second_eval=student_evaluations.second %}
             <div class="info-card mt-4">
                 <h5 style="color: #f59e0b; margin-bottom: 1rem;"><i class="bi bi-calculator"></i> CIE Marks (75)</h5>
@@ -1039,6 +1039,104 @@
                 {% else %}
                 <div class="alert alert-warning mb-0" style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); color: #fbbf24;">
                     CIE marks will be calculated after completion of all evaluation components.
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="info-card mt-4">
+                <h5 style="color: #c4b5fd; margin-bottom: 1rem;"><i class="bi bi-trophy"></i> End Semester Evaluation (75)</h5>
+                {% if ese_status and not ese_status.allowed %}
+                <div class="alert alert-warning" style="background: rgba(248, 113, 113, 0.12); border: 1px solid rgba(248, 113, 113, 0.3); color: #fecaca;">
+                    {{ ese_status.message }}
+                </div>
+                {% endif %}
+
+                {% if second_eval %}
+                <div style="background: rgba(196, 181, 253, 0.08); border: 1px solid rgba(196, 181, 253, 0.3); border-radius: 8px; padding: 1rem;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tbody>
+                            <tr>
+                                <td style="color: #e5e7eb; padding: 6px 0;">Guide Submission</td>
+                                <td style="text-align: right; padding: 6px 0; font-weight: 600;">
+                                    {% if second_eval.ese_guide_submitted %}
+                                    <span style="color: #c4b5fd;">{{ second_eval.ese_guide_total }} / 75</span>
+                                    {% else %}
+                                    <span style="color: #9ca3af;">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="color: #e5e7eb; padding: 6px 0;">Coordinator 1 Submission</td>
+                                <td style="text-align: right; padding: 6px 0; font-weight: 600;">
+                                    {% if second_eval.ese_coord1_submitted %}
+                                    <span style="color: #c4b5fd;">{{ second_eval.ese_coord1_total }} / 75</span>
+                                    {% else %}
+                                    <span style="color: #9ca3af;">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="color: #e5e7eb; padding: 6px 0;">Coordinator 2 Submission</td>
+                                <td style="text-align: right; padding: 6px 0; font-weight: 600;">
+                                    {% if second_eval.ese_coord2_submitted %}
+                                    <span style="color: #c4b5fd;">{{ second_eval.ese_coord2_total }} / 75</span>
+                                    {% else %}
+                                    <span style="color: #9ca3af;">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr style="border-top: 1px solid rgba(196, 181, 253, 0.3);">
+                                <td style="color: #d8b4fe; font-weight: 700; padding: 10px 0 4px;">Averaged ESE Mark</td>
+                                <td style="color: #d8b4fe; font-weight: 700; font-size: 1.1rem; text-align: right; padding: 10px 0 4px;">
+                                    {% if second_eval.ese_final != None %}
+                                    {{ second_eval.ese_final }} / 75
+                                    {% else %}
+                                    —
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-warning mb-0" style="background: rgba(248, 113, 113, 0.12); border: 1px solid rgba(248, 113, 113, 0.3); color: #fecaca;">
+                    Second Evaluation record is not available yet for this student.
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="info-card mt-4">
+                <h5 style="color: #93c5fd; margin-bottom: 1rem;"><i class="bi bi-stars"></i> Final Result (150)</h5>
+                {% if second_eval and second_eval.final_total != None %}
+                <div style="background: rgba(147, 197, 253, 0.08); border: 1px solid rgba(147, 197, 253, 0.3); border-radius: 8px; padding: 1rem;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tbody>
+                            <tr>
+                                <td style="color: #e5e7eb; padding: 6px 0;">CIE Total</td>
+                                <td style="color: #fbbf24; font-weight: 700; text-align: right; padding: 6px 0;">{{ second_eval.cie_total }} / 75</td>
+                            </tr>
+                            <tr>
+                                <td style="color: #e5e7eb; padding: 6px 0;">ESE Total</td>
+                                <td style="color: #d8b4fe; font-weight: 700; text-align: right; padding: 6px 0;">{{ second_eval.ese_final }} / 75</td>
+                            </tr>
+                            <tr style="border-top: 1px solid rgba(147, 197, 253, 0.3);">
+                                <td style="color: #86efac; font-weight: 700; padding: 10px 0 4px;">Final Total</td>
+                                <td style="color: #86efac; font-weight: 700; font-size: 1.2rem; text-align: right; padding: 10px 0 4px;">{{ second_eval.final_total }} / 150</td>
+                            </tr>
+                            <tr>
+                                <td style="color: #e5e7eb; padding: 6px 0;">Percentage</td>
+                                <td style="color: #93c5fd; font-weight: 700; text-align: right; padding: 6px 0;">{{ second_eval.final_percentage|floatformat:2 }}%</td>
+                            </tr>
+                            <tr>
+                                <td style="color: #e5e7eb; padding: 6px 0;">Grade</td>
+                                <td style="color: #fde68a; font-weight: 700; text-align: right; padding: 6px 0; letter-spacing: 0.1em;">{{ second_eval.final_grade }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-0" style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); color: #93c5fd;">
+                    Final result will be published once both CIE and ESE marks are available.
                 </div>
                 {% endif %}
             </div>

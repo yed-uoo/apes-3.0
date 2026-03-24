@@ -75,6 +75,113 @@ def _is_stage_completed_for_group(group, stage):
 	return not evaluations.filter(finalized=False).exists()
 
 
+def _get_ese_availability(student_eval):
+	"""Return (is_available, message) describing ESE readiness for a student."""
+	if not student_eval:
+		return False, "Second Evaluation record is not available for this student."
+	if not student_eval.second_eval_completed:
+		return False, "Second Evaluation must be completed before entering ESE marks."
+	if not student_eval.final_guide_submitted:
+		return False, "Final Guide Evaluation must be submitted before ESE marks."
+	if not student_eval.attendance_submitted:
+		return False, "Attendance marks must be submitted before ESE marks."
+	try:
+		project_report = student_eval.group.project_report
+	except ProjectReport.DoesNotExist:
+		project_report = None
+	if not project_report or project_report.final_mark is None:
+		return False, "Project Report must be evaluated before recording ESE marks."
+	if not student_eval.cie_calculated:
+		return False, "CIE must be calculated before ESE is enabled."
+	return True, ""
+
+
+def _update_ese_completion(student_eval):
+	"""Recalculate ESE aggregates whenever any evaluator submits."""
+	final_mark = student_eval.ese_final_calculated
+	if final_mark is not None:
+		student_eval.ese_final = final_mark
+	else:
+		student_eval.ese_final = None
+		_reset_final_result(student_eval)
+
+	all_submitted = (
+		student_eval.ese_guide_submitted
+		and student_eval.ese_coord1_submitted
+		and student_eval.ese_coord2_submitted
+	)
+	student_eval.ese_completed = all_submitted
+	student_eval.ese_completed_at = timezone.now() if all_submitted else None
+	return student_eval.ese_final is not None
+
+
+def _reset_final_result(student_eval):
+	"""Clear cached final result values when prerequisites are invalid."""
+	student_eval.final_total = None
+	student_eval.final_percentage = None
+	student_eval.final_grade = None
+	student_eval.result_calculated = False
+
+
+def calculate_final_result(student_eval):
+	"""Compute final total, percentage, and grade once CIE and ESE are done."""
+	if not student_eval:
+		return
+	if not (
+		student_eval.cie_total is not None
+		and student_eval.ese_final is not None
+	):
+		return
+	final_total = student_eval.cie_total + student_eval.ese_final
+	final_percentage = round((final_total / 150) * 100, 2)
+	if (
+		student_eval.result_calculated
+		and student_eval.final_total == final_total
+		and student_eval.final_percentage == final_percentage
+	):
+		return
+	grade = _derive_grade_from_percentage(final_percentage)
+	student_eval.final_total = final_total
+	student_eval.final_percentage = final_percentage
+	student_eval.final_grade = grade
+	student_eval.result_calculated = True
+	student_eval.save(update_fields=[
+		"final_total",
+		"final_percentage",
+		"final_grade",
+		"result_calculated",
+	])
+
+
+def _derive_grade_from_percentage(percentage):
+	if percentage >= 90:
+		return "S"
+	if percentage >= 85:
+		return "A+"
+	if percentage >= 80:
+		return "A"
+	if percentage >= 75:
+		return "B+"
+	if percentage >= 70:
+		return "B"
+	if percentage >= 65:
+		return "C+"
+	if percentage >= 60:
+		return "C"
+	if percentage >= 55:
+		return "D"
+	if percentage >= 50:
+		return "P"
+	return "F"
+
+
+def _ensure_final_result(student_eval):
+	"""Backfill final result if prerequisites met but cache stale."""
+	if not student_eval:
+		return
+	calculate_final_result(student_eval)
+
+
 @login_required
 def dashboard(request):
 	if _has_dual_faculty_roles(request.user):
@@ -318,6 +425,7 @@ def mini_project(request):
 			"first": StudentEvaluation.objects.filter(student=request.user, stage="first").first(),
 			"second": StudentEvaluation.objects.filter(student=request.user, stage="second").first(),
 		}
+		_ensure_final_result(student_evaluations.get("second"))
 
 	# Official SDG names for display
 	sdg_names = {
@@ -356,6 +464,16 @@ def mini_project(request):
 			('PSO2', sdg_submission.pso2),
 		]
 
+	second_eval_record = student_evaluations.get("second") if student_evaluations else None
+	ese_allowed = False
+	ese_message = "End Semester Evaluation will be available after completion of all internal evaluations."
+	if second_eval_record:
+		ese_allowed, ese_reason = _get_ese_availability(second_eval_record)
+		if not ese_allowed and ese_reason:
+			ese_message = ese_reason
+	else:
+		ese_message = "Second Evaluation record is not available for this student."
+
 	context = {
 		"group": group,
 		"is_leader": is_leader,
@@ -383,6 +501,10 @@ def mini_project(request):
 		"first_complete": first_complete,
 		"second_complete": second_complete,
 		"can_submit_report": bool(group and first_complete and second_complete),
+		"ese_status": {
+			"allowed": ese_allowed,
+			"message": ese_message,
+		},
 	}
 	return render(request, "mini_project.html", context)
 
@@ -872,28 +994,32 @@ def guide_dashboard(request):
 				for member in group_members
 			}
 		}
+		for eval_obj in student_evaluations_by_group[group_id]["second"].values():
+			_ensure_final_result(eval_obj)
 
-	assigned_groups = [
-		{
+	assigned_groups = []
+	for guide_request in accepted_requests:
+		members = list(GroupMember.objects.filter(group=guide_request.group).select_related("user"))
+		student_eval_map = student_evaluations_by_group.get(guide_request.group_id, {})
+		first_eval_map = student_eval_map.get("first", {})
+		second_eval_map = student_eval_map.get("second", {})
+		esestatus = {}
+		for member in members:
+			eval_second = second_eval_map.get(member.user.id)
+			allowed, reason = _get_ese_availability(eval_second)
+			esestatus[member.user.id] = {"allowed": allowed, "message": reason}
+		assigned_groups.append({
 			"group": guide_request.group,
 			"sdg": sdg_by_group_id.get(guide_request.group_id),
 			"project_report": report_by_group_id.get(guide_request.group_id),
 			"evaluations": evaluations_by_group.get(guide_request.group_id, {}),
 			"evaluation_files": evaluation_files_by_group.get(guide_request.group_id, {}),
-			"student_evaluations": student_evaluations_by_group.get(guide_request.group_id, {}),
-			"members": GroupMember.objects.filter(group=guide_request.group).select_related("user"),
-			# Add flags for evaluation completion status
-			"first_complete": all(
-				eval_obj and eval_obj.finalized
-				for eval_obj in student_evaluations_by_group.get(guide_request.group_id, {}).get("first", {}).values()
-			),
-			"second_complete": all(
-				eval_obj and eval_obj.finalized
-				for eval_obj in student_evaluations_by_group.get(guide_request.group_id, {}).get("second", {}).values()
-			),
-		}
-		for guide_request in accepted_requests
-	]
+			"student_evaluations": student_eval_map,
+			"members": members,
+			"first_complete": all(eval_obj and eval_obj.finalized for eval_obj in first_eval_map.values()),
+			"second_complete": all(eval_obj and eval_obj.finalized for eval_obj in second_eval_map.values()),
+			"ese_status": esestatus,
+		})
 
 	# Get pending guide requests for the requests tab
 	pending_requests = GuideRequest.objects.filter(
@@ -1185,13 +1311,43 @@ def download_abstract(request, abstract_id):
 		).exists()
 		has_access = guide_request
 
+	elif _is_coordinator(request.user):
+		has_access = CoordinatorApproval.objects.filter(
+			group=abstract.group,
+			coordinator=request.user,
+		).exists()
+		if not has_access:
+			student_profile = getattr(abstract.group.leader, "student_profile", None)
+			student_class = getattr(student_profile, "student_class", None)
+			if student_class:
+				has_access = CoordinatorAssignment.objects.filter(
+					faculty=request.user,
+					student_class=student_class,
+				).exists()
+
+	elif _is_hod(request.user):
+		user_dept = getattr(request.user.faculty_profile, "department", None)
+		group_dept = getattr(getattr(abstract.group.leader, "student_profile", None), "department", None)
+		has_access = user_dept and group_dept and user_dept == group_dept
+
+	def _role_redirect():
+		if _is_student(request.user):
+			return redirect("abstract_status")
+		if _is_guide(request.user):
+			return redirect("faculty_abstracts")
+		if _is_coordinator(request.user):
+			return HttpResponseRedirect(reverse("coordinator_dashboard") + "#topics")
+		if _is_hod(request.user):
+			return redirect("hod_dashboard")
+		return redirect("dashboard")
+
 	if not has_access:
 		messages.error(request, "You don't have permission to download this abstract.")
-		return redirect("dashboard")
+		return _role_redirect()
 
 	if not abstract.pdf_file:
 		messages.error(request, "No PDF file available for this abstract.")
-		return redirect("abstract_status" if _is_student(request.user) else "faculty_abstracts")
+		return _role_redirect()
 
 	response = HttpResponse(abstract.pdf_file, content_type='application/pdf')
 	response['Content-Disposition'] = f'attachment; filename="{abstract.pdf_filename}"'
@@ -1429,6 +1585,18 @@ def coordinator_dashboard(request):
 				for member in group_members
 			}
 		}
+		for eval_obj in student_evaluations.get("second", {}).values():
+			_ensure_final_result(eval_obj)
+
+		second_eval_map = student_evaluations.get("second", {})
+		ese_rows = [
+			{"student": member.user, "student_eval": second_eval_map.get(member.user.id)}
+			for member in members
+		]
+		esestatus = {}
+		for member in group_members:
+			allowed, message = _get_ese_availability(second_eval_map.get(member.user.id))
+			esestatus[member.user.id] = {"allowed": allowed, "message": message}
 
 		student_profile = getattr(group.leader, "student_profile", None)
 		class_name = student_profile.student_class.name if student_profile and student_profile.student_class else None
@@ -1485,6 +1653,8 @@ def coordinator_dashboard(request):
 				eval_obj and eval_obj.finalized
 				for eval_obj in student_evaluations.get("second", {}).values()
 			),
+			"ese_status": esestatus,
+			"ese_data": ese_rows,
 		})
 
 	pending_approvals = CoordinatorApproval.objects.filter(
@@ -1925,6 +2095,8 @@ def _calculate_cie(second_eval):
 		"cie_calculated",
 		"cie_calculated_at",
 	])
+	if second_eval.ese_completed:
+		calculate_final_result(second_eval)
 
 
 def _try_calculate_cie(second_eval):
@@ -2030,6 +2202,242 @@ def submit_attendance_marks(request, group_id):
 
 	messages.success(request, "Attendance marks saved successfully for all students.")
 	return redirect("coordinator_dashboard")
+
+
+@login_required
+def submit_coordinator_ese(request, group_id):
+	"""Allow coordinators to record End Semester Evaluation (ESE) marks for students."""
+	if not _is_coordinator(request.user):
+		return HttpResponseForbidden("Only coordinators can submit ESE marks.")
+
+	role_redirect = _ensure_active_role_for_dual_faculty(request, "coordinator")
+	if role_redirect:
+		return role_redirect
+
+	if request.method != "POST":
+		return redirect("coordinator_dashboard")
+
+	group = get_object_or_404(Group, id=group_id)
+	student_profile = getattr(group.leader, "student_profile", None)
+	if not student_profile or not student_profile.student_class:
+		return HttpResponseForbidden("Group leader's class is not assigned.")
+
+	assignments = list(
+		CoordinatorAssignment.objects.filter(student_class=student_profile.student_class)
+		.select_related("faculty")
+		.order_by("id")
+	)
+	if not assignments:
+		messages.error(request, "No coordinators assigned to this class.")
+		return redirect("coordinator_dashboard")
+
+	coordinator_role = None
+	for idx, assignment in enumerate(assignments, 1):
+		if assignment.faculty == request.user:
+			coordinator_role = idx
+			break
+	if not coordinator_role:
+		messages.error(request, "You are not assigned as a coordinator for this class.")
+		return redirect("coordinator_dashboard")
+
+	members = list(GroupMember.objects.filter(group=group).select_related("user").order_by("id"))
+	second_stage_evals = {
+		member.user.id: StudentEvaluation.objects.filter(student=member.user, group=group, stage="second").first()
+		for member in members
+	}
+
+	missing = [member.user.username for member in members if not second_stage_evals.get(member.user.id)]
+	if missing:
+		messages.error(request, "Second Evaluation record is missing for: " + ", ".join(missing))
+		return redirect("coordinator_dashboard")
+
+	allowed_students = {}
+	for member in members:
+		allowed, message = _get_ese_availability(second_stage_evals[member.user.id])
+		if allowed:
+			allowed_students[member.user.id] = True
+		else:
+			allowed_students[member.user.id] = False
+	if not any(allowed_students.values()):
+		messages.error(request, "ESE marks can be entered only after all prerequisites are complete for at least one student.")
+		return redirect("coordinator_dashboard")
+
+	criteria = {
+		"presentation": {"max": 30, "label": "Presentation (30)"},
+		"demo": {"max": 20, "label": "Demonstration (20)"},
+		"viva": {"max": 25, "label": "Viva (25)"},
+	}
+
+	validated_scores = {}
+	for member in members:
+		if not allowed_students[member.user.id]:
+			continue
+		base_prefix = f"student_{member.user.id}_"
+		req_prefix = f"{base_prefix}ese_"
+		scores = {}
+		for field_key, spec in criteria.items():
+			max_score = spec["max"]
+			label = spec["label"]
+			raw_value = request.POST.get(f"{req_prefix}{field_key}")
+			if raw_value is None:
+				raw_value = request.POST.get(f"{base_prefix}{field_key}")
+			raw_value = (raw_value or "").strip()
+			if raw_value == "":
+				messages.error(request, f"{label} for {member.user.username} is required.")
+				return redirect("coordinator_dashboard")
+			try:
+				score = int(raw_value)
+			except (TypeError, ValueError):
+				messages.error(request, f"{label} for {member.user.username} must be a whole number between 0 and {max_score}.")
+				return redirect("coordinator_dashboard")
+			if score < 0 or score > max_score:
+				messages.error(request, f"{label} for {member.user.username} must be between 0 and {max_score}.")
+				return redirect("coordinator_dashboard")
+			scores[field_key] = score
+		validated_scores[member.user.id] = scores
+
+	for member in members:
+		if not allowed_students[member.user.id]:
+			continue
+		evaluation = second_stage_evals[member.user.id]
+		scores = validated_scores[member.user.id]
+		coord_fields = []
+		total = sum(scores.values())
+		if coordinator_role == 1:
+			evaluation.ese_coord1_presentation = scores["presentation"]
+			evaluation.ese_coord1_demo = scores["demo"]
+			evaluation.ese_coord1_viva = scores["viva"]
+			evaluation.ese_coord1_submitted = True
+			coord_fields.extend([
+				"ese_coord1_presentation",
+				"ese_coord1_demo",
+				"ese_coord1_viva",
+				"ese_coord1_submitted",
+			])
+		else:
+			evaluation.ese_coord2_presentation = scores["presentation"]
+			evaluation.ese_coord2_demo = scores["demo"]
+			evaluation.ese_coord2_viva = scores["viva"]
+			evaluation.ese_coord2_submitted = True
+			coord_fields.extend([
+				"ese_coord2_presentation",
+				"ese_coord2_demo",
+				"ese_coord2_viva",
+				"ese_coord2_submitted",
+			])
+
+		completed = _update_ese_completion(evaluation)
+		coord_fields.extend([
+			"ese_final",
+			"ese_completed",
+			"ese_completed_at",
+			"final_total",
+			"final_percentage",
+			"final_grade",
+			"result_calculated",
+		])
+		evaluation.save(update_fields=coord_fields)
+		if completed:
+			calculate_final_result(evaluation)
+
+	messages.success(request, "ESE marks submitted successfully.")
+	return redirect("coordinator_dashboard")
+
+
+@login_required
+def submit_guide_ese(request, group_id):
+	"""Allow the assigned guide to submit their ESE marks for all members in a group."""
+	if not _is_guide(request.user):
+		messages.error(request, "Only guides can submit ESE marks.")
+		return redirect("dashboard")
+
+	if request.method != "POST":
+		return redirect("guide_dashboard")
+
+	group = get_object_or_404(Group, id=group_id)
+
+	if not GuideRequest.objects.filter(group=group, guide=request.user, status=GuideRequest.STATUS_ACCEPTED).exists():
+		messages.error(request, "You are not the assigned guide for this group.")
+		return redirect("guide_dashboard")
+
+	if not _is_stage_completed_for_group(group, "second"):
+		messages.error(request, "ESE entry is available only after the Second Evaluation is completed for the group.")
+		return redirect("guide_dashboard")
+
+	members = list(GroupMember.objects.filter(group=group).select_related("user").order_by("id"))
+	second_stage_evals = {
+		member.user.id: StudentEvaluation.objects.filter(student=member.user, group=group, stage="second").first()
+		for member in members
+	}
+
+	missing_records = [member.user.username for member in members if not second_stage_evals.get(member.user.id)]
+	if missing_records:
+		messages.error(request, "Second Evaluation data is missing for: " + ", ".join(missing_records))
+		return redirect("guide_dashboard")
+
+	not_ready = {}
+	for member in members:
+		eval_record = second_stage_evals[member.user.id]
+		allowed, message = _get_ese_availability(eval_record)
+		if not allowed:
+			not_ready[member.user.username] = message or "Prerequisites for ESE are not met."
+
+	if not_ready:
+		first_user, reason = next(iter(not_ready.items()))
+		messages.error(request, f"ESE cannot be submitted because {first_user}: {reason}")
+		return redirect("guide_dashboard")
+
+	criteria = {
+		"presentation": ("ese_guide_presentation", 30, "Presentation (30)"),
+		"demo": ("ese_guide_demo", 20, "Demonstration (20)"),
+		"viva": ("ese_guide_viva", 25, "Viva (25)"),
+	}
+
+	now = timezone.now()
+	for member in members:
+		eval_record = second_stage_evals[member.user.id]
+		prefix = f"student_{member.user.id}_ese_"
+		validated_scores = {}
+		for slug, (model_field, max_score, label) in criteria.items():
+			raw_value = request.POST.get(f"{prefix}{slug}", "").strip()
+			if raw_value == "":
+				messages.error(request, f"{label} mark for {member.user.username} is required.")
+				return redirect("guide_dashboard")
+			try:
+				score = int(raw_value)
+			except (TypeError, ValueError):
+				messages.error(request, f"{label} mark for {member.user.username} must be a whole number between 0 and {max_score}.")
+				return redirect("guide_dashboard")
+			if score < 0 or score > max_score:
+				messages.error(request, f"{label} mark for {member.user.username} must be between 0 and {max_score}.")
+				return redirect("guide_dashboard")
+			validated_scores[model_field] = score
+
+		for field_name, score in validated_scores.items():
+			setattr(eval_record, field_name, score)
+		eval_record.ese_guide_submitted = True
+		eval_record.ese_guide_submitted_at = now
+		completed = _update_ese_completion(eval_record)
+		update_fields = [
+			"ese_guide_presentation",
+			"ese_guide_demo",
+			"ese_guide_viva",
+			"ese_guide_submitted",
+			"ese_guide_submitted_at",
+			"ese_final",
+			"ese_completed",
+			"ese_completed_at",
+			"final_total",
+			"final_percentage",
+			"final_grade",
+			"result_calculated",
+		]
+		eval_record.save(update_fields=update_fields)
+		if completed:
+			calculate_final_result(eval_record)
+
+	messages.success(request, "Guide ESE marks submitted successfully.")
+	return redirect("guide_dashboard")
 
 
 @login_required
