@@ -16,6 +16,7 @@ urlpatterns = [
     path("project-report/mark/<int:report_id>/", views.submit_report_mark, name="submit_report_mark"),
     path("project-report/reject/<int:report_id>/", views.submit_report_rejection, name="submit_report_rejection"),
     path("project-report/download/<int:report_id>/", views.download_project_report, name="download_project_report"),
+    path("cie-report/<int:group_id>/", views.generate_cie_report, name="generate_cie_report"),
     path("sdg-submission/", views.sdg_submission, name="sdg_submission"),
     path("group-requests/", views.group_requests, name="group_requests"),
     path("guide-request/", views.guide_request, name="guide_request"),
