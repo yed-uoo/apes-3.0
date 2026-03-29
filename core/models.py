@@ -408,60 +408,59 @@ class StudentEvaluation(models.Model):
 	stage = models.CharField(max_length=10, choices=STAGE_CHOICES)
 
 	# Guide marks (max 40 total)
-	guide_topic = models.IntegerField(null=True, blank=True)  # max 5
-	guide_planning = models.IntegerField(null=True, blank=True)  # max 5
-	guide_scalability = models.IntegerField(null=True, blank=True)  # max 2
-	guide_novelty = models.IntegerField(null=True, blank=True)  # max 5
-	guide_task_distribution = models.IntegerField(null=True, blank=True)  # max 5
-	guide_schedule = models.IntegerField(null=True, blank=True)  # max 3
-	guide_interim = models.IntegerField(null=True, blank=True)  # max 5
-	guide_presentation = models.IntegerField(null=True, blank=True)  # max 5
-	guide_viva = models.IntegerField(null=True, blank=True)  # max 5
+	guide_topic = models.IntegerField(default=0)  # max 5
+	guide_planning = models.IntegerField(default=0)  # max 5
+	guide_scalability = models.IntegerField(default=0)  # max 2
+	guide_novelty = models.IntegerField(default=0)  # max 5
+	guide_task_distribution = models.IntegerField(default=0)  # max 5
+	guide_schedule = models.IntegerField(default=0)  # max 3
+	guide_interim = models.IntegerField(default=0)  # max 5
+	guide_presentation = models.IntegerField(default=0)  # max 5
+	guide_viva = models.IntegerField(default=0)  # max 5
 
 	guide_submitted = models.BooleanField(default=False)
 
 	# Coordinator 1 marks (max 40 total)
-	coordinator1_topic = models.IntegerField(null=True, blank=True)
-	coordinator1_planning = models.IntegerField(null=True, blank=True)
-	coordinator1_scalability = models.IntegerField(null=True, blank=True)
-	coordinator1_novelty = models.IntegerField(null=True, blank=True)
-	coordinator1_task_distribution = models.IntegerField(null=True, blank=True)
-	coordinator1_schedule = models.IntegerField(null=True, blank=True)
-	coordinator1_interim = models.IntegerField(null=True, blank=True)
-	coordinator1_presentation = models.IntegerField(null=True, blank=True)
-	coordinator1_viva = models.IntegerField(null=True, blank=True)
+	coordinator1_topic = models.IntegerField(default=0)
+	coordinator1_planning = models.IntegerField(default=0)
+	coordinator1_scalability = models.IntegerField(default=0)
+	coordinator1_novelty = models.IntegerField(default=0)
+	coordinator1_task_distribution = models.IntegerField(default=0)
+	coordinator1_schedule = models.IntegerField(default=0)
+	coordinator1_interim = models.IntegerField(default=0)
+	coordinator1_presentation = models.IntegerField(default=0)
+	coordinator1_viva = models.IntegerField(default=0)
 
 	coordinator1_submitted = models.BooleanField(default=False)
 
 	# Coordinator 2 marks (max 40 total)
-	coordinator2_topic = models.IntegerField(null=True, blank=True)
-	coordinator2_planning = models.IntegerField(null=True, blank=True)
-	coordinator2_scalability = models.IntegerField(null=True, blank=True)
-	coordinator2_novelty = models.IntegerField(null=True, blank=True)
-	coordinator2_task_distribution = models.IntegerField(null=True, blank=True)
-	coordinator2_schedule = models.IntegerField(null=True, blank=True)
-	coordinator2_interim = models.IntegerField(null=True, blank=True)
-	coordinator2_presentation = models.IntegerField(null=True, blank=True)
-	coordinator2_viva = models.IntegerField(null=True, blank=True)
+	coordinator2_topic = models.IntegerField(default=0)
+	coordinator2_planning = models.IntegerField(default=0)
+	coordinator2_scalability = models.IntegerField(default=0)
+	coordinator2_novelty = models.IntegerField(default=0)
+	coordinator2_task_distribution = models.IntegerField(default=0)
+	coordinator2_schedule = models.IntegerField(default=0)
+	coordinator2_interim = models.IntegerField(default=0)
+	coordinator2_presentation = models.IntegerField(default=0)
+	coordinator2_viva = models.IntegerField(default=0)
 
 	coordinator2_submitted = models.BooleanField(default=False)
 
 	# Legacy coordinator marks (keep for backward compatibility)
-	coordinator_topic = models.IntegerField(null=True, blank=True)
-	coordinator_planning = models.IntegerField(null=True, blank=True)
-	coordinator_scalability = models.IntegerField(null=True, blank=True)
-	coordinator_novelty = models.IntegerField(null=True, blank=True)
-	coordinator_task_distribution = models.IntegerField(null=True, blank=True)
-	coordinator_schedule = models.IntegerField(null=True, blank=True)
-	coordinator_interim = models.IntegerField(null=True, blank=True)
-	coordinator_presentation = models.IntegerField(null=True, blank=True)
-	coordinator_viva = models.IntegerField(null=True, blank=True)
+	coordinator_topic = models.IntegerField(default=0)
+	coordinator_planning = models.IntegerField(default=0)
+	coordinator_scalability = models.IntegerField(default=0)
+	coordinator_novelty = models.IntegerField(default=0)
+	coordinator_task_distribution = models.IntegerField(default=0)
+	coordinator_schedule = models.IntegerField(default=0)
+	coordinator_interim = models.IntegerField(default=0)
+	coordinator_presentation = models.IntegerField(default=0)
+	coordinator_viva = models.IntegerField(default=0)
 
 	coordinator_submitted = models.BooleanField(default=False)
 
 	attendance_marks = models.IntegerField(
-		null=True,
-		blank=True,
+		default=0,
 		validators=[MinValueValidator(0), MaxValueValidator(10)],
 	)
 	attendance_submitted = models.BooleanField(default=False)
@@ -475,71 +474,119 @@ class StudentEvaluation(models.Model):
 	attendance_submitted_at = models.DateTimeField(null=True, blank=True)
 
 	final_guide_topic = models.IntegerField(
-		null=True,
-		blank=True,
+		default=0,
 		validators=[MinValueValidator(0), MaxValueValidator(5)],
 	)
 	final_guide_planning = models.IntegerField(
-		null=True,
-		blank=True,
+		default=0,
 		validators=[MinValueValidator(0), MaxValueValidator(5)],
 	)
 	final_guide_scale = models.IntegerField(
-		null=True,
-		blank=True,
+		default=0,
 		validators=[MinValueValidator(0), MaxValueValidator(2)],
 	)
 	final_guide_novelty = models.IntegerField(
-		null=True,
-		blank=True,
+		default=0,
 		validators=[MinValueValidator(0), MaxValueValidator(5)],
 	)
 	final_guide_task = models.IntegerField(
-		null=True,
-		blank=True,
+		default=0,
 		validators=[MinValueValidator(0), MaxValueValidator(5)],
 	)
 	final_guide_schedule = models.IntegerField(
-		null=True,
-		blank=True,
+		default=0,
 		validators=[MinValueValidator(0), MaxValueValidator(3)],
 	)
 	final_guide_interim = models.IntegerField(
-		null=True,
-		blank=True,
+		default=0,
 		validators=[MinValueValidator(0), MaxValueValidator(5)],
 	)
 	final_guide_presentation = models.IntegerField(
-		null=True,
-		blank=True,
+		default=0,
 		validators=[MinValueValidator(0), MaxValueValidator(5)],
 	)
 	final_guide_viva = models.IntegerField(
-		null=True,
-		blank=True,
+		default=0,
 		validators=[MinValueValidator(0), MaxValueValidator(5)],
 	)
 	final_guide_total = models.IntegerField(
-		null=True,
-		blank=True,
+		default=0,
 		validators=[MinValueValidator(0), MaxValueValidator(40)],
 	)
 
 	final_guide_raw = models.IntegerField(
-		null=True,
-		blank=True,
+		default=0,
 		validators=[MinValueValidator(0), MaxValueValidator(40)],
 	)
-	final_guide_mark = models.IntegerField(null=True, blank=True)
+	final_guide_mark = models.IntegerField(default=0, null=True, blank=True)
 	final_guide_submitted = models.BooleanField(default=False)
 	final_guide_submitted_at = models.DateTimeField(null=True, blank=True)
 
 	# CIE (Continuous Internal Evaluation) fields — stored on the "second" stage record
-	committee_raw_total = models.IntegerField(null=True, blank=True)
-	committee_mark = models.IntegerField(null=True, blank=True)
-	cie_total = models.IntegerField(null=True, blank=True)
+	committee_raw_total = models.IntegerField(default=0, null=True, blank=True)
+	committee_mark = models.IntegerField(default=0, null=True, blank=True)
+	cie_total = models.IntegerField(default=0, null=True, blank=True)
 	cie_calculated = models.BooleanField(default=False)
 	cie_calculated_at = models.DateTimeField(null=True, blank=True)
+
+	# ESE (External Evaluation) Guide marks
+	ese_guide_presentation = models.IntegerField(
+		default=0,
+		validators=[MinValueValidator(0), MaxValueValidator(30)],
+	)  # max 30
+	ese_guide_demo = models.IntegerField(
+		default=0,
+		validators=[MinValueValidator(0), MaxValueValidator(20)],
+	)  # max 20
+	ese_guide_viva = models.IntegerField(
+		default=0,
+		validators=[MinValueValidator(0), MaxValueValidator(25)],
+	)  # max 25
+	ese_guide_submitted = models.BooleanField(default=False)
+	ese_guide_submitted_at = models.DateTimeField(null=True, blank=True)
+
+	# ESE (External Evaluation) Coordinator 1 marks
+	ese_coord1_presentation = models.IntegerField(
+		default=0,
+		validators=[MinValueValidator(0), MaxValueValidator(30)],
+	)  # max 30
+	ese_coord1_demo = models.IntegerField(
+		default=0,
+		validators=[MinValueValidator(0), MaxValueValidator(20)],
+	)  # max 20
+	ese_coord1_viva = models.IntegerField(
+		default=0,
+		validators=[MinValueValidator(0), MaxValueValidator(25)],
+	)  # max 25
+	ese_coord1_submitted = models.BooleanField(default=False)
+	ese_coord1_submitted_at = models.DateTimeField(null=True, blank=True)
+
+	# ESE (External Evaluation) Coordinator 2 marks
+	ese_coord2_presentation = models.IntegerField(
+		default=0,
+		validators=[MinValueValidator(0), MaxValueValidator(30)],
+	)  # max 30
+	ese_coord2_demo = models.IntegerField(
+		default=0,
+		validators=[MinValueValidator(0), MaxValueValidator(20)],
+	)  # max 20
+	ese_coord2_viva = models.IntegerField(
+		default=0,
+		validators=[MinValueValidator(0), MaxValueValidator(25)],
+	)  # max 25
+	ese_coord2_submitted = models.BooleanField(default=False)
+	ese_coord2_submitted_at = models.DateTimeField(null=True, blank=True)
+
+	# ESE Final averaged mark
+	ese_final = models.IntegerField(null=True, blank=True)
+	ese_completed = models.BooleanField(default=False)
+	ese_completed_at = models.DateTimeField(null=True, blank=True)
+
+	# Final result cache
+	final_total = models.IntegerField(null=True, blank=True)
+	final_percentage = models.FloatField(null=True, blank=True)
+	final_grade = models.CharField(max_length=5, null=True, blank=True)
+	result_calculated = models.BooleanField(default=False)
 
 	finalized = models.BooleanField(default=False)
 
@@ -616,6 +663,51 @@ class StudentEvaluation(models.Model):
 			self.coordinator_viva or 0,
 		]
 		return sum(marks)
+
+	@property
+	def ese_guide_total(self):
+		"""Calculate total ESE Guide marks (presentation + demo + viva)."""
+		marks = [
+			self.ese_guide_presentation or 0,
+			self.ese_guide_demo or 0,
+			self.ese_guide_viva or 0,
+		]
+		return sum(marks)
+
+	@property
+	def ese_coord1_total(self):
+		"""Calculate total ESE Coordinator 1 marks (presentation + demo + viva)."""
+		marks = [
+			self.ese_coord1_presentation or 0,
+			self.ese_coord1_demo or 0,
+			self.ese_coord1_viva or 0,
+		]
+		return sum(marks)
+
+	@property
+	def ese_coord2_total(self):
+		"""Calculate total ESE Coordinator 2 marks (presentation + demo + viva)."""
+		marks = [
+			self.ese_coord2_presentation or 0,
+			self.ese_coord2_demo or 0,
+			self.ese_coord2_viva or 0,
+		]
+		return sum(marks)
+
+	@property
+	def ese_final_calculated(self):
+		"""Average submitted ESE totals on the native 75-point scale."""
+		totals = []
+		if self.ese_guide_submitted:
+			totals.append(self.ese_guide_total)
+		if self.ese_coord1_submitted:
+			totals.append(self.ese_coord1_total)
+		if self.ese_coord2_submitted:
+			totals.append(self.ese_coord2_total)
+		if totals:
+			average = sum(totals) / len(totals)
+			return round(average)
+		return None
 
 	@property
 	def second_eval_completed(self):
